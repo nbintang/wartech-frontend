@@ -1,29 +1,26 @@
-import SignUp from '@/features/auth/signup'
-import { GalleryVerticalEnd } from 'lucide-react'
-import Image from 'next/image'
-import React from 'react'
+import React from "react";
+import SignUpForm from "../../../features/auth/signup/components/SignUpForm";
+import Link from "next/link";
 
-export default function SignUpPage() {
+export default function SignUp() {
   return (
-  <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Acme Inc.
-          </a>
+    <>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">Welcome to Warta Technologies</h1>
+          <p className="text-muted-foreground text-sm text-balance">
+            Fill out the form below to create your account
+          </p>
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <SignUp />
-          </div>
+        <SignUpForm />
+        <div className="text-center text-sm">
+          Already have an account?{" "}
+          <Link href="/sign-in" className="underline underline-offset-4">
+            Sign in
+          </Link>
         </div>
       </div>
-      <div className="bg-muted relative hidden lg:block">
-     <div className='absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale bg-black'/>
-      </div>
-    </div>
-  )
+
+    </>
+  );
 }

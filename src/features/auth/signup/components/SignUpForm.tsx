@@ -22,32 +22,17 @@ import { toast } from "sonner";
 import { isAxiosError } from "axios";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
+import DialogLayout from "@/components/DialogLayout";
+import { useHandleDialog } from "@/hooks/useHandleDialog";
 
-const signUpSchema = z
-  .object({
-    name: z
-      .string()
-      .min(6, { message: "Name must be at least 6 characters long." }),
-    email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters long." })
-      .max(20, { message: "Password must be at most 32 characters long." }),
-    confirmPassword: z.string(),
-    acceptedTerms: z.boolean({ required_error: "You must accept the terms." }), // Remove the default value
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  });
-
-type SignUpForm = z.infer<typeof signUpSchema>;
 export default function SignUpForm() {
+  const onOpenChange = useHandleDialog((state) => state.onOpenChange);
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -56,17 +41,41 @@ export default function SignUpForm() {
   });
   const router = useRouter();
   async function onSubmit(values: SignUpForm) {
+    onOpenChange("signup", true, {
+      message: "Processing...",
+      isLoading: true,
+    });
+
     try {
-      //get confirmPassword
-      const { confirmPassword, acceptedTerms, ...rest } = values;
       console.log(values);
-      //   const response = await axiosInstance.post(`/auth/signup`, {
-      //     ...rest,
-      //     accepted_terms: acceptedTerms,
-      //   });
-      //   const successMessage = response.data.message;
-      //   toast.success(successMessage);
-      //   if (response.status === 201) router.push("/sign-in");
+      const {
+        lastName,
+        firstName,
+        email,
+        password,
+        acceptedTerms: accepted_terms,
+      } = values;
+      const name = `${firstName} ${lastName}`;
+
+      const response = await axiosInstance.post(`/auth/signup`, {
+        name,
+        email,
+        password,
+        accepted_terms,
+      });
+      if (response.status === 200) {
+        const successMessage = response.data.message;
+        onOpenChange("signup", true, {
+          message: successMessage,
+          isLoading: false,
+        });
+      } else {
+        const errorMessage = response.data.message;
+        onOpenChange("signup", true, {
+          message: errorMessage,
+          isLoading: false,
+        });
+      }
     } catch (error) {
       console.log(error);
       if (isAxiosError(error)) {
@@ -78,134 +87,141 @@ export default function SignUpForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem className="grid gap-3">
-              <FormLabel htmlFor="name">Name</FormLabel>
-              <FormControl>
-                <Input
-                  id="name"
-                  placeholder="Enter your name"
-                  type="text"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="grid gap-3">
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <FormControl>
-                <Input
-                  id="email"
-                  placeholder="m@example.com"
-                  type="email"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem className="grid ">
+                <FormLabel htmlFor="firstName">Full Name</FormLabel>
+                <FormDescription>Please enter your full name</FormDescription>
+                <FormControl>
+                  <Input
+                    id="firstName"
+                    placeholder="Enter your First Name"
+                    type="text"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem className="">
+                <FormControl>
+                  <Input
+                    id="lastName"
+                    placeholder="Enter your Last Name"
+                    type="text"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="grid gap-3">
+                <FormLabel htmlFor="email">Email</FormLabel>
+                <FormControl>
+                  <Input
+                    id="email"
+                    placeholder="m@example.com"
+                    type="email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem className="grid gap-3">
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <FormControl>
-                <Input
-                  id="password"
-                  placeholder="********"
-                  type="password"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem className="grid gap-3">
-              <FormLabel htmlFor="confirmPassword">Confirm Password</FormLabel>
-              <FormControl>
-                <Input
-                  id="password"
-                  placeholder="********"
-                  type="password"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="acceptedTerms"
-          render={({ field }) => (
-            <FormItem className="flex flex-row-reverse items-center gap-x-4">
-  <div >
-                <FormLabel className="text-xs font-normal">
-                Accept Terms and Conditions
-              </FormLabel>
-              <FormDescription className="text-xs text-muted-foreground">
-                By signing up, you agree to our{" "}
-                <a
-                  href="#"
-                  className="underline underline-offset-4 hover:text-primary"
-                >
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a
-                  href="#"
-                  className="underline underline-offset-4 hover:text-primary"
-                >
-                  Privacy Policy
-                </a>
-                .
-              </FormDescription>
-  </div>
-              <FormControl>
-                <Checkbox
-                  id="acceptedTerms"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={form.formState.isSubmitting}
-        >
-          {!form.formState.isSubmitting ? (
-            "Sign in"
-          ) : (
-            <span className="flex items-center gap-2">
-              Signing in
-              <LoaderCircleIcon className="animate-spin" />
-            </span>
-          )}
-        </Button>
-      </form>
-    </Form>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="grid gap-3">
+                <FormLabel htmlFor="password">Password</FormLabel>
+                <FormControl>
+                  <Input
+                    id="password"
+                    placeholder="********"
+                    type="password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem className="grid gap-3">
+                <FormLabel htmlFor="confirmPassword">
+                  Confirm Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    id="password"
+                    placeholder="********"
+                    type="password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="acceptedTerms"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm">
+                    Accept terms and conditions
+                  </FormLabel>
+                  <FormDescription className="text-xs">
+                    By signing up, you agree to our terms and conditions.
+                  </FormDescription>
+                  <FormMessage className="text-xs" />
+                </div>
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {!form.formState.isSubmitting ? (
+              "Sign in"
+            ) : (
+              <span className="flex items-center gap-2">
+                Signing in
+                <LoaderCircleIcon className="animate-spin" />
+              </span>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </>
   );
 }

@@ -1,28 +1,22 @@
-import { GalleryVerticalEnd } from "lucide-react";
+import React from "react";
+import Link from "next/link";
+import SignInForm from "@/features/auth/signin/components/SignInForm";
 
-import SignIn from "@/features/auth/signin";
-import Image from "next/image";
-
-export default function SignInPage() {
+export default function SignIn() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Acme Inc.
-          </a>
-        </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <SignIn />
-          </div>
-        </div>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <p className="text-muted-foreground text-sm text-balance">
+          Enter your email below to login to your account
+        </p>
       </div>
-      <div className="bg-muted relative hidden lg:block">
-        <div className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale bg-black" />
+      <SignInForm />
+      <div className="text-center text-sm">
+        Don&apos;t have an account?{" "}
+        <Link href="/sign-up" className="underline underline-offset-4">
+          Sign up
+        </Link>
       </div>
     </div>
   );
