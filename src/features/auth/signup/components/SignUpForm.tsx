@@ -63,16 +63,16 @@ export default function SignUpForm() {
         password,
         accepted_terms,
       });
-      if (response.status === 200) {
-        const successMessage = response.data.message;
+      if (response.status === 201) {
+        const message = response.data.message;
         onOpenChange("signup", true, {
-          message: successMessage,
+          message: message,
           isLoading: false,
         });
       } else {
-        const errorMessage = response.data.message;
+        const message = response.data.message;
         onOpenChange("signup", true, {
-          message: errorMessage,
+          message: message,
           isLoading: false,
         });
       }

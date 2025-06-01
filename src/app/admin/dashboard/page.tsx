@@ -2,16 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import SignOut from "@/features/auth/signout/components/SignOut";
+import useFetchProtectedData from "@/hooks/useFetchProtectedData";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const res = await axiosInstance.get("/protected/users");
-      return res.data;
-    },
+  const { data, error, isLoading } = useFetchProtectedData({
+    TAG: "account",
+    endpoint: "/users",
   });
   if (error) {
     return <>{error.message}</>;
