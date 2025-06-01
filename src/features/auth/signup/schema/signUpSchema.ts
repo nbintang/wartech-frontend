@@ -10,7 +10,7 @@ export const signUpSchema = z
       .min(8, { message: "Password must be at least 8 characters long." })
       .max(20, { message: "Password must be at most 32 characters long." }),
     confirmPassword: z.string(),
-    acceptedTerms: z.boolean(),
+    acceptedTOS: z.boolean(),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -20,11 +20,11 @@ export const signUpSchema = z
         path: ["confirmPassword"],
       });
     }
-    if (!data.acceptedTerms) {
+    if (!data.acceptedTOS) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "You must accept the terms and conditions.",
-        path: ["acceptedTerms"],
+        path: ["acceptedTOS"],
       });
     }
   });

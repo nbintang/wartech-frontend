@@ -27,7 +27,7 @@ export default function UserProfile() {
       )}
       {isUnauthorized && (
         <Button asChild>
-          <Link href="/sign-in">Sign In</Link>
+          <Link href="/auth/sign-in">Sign In</Link>
         </Button>
       )}
       {isLoading && <LoaderCircleIcon className="animate-spin" />}

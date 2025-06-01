@@ -5,7 +5,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
+import  jwtDecode from "@/helpers/jwtDecoder";
 import { BASE_URL } from "./axiosInstance";
 
 const isExpiredToken = (token: string) => {

@@ -17,19 +17,14 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import { toast } from "sonner";
 import { isAxiosError } from "axios";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { type SignInForm, signInSchema } from "../schema/signInSchema";
+import jwtDecode from "@/helpers/jwtDecoder";
+import { signin } from "../service/signin";
+import { catchAxiosError } from "@/helpers/catchAxiosError";
 
-const signInSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long." }),
-});
-
-type SignInForm = z.infer<typeof signInSchema>;
 export default function SignInForm() {
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -39,26 +34,21 @@ export default function SignInForm() {
     },
   });
   const router = useRouter();
-  async function onSubmit(values: SignInForm) {
+  const onSubmit = async (values: SignInForm) => {
     try {
-      const response = await axiosInstance.post(`/auth/signin`, values);
-      const accessToken = response.data.data.accessToken;
+      const accessToken = await signin(values);
       Cookies.set("accessToken", accessToken);
-      const tokenInfo: any = jwtDecode(accessToken);
-      const role = tokenInfo.role.toLowerCase();
-      if (role === "admin" || role === "reporter") {
-        router.push(`/${role}/dashboard`);
+      const tokenInfo = jwtDecode(accessToken);
+      const role = tokenInfo.role;
+      if (role === "ADMIN" || role === "REPORTER") {
+        router.push(`/${role.toLowerCase()}/dashboard`);
       } else {
         router.push("/");
       }
-      if (response.status === 200) toast.success("Login successful!");
+      toast.success("Signed in successfully");
     } catch (error) {
-      console.log(error)
-      if(isAxiosError(error)) {
-        const errorServerMessage = error.response?.data.message
-        toast.error(errorServerMessage);
-        console.log(errorServerMessage);
-      }
+      console.log(error);
+     catchAxiosError(error);
     }
   }
 

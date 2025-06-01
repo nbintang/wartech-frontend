@@ -14,17 +14,34 @@ import {
   LoaderCircleIcon,
   CheckCircle2Icon,
   AlertTriangleIcon,
+  CheckCircle,
+  Loader2,
+  BadgeX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export default function DialogLayout() {
-  const { type, isOpen, onOpenChange, message, isLoading } = useHandleDialog(
+  const {
+    type,
+    isOpen,
+    onOpenChange,
+    message,
+    isLoading,
+    isSuccess,
+    isError,
+    redirect,
+  } = useHandleDialog(
     useShallow((state) => ({
       type: state.type,
       isOpen: state.isOpen,
       onOpenChange: state.onOpenChange,
       message: state.message,
       isLoading: state.isLoading,
+      isSuccess: state.isSuccess,
+      isError: state.isError,
+      redirect: state.redirect,
     }))
   );
 
@@ -32,40 +49,50 @@ export default function DialogLayout() {
     <Dialog
       open={isOpen}
       onOpenChange={(isOpen) =>
-        onOpenChange(type, isOpen, { message, isLoading })
+        onOpenChange(type, isOpen, {
+          message,
+          isLoading,
+          isSuccess,
+          isError,
+          redirect,
+        })
       }
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
-            <BotIcon className="size-5 text-primary" />
-            <span>Warta Technologies</span>
+          <div
+            className={cn(
+              "flex items-center justify-center w-12 h-12 mx-auto rounded-full mb-4",
+              isSuccess && "bg-green-100 text-green-600"
+            )}
+          >
+            <CheckCircle className="w-6 h-6 " />
+          </div>
+          {isLoading && (
+            <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+          )}
+          {isError && <BadgeX className="w-5 h-5 text-red-500" />}
+          <DialogTitle className="text-center">
+            {isSuccess
+              ? "Success!"
+              : isError
+              ? "Something went wrong"
+              : "Processing..."}
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Information from Warta Technologies
+          <DialogDescription className="text-center">
+            {message}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 flex flex-col items-center text-center gap-2">
-          {isLoading ? (
-            <>
-              <LoaderCircleIcon className="size-6 animate-spin text-blue-500" />
-              <p className="text-sm text-muted-foreground">Please wait...</p>
-            </>
-          ) : message?.toLowerCase().includes("success") ? (
-            <>
-              <CheckCircle2Icon className="size-6 text-green-500" />
-              <p className="text-xl text-green-600">{message}</p>
-            </>
-          ) : message ? (
-            <>
-              <AlertTriangleIcon className="size-6 text-yellow-500" />
-              <p className="text-sm text-yellow-700">{message}</p>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">No message available.</p>
-          )}
-        </div>
+        {!isLoading && (
+          <div className="flex justify-center mt-4">
+            <Button disabled={redirect} asChild>
+              <Link href="/auth/verify">
+                {redirect ? "Redirecting..." : "Verify You Account"}
+              </Link>
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

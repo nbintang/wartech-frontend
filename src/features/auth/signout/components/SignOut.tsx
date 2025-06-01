@@ -16,7 +16,7 @@ export default function SignOut() {
         Cookies.remove("refreshToken");
         const message = response.data.message;
         toast.success(message);
-        router.push("/sign-in");
+        router.push("/auth/sign-in");
       }
     } catch (error) {
       console.log(error);

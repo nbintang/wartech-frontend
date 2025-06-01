@@ -7,11 +7,13 @@ type FetchParamsKey =
   | "articles"
   | "comments"
   | "tags"
+  | "verify"
   | "categories";
 type FetchParamsProps<T> = {
   TAG: FetchParamsKey;
   endpoint: string;
 } & Omit<UseQueryOptions<T>, "queryKey" | "queryFn">;
+
 export default function useFetchProtectedData<T>({
   TAG,
   endpoint,

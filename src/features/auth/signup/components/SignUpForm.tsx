@@ -1,8 +1,5 @@
 "use client";
 
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,82 +11,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import Cookies from "js-cookie";
 import { LoaderCircleIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
-import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import { axiosInstance } from "@/lib/axiosInstance";
 import { Checkbox } from "@/components/ui/checkbox";
-import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
-import DialogLayout from "@/components/DialogLayout";
-import { useHandleDialog } from "@/hooks/useHandleDialog";
+import useSignUp from "../hooks/useSignup";
 
 export default function SignUpForm() {
-  const onOpenChange = useHandleDialog((state) => state.onOpenChange);
-  const form = useForm<SignUpForm>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      acceptedTerms: false,
-    },
-  });
-  const router = useRouter();
-  async function onSubmit(values: SignUpForm) {
-    onOpenChange("signup", true, {
-      message: "Processing...",
-      isLoading: true,
-    });
-
-    try {
-      console.log(values);
-      const {
-        lastName,
-        firstName,
-        email,
-        password,
-        acceptedTerms: accepted_terms,
-      } = values;
-      const name = `${firstName} ${lastName}`;
-
-      const response = await axiosInstance.post(`/auth/signup`, {
-        name,
-        email,
-        password,
-        accepted_terms,
-      });
-      if (response.status === 201) {
-        const message = response.data.message;
-        onOpenChange("signup", true, {
-          message: message,
-          isLoading: false,
-        });
-      } else {
-        const message = response.data.message;
-        onOpenChange("signup", true, {
-          message: message,
-          isLoading: false,
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      if (isAxiosError(error)) {
-        const errorServerMessage = error.response?.data.message;
-        toast.error(errorServerMessage);
-        console.log(errorServerMessage);
-      }
-    }
-  }
-
+ const {form, signupMutation} = useSignUp()
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+        <form
+          onSubmit={form.handleSubmit((values) =>
+            signupMutation.mutate(values)
+          )}
+          className="grid gap-6"
+        >
           <FormField
             control={form.control}
             name="firstName"
@@ -185,7 +121,7 @@ export default function SignUpForm() {
           />
           <FormField
             control={form.control}
-            name="acceptedTerms"
+            name="acceptedTOS"
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
