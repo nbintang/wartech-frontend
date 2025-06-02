@@ -5,93 +5,77 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import ResendEmailForm from "@/features/auth/resend-email/components/ResendEmailForm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
+import AuthCard from "@/components/AuthCard";
+import Link from "next/link";
 
-const getVerifyUser = async (token: string) => {
-  const response = await axiosInstance.post(`/auth/verify`, undefined, {
+const getVerifyUser = async (token: string) =>
+  await axiosInstance.post(`/auth/verify`, undefined, {
     params: {
       token,
     },
   });
-  return response.data.data.accessToken;
-};
 export default function VerifyUserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const { isSuccess, isError, data, error, isFetching } = useQuery({
-    queryKey: ["verify"],
-    queryFn: async () => await getVerifyUser(token!),
-    enabled: !!token,
-    retry: false,
+  const token = searchParams.get("token") as string;
+
+  const { mutate, isPending, isSuccess } = useMutation({
+    mutationFn: async () => {
+      const response = await getVerifyUser(token);
+      const accessToken = response.data.data.accessToken;
+      Cookies.set("accessToken", accessToken);
+      return response;
+    },
+    onMutate: () => {
+      toast.loading("Verifying email...", { id: "verify" });
+    },
+    onSuccess: () => {
+      toast.success("Email verified successfully!", { id: "verify" });
+      router.push("/auth/signin");
+    },
+    onError: (err) => {
+      const message = catchAxiosErrorMessage(err);
+      message && toast.error(message, { id: "verify" });
+    },
   });
+
   useEffect(() => {
-    if (isSuccess && data) {
-      Cookies.set("accessToken", data);
-      toast.success("Account verified successfully", {
-        richColors: true,
-      });
-      router.push("/");
+    if (token) {
+      mutate();
     }
-  }, [isSuccess, data, router]);
-  useEffect(() => {
-    if (isError && isAxiosError(error)) {
-      if (
-        error.status === 404 ||
-        error.status === 401 ||
-        error.status === 429
-      ) {
-        toast.error("Account verification failed");
-      } else {
-        toast.error("Something went wrong, please try again");
-      }
-    }
-  }, [isError, error]);
+  }, [token, mutate]);
 
   return (
-    <Card className="relative">
-      <CardHeader className="space-y-1">
-        <a
-          href="#"
-          className="flex items-center gap-2 font-medium  text-xs top-4 left-4"
-        >
-          <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <BotIcon className="size-4" />
+    <AuthCard
+      title="Verify your email"
+      description="We've sent a verification link to your email address. Please check your inbox and click the link to verify your account."
+    >
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4">
+            <Mail className="w-8 h-8 text-blue-600" />
           </div>
-          Warta Technologies
-        </a>
-        <CardTitle className="text-2xl font-bold text-center">
-          Verify your email
-        </CardTitle>
-        <CardDescription className="text-center">
-          We've sent a verification link to your email address. Please check
-          your inbox and click the link to verify your account.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4">
-              <Mail className="w-8 h-8 text-blue-600" />
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              {
-                "Didn't receive the email? Check your spam folder or request a new verification email."
-              }
-            </p>
-          </div>
-          <ResendEmailForm isVerifying={isFetching} isSuccess={isSuccess} />
+          <p className="text-sm text-gray-600 mb-4">
+            Didn't receive the email? Check your spam folder or request a new
+            verification email.
+          </p>
         </div>
-      </CardContent>
-    </Card>
+        <ResendEmailForm
+          isVerifying={isPending}
+          isSuccessVerifying={isSuccess}
+        />
+        <div className="text-center">
+          <Link
+            href="/auth/sign-in"
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+    </AuthCard>
   );
 }

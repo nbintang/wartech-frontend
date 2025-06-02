@@ -23,8 +23,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignInForm, signInSchema } from "../schema/signInSchema";
 import jwtDecode from "@/helpers/jwtDecoder";
 import { signin } from "../service/signin";
-import { catchAxiosError } from "@/helpers/catchAxiosError";
-
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 export default function SignInForm() {
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -46,11 +45,12 @@ export default function SignInForm() {
         router.push("/");
       }
       toast.success("Signed in successfully");
+      form.reset();
     } catch (error) {
       console.log(error);
-     catchAxiosError(error);
+      catchAxiosErrorMessage(error);
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -82,7 +82,7 @@ export default function SignInForm() {
               <div className="flex items-center">
                 <FormLabel htmlFor="password">Password</FormLabel>
                 <Link
-                  href="/forgot-password"
+                  href="/auth/forgot-password"
                   className="ml-auto text-sm underline-offset-4 hover:underline"
                 >
                   Forgot your password?

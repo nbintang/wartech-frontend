@@ -1,10 +1,10 @@
 import * as jose from "jose";
 type Role = "ADMIN" | "REPORTER" | "USER";
 export type JwtPayload = {
-  sub: string;
-  email: string;
-  role: Role;
-  verified: boolean;
+  sub?: string;
+  email?: string;
+  role?: Role;
+  verified?: boolean;
 };
 
 export interface UserJwtPayload extends JwtPayload {

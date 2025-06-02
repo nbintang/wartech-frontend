@@ -11,9 +11,11 @@ import { useMutation } from "@tanstack/react-query";
 import { signin } from "../../signin/service/signin";
 import Cookies from "js-cookie";
 import jwtDecode from "@/helpers/jwtDecoder";
-import { catchAxiosError } from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
+import useTimerCountDown from "@/hooks/useTimerCountDown";
 const useSignUp = () => {
-  const onOpenChange = useHandleDialog((state) => state.onOpenChange);
+  const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
+  const { startTimer}  =useTimerCountDown()
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -34,10 +36,12 @@ const useSignUp = () => {
         name,
         ...rest,
       });
+
       return response.data;
     },
+
     onMutate: async () => {
-      onOpenChange("signup", true, {
+      setOpenDialog("signup", true, {
         message: "Processing...",
         isLoading: true,
       });
@@ -49,27 +53,36 @@ const useSignUp = () => {
           password: variables.password,
         });
         Cookies.set("accessToken", accessToken);
-        onOpenChange("signup", true, {
-          message: _data.message || "Account created successfully!",
-          isSuccess: true,
+        setOpenDialog("signup", true, {
+          message: "Creating your account...",
+          isLoading: true,
+          isSuccess: false,
+          isError: false,
+          redirect: false,
         });
         const tokenInfo = jwtDecode(accessToken);
         if (!tokenInfo.verified) {
-          onOpenChange("signup", true, {
-            message: "Account created and signed in!",
+          startTimer(60);
+          setOpenDialog("signup", true, {
+            message: "Redirecting...",
             isSuccess: true,
+            isLoading: false,
+            redirect: true,
           });
-          form.reset();
+          // Lanjutkan redirect
           router.push("/auth/verify");
+          form.reset();
         }
+        useHandleDialog.getState().closeDialog();
       } catch (error) {
-        onOpenChange("signup", true, {
+        setOpenDialog("signup", true, {
           message: "Signup succeeded but auto login failed",
+          isError: true,
           isLoading: false,
           isSuccess: false,
-          isError: true,
+          redirect: false,
         });
-        const message = catchAxiosError(error);
+        const message = catchAxiosErrorMessage(error);
         toast.error(message);
       }
     },
@@ -77,7 +90,7 @@ const useSignUp = () => {
       const message =
         (error as any)?.response?.data?.message || "Something went wrong";
       toast.error(message);
-      onOpenChange("signup", true, {
+      setOpenDialog("signup", true, {
         message,
         isLoading: false,
         isError: true,
@@ -85,7 +98,7 @@ const useSignUp = () => {
     },
   });
 
-  return { form, signupMutation, onOpenChange };
+  return { form, signupMutation, onOpenChange: setOpenDialog };
 };
 
 export default useSignUp;

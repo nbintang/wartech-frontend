@@ -14,41 +14,56 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { toast } from "sonner";
 import { isAxiosError } from "axios";
-import { catchAxiosError } from "@/helpers/catchAxiosError";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 
-const resendPasswordSchema = z.object({
+const resendEmailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
 });
-type ResendPasswordForm = z.infer<typeof resendPasswordSchema>;
+type ResendEmailForm = z.infer<typeof resendEmailSchema>;
 export default function ResendEmailForm({
   isVerifying,
-  isSuccess,
+  isSuccessVerifying: isSuccess,
 }: {
   isVerifying?: boolean;
-  isSuccess?: boolean;
+  isSuccessVerifying?: boolean;
 }) {
-  const form = useForm<ResendPasswordForm>({
-    resolver: zodResolver(resendPasswordSchema),
+  const router = useRouter();
+  const { startTimer, timer, isTimerStarted } = useTimerCountDown();
+  const [isSended, setIsSended] = useState<boolean>(false);
+  const form = useForm<ResendEmailForm>({
+    resolver: zodResolver(resendEmailSchema),
     defaultValues: {
       email: "",
     },
   });
-  const { startTimer, timer, isTimerStarted } = useTimerCountDown();
-
-  const onSubmit = async (values: ResendPasswordForm) => {
-    toast.promise(axiosInstance.post("/auth/resend-verification", values), {
-      loading: "Sending email...",
-      success: (data) => {
-        return `Email sent successfully! ${data.data.message}`;
-      },
-      error: (err) => catchAxiosError(err),
-    });
-    startTimer(60);
-  };
+  const onSubmit = async (values: ResendEmailForm) =>
+    await toast
+      .promise(axiosInstance.post("/auth/resend-verification", values), {
+        loading: "Sending email...",
+        success: (data) => {
+          if (data.status === 201) {
+            startTimer(60);
+            setIsSended(true);
+          }
+          form.reset();
+          return `Email sent successfully! ${data.data.message}`;
+        },
+        error: (err) => {
+          if (err.response?.status === 401) {
+            router.push("/auth/sign-up");
+            return "Unauthorized, Please sign up first";
+          }
+          return catchAxiosErrorMessage(err);
+        },
+      })
+      .unwrap();
+  const isDisabled =
+    form.formState.isSubmitting || isTimerStarted || isVerifying || isSuccess;
 
   return (
     <Form {...form}>
@@ -69,9 +84,7 @@ export default function ResendEmailForm({
                   id="email"
                   type="email"
                   placeholder="john@example.com"
-                  disabled={
-                    form.formState.isSubmitting || isTimerStarted || isVerifying
-                  }
+                  disabled={isDisabled}
                   {...field}
                 />
               </FormControl>
@@ -80,7 +93,7 @@ export default function ResendEmailForm({
           )}
         />
 
-        {form.formState.isSubmitSuccessful && (
+        {form.formState.isSubmitSuccessful && isSended && (
           <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
             A verification email has been sent to your email address.
           </div>
@@ -90,12 +103,7 @@ export default function ResendEmailForm({
           type="submit"
           variant="outline"
           className="w-full"
-          disabled={
-            form.formState.isSubmitting ||
-            isTimerStarted ||
-            isVerifying ||
-            isSuccess
-          }
+          disabled={isDisabled}
         >
           {isTimerStarted ? (
             <>

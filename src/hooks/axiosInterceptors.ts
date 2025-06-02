@@ -5,14 +5,10 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import Cookies from "js-cookie";
-import  jwtDecode from "@/helpers/jwtDecoder";
-import { BASE_URL } from "./axiosInstance";
+import { BASE_URL } from "../lib/axiosInstance";
+import isExpiredToken from "@/helpers/isExpiredToken";
 
-const isExpiredToken = (token: string) => {
-  const decodedToken = jwtDecode(token);
-  const currentTime = Date.now() / 1000;
-  return decodedToken.exp && decodedToken.exp < currentTime;
-};
+
 
 const getRefreshToken = async () => {
   try {

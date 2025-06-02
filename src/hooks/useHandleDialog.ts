@@ -1,33 +1,22 @@
 import { create } from "zustand";
-
+type DialogOptions = {
+  isLoading: boolean;
+  message: string;
+  isSuccess?: boolean;
+  redirect?: boolean;
+  isError?: boolean;
+};
 type DialogStore = {
   type: string;
   isOpen: boolean;
   message: string;
-  isLoading?: boolean;
+  isLoading: boolean;
   isError?: boolean;
   redirect?: boolean;
   isSuccess?: boolean;
-  onOpenChange: (
-    type: string,
-    isOpen: boolean,
-    {
-      isLoading,
-      isSuccess,
-      isError,
-      message,
-      redirect,
-    }: {
-      isLoading?: boolean;
-      message: string;
-      isSuccess?: boolean;
-      redirect?: boolean;
-      isError?: boolean;
-    }
-  ) => void;
+  setOpenDialog: (type: string, isOpen: boolean, options: DialogOptions) => void;
   closeDialog: () => void;
 };
-
 export const useHandleDialog = create<DialogStore>((set) => ({
   type: "",
   isLoading: false,
@@ -35,25 +24,12 @@ export const useHandleDialog = create<DialogStore>((set) => ({
   isError: false,
   isSuccess: false,
   message: "",
-  onOpenChange: (
-    type,
-    isOpen,
-    {
-      isLoading,
-      message,
-      isSuccess = false,
-      isError = false,
-      redirect = false,
-    }
-  ) =>
+  redirect: false,
+  setOpenDialog: (type, isOpen, options) =>
     set({
       type,
       isOpen,
-      message,
-      isLoading,
-      isSuccess,
-      redirect,
-      isError,
+      ...options,
     }),
   closeDialog: () =>
     set({ isOpen: false, type: "", message: "", isLoading: false }),
