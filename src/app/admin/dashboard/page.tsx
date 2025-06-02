@@ -1,16 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import UserProfile from "@/components/UserProfile";
 import SignOut from "@/features/auth/signout/components/SignOut";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { axiosInstance } from "@/lib/axiosInstance";
-import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const { data, error, isLoading } = useFetchProtectedData({
-    TAG: "account",
+    TAG: "users",
     endpoint: "/users",
   });
+
   if (error) {
     return <>{error.message}</>;
   }
@@ -18,7 +17,10 @@ export default function Dashboard() {
   console.log(data);
   return (
     <main className="grid place-items-center min-h-screen">
-      {isLoading ? "Loading..." : <SignOut />}
+      <div className="space-y-3">
+        <UserProfile />
+        <SignOut />
+      </div>
     </main>
   );
 }

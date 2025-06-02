@@ -2,36 +2,34 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { Button } from "./ui/button";
-import Link from "next/link";
-import { LoaderCircleIcon } from "lucide-react";
+import { CheckCircle2, LoaderCircleIcon } from "lucide-react";
 import { UserProfileResponse } from "@/type/userType";
-import SignOut from "@/features/auth/signout/components/SignOut";
 export default function UserProfile() {
   const { data, isLoading, isSuccess, isUnauthorized } =
     useFetchProtectedData<UserProfileResponse>({
       TAG: "account",
       endpoint: "/users/profile",
     });
-  
+
   return (
     <>
       {isSuccess && (
-        <div>
-          <Avatar>
+        <div className="flex  gap-2">
+          <Avatar className="size-11">
             <AvatarImage src="https://github.com/shadcn.png" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <p>{data.email}</p>
-          <SignOut />
+          <div className="flex flex-col items-start ">
+            <div className="flex items-center flex-row-reverse gap-2">
+              {data.verified && (
+                <CheckCircle2 className="text-blue-500 size-4" />
+              )}
+              <p>{data.name}</p>
+            </div>
+            <p className="text-sm text-muted-foreground">{data.email}</p>
+          </div>
         </div>
       )}
-      {isUnauthorized && (
-        <Button asChild>
-          <Link href="/auth/sign-in">Sign In</Link>
-        </Button>
-      )}
-      {isLoading && <LoaderCircleIcon className="animate-spin" />}
     </>
   );
 }

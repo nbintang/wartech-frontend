@@ -5,27 +5,27 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
+import { useMutation } from "@tanstack/react-query";
 
 export default function SignOut() {
   const router = useRouter();
-  const handleSignout = async () => {
-    try {
+  const { mutate, isPending, isSuccess } = useMutation({
+    mutationFn: async () => {
       const response = await axiosInstance.delete("/auth/signout");
-      if (response.data.success) {
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
-        const message = response.data.message;
-        toast.success(message);
-        router.push("/auth/sign-in");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Signed out successfully!");
+      router.push("/auth/sign-in");
+    },
+  });
 
   return (
-    <Button className="" onClick={handleSignout}>
+      <Button className="w-full cursor-pointer" onClick={() => mutate()}>
       Sign Out
-    </Button>
+    
+      </Button>
   );
 }
