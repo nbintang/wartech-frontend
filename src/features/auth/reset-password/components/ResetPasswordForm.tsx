@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useHandleDialog } from "@/hooks/useHandleDialog";
+import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -26,11 +27,14 @@ const ResetPasswordSchema = z
     confirmPassword: z
       .string()
       .min(8, { message: "Password must be at least 8 characters long." }),
+    token: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+
 type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
 export default function ResetPasswordForm({
   token,
@@ -39,8 +43,6 @@ export default function ResetPasswordForm({
   token: string;
   isTokenMissing: boolean;
 }) {
-  const router = useRouter();
-  const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
   const form = useForm<ResetPasswordSchemaType>({
     resolver: zodResolver(ResetPasswordSchema),
     defaultValues: {
@@ -48,42 +50,24 @@ export default function ResetPasswordForm({
       confirmPassword: "",
     },
   });
-  const { mutate, isError, isPending, isSuccess } = useMutation({
-    mutationFn: async (values: ResetPasswordSchemaType) =>
-      await axiosInstance.post(`/auth/reset-password`, {
-        token,
-        password: values.newPassword,
-      }),
-    onMutate: () => {
-      setOpenDialog("reset-password", true, {
-        message: "Processing...",
-        isLoading: true,
-        isSuccess: false,
-      });
-    },
-    onSuccess: (response) => {
-      if (response.status === 201) {
-        setOpenDialog("reset-password", true, {
-          message: "Redirecting...",
-          isSuccess: true,
-          isLoading: false,
-          redirect: true,
-        });
-        router.push("/auth/login");
-      }
-    },
-    onError: (err) => {
-      setOpenDialog("reset-password", true, {
-        message: "Something went wrong",
-        isError: true,
-        isLoading: false,
-      });
-    },
+  const { mutate, isError, isPending, isSuccess } = usePostVerifyAuth({
+    endpoint: "/reset-password",
+    formSchema: ResetPasswordSchema.transform((data) => data),
+    startTime: true,
+    second: 60,
+    redirect: true,
+    redirectUrl: "/auth/sign-in",
   });
+
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values))}
+        onSubmit={form.handleSubmit((values) =>
+          mutate({
+            password: values.newPassword,
+            token,
+          })
+        )}
         className="space-y-4"
       >
         <FormField

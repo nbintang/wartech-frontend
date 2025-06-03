@@ -14,13 +14,14 @@ type FetchParamsProps<T> = {
   endpoint: string;
 } & Omit<UseQueryOptions<T>, "queryKey" | "queryFn">;
 
-export default function useFetchProtectedData<T>({
+const useFetchProtectedData = <T>({
   TAG,
   endpoint,
   ...queryOptions
-}: FetchParamsProps<T>) {
-  const data = useQuery({
+}: FetchParamsProps<T>) => {
+  const result = useQuery({
     queryKey: [TAG],
+
     queryFn: async (): Promise<T> => {
       const res = await axiosInstance.get(`/protected${endpoint}`);
       const data = res.data.data;
@@ -29,11 +30,12 @@ export default function useFetchProtectedData<T>({
     ...queryOptions,
   });
   const isUnauthorized =
-    data.error &&
-    isAxiosError(data.error) &&
-    data.error.response?.status === 401;
+    result.error &&
+    isAxiosError(result.error) &&
+    result.error.response?.status === 401;
   return {
-    ...data,
+    ...result,
     isUnauthorized,
   };
-}
+};
+export default useFetchProtectedData;

@@ -18,14 +18,15 @@ export default function SignOut() {
     },
     onSuccess: () => {
       toast.success("Signed out successfully!");
+      router.refresh();
       router.push("/auth/sign-in");
     },
+
   });
 
   return (
-      <Button className="w-full cursor-pointer" onClick={() => mutate()}>
+    <Button className="w-full cursor-pointer" onClick={() => mutate()}>
       Sign Out
-    
-      </Button>
+    </Button>
   );
 }

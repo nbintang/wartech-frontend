@@ -1,13 +1,13 @@
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
 
-const catchAxiosErrorMessage = (error: any): string | undefined => {
+const catchAxiosErrorMessage = (error: unknown): string | undefined => {
   console.error("error in catchAxiosError", error);
-  const execptionStatusCodeMessage  = [401, 429]
+  const statusCode = [401, 429];
   if (isAxiosError(error)) {
     if (
       typeof error.response?.status === "number" &&
-     execptionStatusCodeMessage .includes(error.response?.status)
+      statusCode.includes(error.response?.status)
     ) {
       console.log(error.response?.data.message);
       return "Failed to verify email. Please try again later.";

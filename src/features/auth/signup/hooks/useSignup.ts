@@ -15,7 +15,8 @@ import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
 const useSignUp = () => {
   const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
-  const { startTimer}  =useTimerCountDown()
+  const { startTimer } = useTimerCountDown();
+  const router = useRouter();
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -27,7 +28,6 @@ const useSignUp = () => {
       acceptedTOS: false,
     },
   });
-  const router = useRouter();
   const signupMutation = useMutation({
     mutationFn: async (values: SignUpForm) => {
       const { lastName, firstName, ...rest } = values;
@@ -36,12 +36,10 @@ const useSignUp = () => {
         name,
         ...rest,
       });
-
       return response.data;
     },
-
     onMutate: async () => {
-      setOpenDialog("signup", true, {
+      setOpenDialog("signup", {
         message: "Processing...",
         isLoading: true,
       });
@@ -53,21 +51,19 @@ const useSignUp = () => {
           password: variables.password,
         });
         Cookies.set("accessToken", accessToken);
-        setOpenDialog("signup", true, {
+        setOpenDialog("signup",  {
           message: "Creating your account...",
           isLoading: true,
           isSuccess: false,
           isError: false,
-          redirect: false,
         });
         const tokenInfo = jwtDecode(accessToken);
         if (!tokenInfo.verified) {
           startTimer(60);
-          setOpenDialog("signup", true, {
+          setOpenDialog("signup", {
             message: "Redirecting...",
             isSuccess: true,
             isLoading: false,
-            redirect: true,
           });
           // Lanjutkan redirect
           router.push("/auth/verify");
@@ -75,22 +71,19 @@ const useSignUp = () => {
         }
         useHandleDialog.getState().closeDialog();
       } catch (error) {
-        setOpenDialog("signup", true, {
-          message: "Signup succeeded but auto login failed",
+        const message = catchAxiosErrorMessage(error) ?? "An unknown error occurred.";
+        setOpenDialog("signup",  {
+          message,
           isError: true,
           isLoading: false,
           isSuccess: false,
-          redirect: false,
         });
-        const message = catchAxiosErrorMessage(error);
-        toast.error(message);
       }
     },
     onError: (error) => {
       const message =
-        (error as any)?.response?.data?.message || "Something went wrong";
-      toast.error(message);
-      setOpenDialog("signup", true, {
+        catchAxiosErrorMessage(error) ?? "An unknown error occurred.";
+      setOpenDialog("signup",  {
         message,
         isLoading: false,
         isError: true,

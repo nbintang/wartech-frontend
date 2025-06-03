@@ -3,34 +3,31 @@ type DialogOptions = {
   isLoading: boolean;
   message: string;
   isSuccess?: boolean;
-  redirect?: boolean;
   isError?: boolean;
 };
 type DialogStore = {
-  type: string;
+  key: string;
   isOpen: boolean;
   message: string;
   isLoading: boolean;
   isError?: boolean;
-  redirect?: boolean;
   isSuccess?: boolean;
-  setOpenDialog: (type: string, isOpen: boolean, options: DialogOptions) => void;
+  setOpenDialog: (key: string, options: DialogOptions) => void;
   closeDialog: () => void;
 };
 export const useHandleDialog = create<DialogStore>((set) => ({
-  type: "",
+  key: "",
   isLoading: false,
   isOpen: false,
   isError: false,
   isSuccess: false,
   message: "",
-  redirect: false,
-  setOpenDialog: (type, isOpen, options) =>
+  setOpenDialog: (key, options) =>
     set({
-      type,
-      isOpen,
+      key,
+      isOpen: true,
       ...options,
     }),
   closeDialog: () =>
-    set({ isOpen: false, type: "", message: "", isLoading: false }),
+    set({ isOpen: false, key: "", message: "", isLoading: false }),
 }));

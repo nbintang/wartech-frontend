@@ -34,7 +34,7 @@ export default function VerifyUserPage() {
     },
     onSuccess: () => {
       toast.success("Email verified successfully!", { id: "verify" });
-      router.push("/auth/signin");
+      router.push("/");
     },
     onError: (err) => {
       const message = catchAxiosErrorMessage(err);

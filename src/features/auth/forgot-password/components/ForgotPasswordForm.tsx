@@ -9,78 +9,38 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useHandleDialog } from "@/hooks/useHandleDialog";
-import useTimerCountDown from "@/hooks/useTimerCountDown";
-import { axiosInstance } from "@/lib/axiosInstance";
+import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
 import { Loader2, Mail } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { set, z } from "zod";
+import { z } from "zod";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
 });
 type ForgotPassword = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordForm() {
-  const router = useRouter();
-  const { startTimer, timer, isTimerStarted } = useTimerCountDown();
-  const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
   const form = useForm<ForgotPassword>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
-  const { mutate, isPending, isSuccess } = useMutation({
-    mutationFn: async ({ email }: ForgotPassword) =>
-      await axiosInstance.post("/auth/forgot-password", { email }),
-    onMutate: () => {
-      toast.loading("Sending email...", { id: "forgot-password" });
-      setOpenDialog("forgot-password", true, {
-        message: "Processing...",
-        isLoading: true,
-        isSuccess: false,
-      });
-    },
-    onSuccess: (response) => {
-      if (response.status === 201) {
-        toast.success("Email sent successfully!", {
-          id: "forgot-password",
-          duration: 2000,
-        });
-        setOpenDialog("forgot-password", true, {
-          message: "Success, please check your email",
-          isSuccess: true,
-          isLoading: false,
-          redirect: true,
-        });
-      }
-      form.reset();
-    },
-    onError: (err) => {
-      setOpenDialog("forgot-password", true, {
-        message: "Something went wrong",
-        isError: true,
-        isLoading: false,
-      });
-      if (isAxiosError(err)) {
-        toast.error(err.response?.data.message, { id: "forgot-password" });
-      }
-    },
-    onSettled: () => {
-      startTimer(60);
-    },
-  });
+  const { mutate, isPending, isSuccess, isTimerStarted, timer, } =
+    usePostVerifyAuth({
+      endpoint: "/forgot-password",
+      formSchema: forgotPasswordSchema,
+      startTime: true,
+      second: 60,
+    });
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values))}
+        onSubmit={form.handleSubmit(
+          (values) => (mutate(values), isSuccess && form.reset())
+        )}
         className="flex w-full md:w-auto gap-2 space-y-4 flex-col"
       >
         <FormField

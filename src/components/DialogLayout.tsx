@@ -17,43 +17,30 @@ import { useRouter } from "next/navigation";
 
 export default function DialogLayout() {
   const router = useRouter();
-  const {
-    type,
-    isOpen,
-    setOpenDialog,
-    message,
-    isLoading,
-    isSuccess,
-    isError,
-    redirect,
-  } = useHandleDialog(
-    useShallow((state) => ({
-      type: state.type,
-      isOpen: state.isOpen,
-      setOpenDialog: state.setOpenDialog,
-      message: state.message,
-      isLoading: state.isLoading,
-      isSuccess: state.isSuccess,
-      isError: state.isError,
-      redirect: state.redirect,
-    }))
-  );
-  const handleClick = () => {
-    router.push("/auth/verify");
-  };
+  const { key, isOpen, setOpenDialog, message, isLoading, isSuccess, isError } =
+    useHandleDialog(
+      useShallow((state) => ({
+        key: state.key,
+        isOpen: state.isOpen,
+        setOpenDialog: state.setOpenDialog,
+        message: state.message,
+        isLoading: state.isLoading,
+        isSuccess: state.isSuccess,
+        isError: state.isError,
+      }))
+    );
+  // const handleClick = () => {
+  //   router.push("/auth/verify");
+  // };
 
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={(isOpen) =>
-        setOpenDialog(type, isOpen, {
-          message,
-          isLoading,
-          isSuccess,
-          isError,
-          redirect,
-        })
-      }
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          useHandleDialog.getState().closeDialog();
+        }
+      }}
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
@@ -86,11 +73,11 @@ export default function DialogLayout() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center mt-4">
+        {/* <div className="flex justify-center mt-4">
           <Button onClick={handleClick}  asChild>
             Verify Your Account
           </Button>
-        </div>
+        </div> */}
       </DialogContent>
     </Dialog>
   );

@@ -41,6 +41,7 @@ export default function SignUpForm() {
                     type="text"
                     {...field}
                   />
+                  
                 </FormControl>
                 <FormMessage />
               </FormItem>
