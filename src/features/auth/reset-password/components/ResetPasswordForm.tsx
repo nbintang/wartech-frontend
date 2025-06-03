@@ -14,25 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangleIcon, Loader2 } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-const BaseResetPasswordSchema = z.object({
-  newPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long." }),
-  confirmPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long." }),
-});
+import {
+  ResetPasswordAPISchema,
+  ResetPasswordSchema,
+  ResetPasswordSchemaType,
+} from "../schema/resetPasswordSchema";
 
-const ResetPasswordSchema = BaseResetPasswordSchema.refine(
-  (data) => data.newPassword === data.confirmPassword,
-  {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  }
-);
-
-type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
 export default function ResetPasswordForm({
   token,
   isTokenMissing,
@@ -50,7 +37,7 @@ export default function ResetPasswordForm({
   const { mutate, isError, isPending, isSuccess, error } = usePostVerifyAuth({
     endpoint: "/reset-password",
     params: { token },
-    formSchema: BaseResetPasswordSchema.pick({ newPassword: true }),
+    formSchema: ResetPasswordAPISchema,
     redirect: true,
     redirectUrl: "/auth/sign-in",
   });

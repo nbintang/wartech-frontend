@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
 import { useHandleDialog } from "@/hooks/useHandleDialog";

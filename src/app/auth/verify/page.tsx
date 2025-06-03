@@ -23,6 +23,7 @@ export default function VerifyUserPage() {
   const token = searchParams.get("token") as string;
 
   const { mutate, isPending, isSuccess } = useMutation({
+    mutationKey: ["verify-user"],
     mutationFn: async () => {
       const response = await getVerifyUser(token);
       const accessToken = response.data.data.accessToken;
@@ -40,6 +41,7 @@ export default function VerifyUserPage() {
       const message = catchAxiosErrorMessage(err);
       message && toast.error(message, { id: "verify" });
     },
+    retry: false,
   });
 
   useEffect(() => {

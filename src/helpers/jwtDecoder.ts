@@ -1,5 +1,5 @@
 import * as jose from "jose";
-type Role = "ADMIN" | "REPORTER" | "USER";
+type Role = "ADMIN" | "REPORTER" | "READER";
 export type JwtPayload = {
   sub?: string;
   email?: string;
@@ -7,11 +7,11 @@ export type JwtPayload = {
   verified?: boolean;
 };
 
-export interface UserJwtPayload extends JwtPayload {
+export interface JwtUserPayload extends JwtPayload {
   iat: number;
   exp: number;
 }
 
-const jwtDecode = <T = UserJwtPayload>(token: string): T =>
+const jwtDecode = <T = JwtUserPayload>(token: string): T =>
   jose.decodeJwt(token) as T;
 export default jwtDecode;

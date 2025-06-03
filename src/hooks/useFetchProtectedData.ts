@@ -7,7 +7,6 @@ type FetchParamsKey =
   | "articles"
   | "comments"
   | "tags"
-  | "verify"
   | "categories";
 type FetchParamsProps<T> = {
   TAG: FetchParamsKey;
@@ -21,7 +20,6 @@ const useFetchProtectedData = <T>({
 }: FetchParamsProps<T>) => {
   const result = useQuery({
     queryKey: [TAG],
-
     queryFn: async (): Promise<T> => {
       const res = await axiosInstance.get(`/protected${endpoint}`);
       const data = res.data.data;

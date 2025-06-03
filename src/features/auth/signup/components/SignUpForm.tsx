@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoaderCircleIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import useSignUp from "../hooks/useSignUp";
+import useSignUp from "../hooks/useSignup";
 
 export default function SignUpForm() {
   const { form, signupMutation } = useSignUp();
