@@ -79,7 +79,7 @@ export default function ResendEmailForm({
           <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
             A verification email has been sent to your email address.
           </div>
-        )}
+        )} 
         {isError && (
           <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
             <AlertTriangleIcon className="text-red-600" />

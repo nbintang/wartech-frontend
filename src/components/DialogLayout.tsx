@@ -65,7 +65,7 @@ export default function DialogLayout() {
             {isSuccess
               ? "Success!"
               : isError
-              ? "Something went wrong"
+              ? "Failed to verify"
               : "Processing..."}
           </DialogTitle>
           <DialogDescription className="text-center">
