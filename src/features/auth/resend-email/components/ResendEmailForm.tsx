@@ -6,23 +6,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { axiosInstance } from "@/lib/axiosInstance";
-import { toast } from "sonner";
-import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw } from "lucide-react";
-import useTimerCountDown from "@/hooks/useTimerCountDown";
+import { AlertTriangleIcon, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
-import { useMutation } from "@tanstack/react-query";
-import { useHandleDialog } from "@/hooks/useHandleDialog";
 import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 
 const resendEmailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -35,21 +27,19 @@ export default function ResendEmailForm({
   isVerifying?: boolean;
   isSuccessVerifying?: boolean;
 }) {
-  const router = useRouter();
-  const { startTimer, timer, isTimerStarted } = useTimerCountDown();
-  const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
   const form = useForm<ResendEmailForm>({
     resolver: zodResolver(resendEmailSchema),
     defaultValues: {
       email: "",
     },
   });
-  const { mutate, isSuccess, isError } = usePostVerifyAuth({
-    endpoint: "/resend-verification",
-    formSchema: resendEmailSchema,
-    startTime: true,
-    second: 60,
-  });
+  const { mutate, isSuccess, isError, isTimerStarted, timer, error } =
+    usePostVerifyAuth({
+      endpoint: "/resend-verification",
+      formSchema: resendEmailSchema,
+      startTime: true,
+      second: 60,
+    });
 
   const isDisabled =
     isSuccess || isTimerStarted || isVerifying || isSuccessVerifying;
@@ -90,7 +80,14 @@ export default function ResendEmailForm({
             A verification email has been sent to your email address.
           </div>
         )}
-
+        {isError && (
+          <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
+            <AlertTriangleIcon className="text-red-600" />
+            <div className="text-sm text-red-600  ">
+              {catchAxiosErrorMessage(error) || "Something went wrong"}
+            </div>
+          </div>
+        )}
         <Button
           type="submit"
           variant="outline"

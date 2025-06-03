@@ -1,9 +1,9 @@
 // hooks/useResendTimer.ts
 import { useEffect, useState } from "react";
 
-const TIMER_KEY = "resend_timer_target";
-
-export default function useTimerCountDown() {
+export default function useTimerCountDown(
+  TIMER_KEY: string = "resend_timer_target"
+) {
   const [timer, setTimer] = useState(0);
 
   useEffect(() => {
@@ -37,7 +37,6 @@ export default function useTimerCountDown() {
     localStorage.setItem(TIMER_KEY, targetTime.toString());
     setTimer(defaultSeconds);
   };
-
 
   const isTimerStarted = timer > 0;
 

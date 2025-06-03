@@ -9,9 +9,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Mail } from "lucide-react";
+import { AlertTriangleIcon, Loader2, Mail } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,13 +28,20 @@ export default function ForgotPasswordForm() {
       email: "",
     },
   });
-  const { mutate, isPending, isSuccess, isTimerStarted, timer, } =
-    usePostVerifyAuth({
-      endpoint: "/forgot-password",
-      formSchema: forgotPasswordSchema,
-      startTime: true,
-      second: 60,
-    });
+  const {
+    mutate,
+    isPending,
+    isSuccess,
+    isTimerStarted,
+    timer,
+    isError,
+    error,
+  } = usePostVerifyAuth({
+    endpoint: "/forgot-password",
+    formSchema: forgotPasswordSchema,
+    startTime: true,
+    second: 60,
+  });
 
   return (
     <Form {...form}>
@@ -70,6 +78,14 @@ export default function ForgotPasswordForm() {
           <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md flex items-center">
             <Mail className="w-4 h-4 mr-2" />
             Your password reset link has been sent to your email, please check.
+          </div>
+        )}
+        {isError && (
+          <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
+            <AlertTriangleIcon className="text-red-600" />
+            <div className="text-sm text-red-600  ">
+              {catchAxiosErrorMessage(error) || "Something went wrong"}
+            </div>
           </div>
         )}
         <Button

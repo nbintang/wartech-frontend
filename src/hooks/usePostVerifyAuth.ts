@@ -8,26 +8,35 @@ import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 
-type InternalMutationKeys =
+type AllowMutationOptions =
   | "mutationFn"
   | "mutationKey"
   | "onMutate"
   | "onSuccess"
   | "onError";
-type BaseAuthParams<TFormSchema extends z.ZodSchema> = {
-  endpoint: string;
-  startTime: boolean;
-  second: number;
-  formSchema: TFormSchema;
-} & Omit<
-  UseMutationOptions<
-    AxiosResponse<any>,
-    unknown,
-    z.infer<TFormSchema>,
-    unknown
-  >,
-  InternalMutationKeys
->;
+type BaseAuthParams<TFormSchema extends z.ZodSchema> =
+  | {
+      startTime?: false;
+      second?: never;
+      formSchema: TFormSchema;
+      params?:any;
+      endpoint: string;
+    }
+  | ({
+      startTime: true;
+      second: number;
+      params?: any
+      formSchema: TFormSchema;
+      endpoint: string;
+    } & Omit<
+      UseMutationOptions<
+        AxiosResponse<any>,
+        unknown,
+        z.infer<TFormSchema>,
+        unknown
+      >,
+      AllowMutationOptions
+    >);
 type WithRedirect<TFormSchema extends z.ZodSchema> = {
   redirect: true;
   redirectUrl: string;
@@ -45,8 +54,9 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
   formSchema,
   startTime = false,
   redirect = false,
+  params,
   redirectUrl,
-  second = 60,
+  second,
   ...mutateOptions
 }: PostAuthParamsProps<TFormSchema>) => {
   const { startTimer, timer, isTimerStarted } = useTimerCountDown();
@@ -59,7 +69,9 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
   >({
     mutationKey: [endpoint],
     mutationFn: async (values: z.infer<typeof formSchema>) =>
-      await axiosInstance.post(`/auth${endpoint}`, values),
+      await axiosInstance.post(`/auth${endpoint}`, values, {
+        params
+      }),
     onMutate: () => {
       setOpenDialog(endpoint, {
         message: "Processing...",

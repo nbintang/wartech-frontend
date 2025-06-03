@@ -10,7 +10,7 @@ const catchAxiosErrorMessage = (error: unknown): string | undefined => {
       statusCode.includes(error.response?.status)
     ) {
       console.log(error.response?.data.message);
-      return "Failed to verify email. Please try again later.";
+      return "Invalid Credentials";
     }
     const errorServerMessage = error.response?.data.message;
     console.log(errorServerMessage);

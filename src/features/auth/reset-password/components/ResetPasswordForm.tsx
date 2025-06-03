@@ -5,35 +5,32 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useHandleDialog } from "@/hooks/useHandleDialog";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
-import { axiosInstance } from "@/lib/axiosInstance";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { AlertTriangleIcon, Loader2 } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
-const ResetPasswordSchema = z
-  .object({
-    newPassword: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters long." }),
-    confirmPassword: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters long." }),
-    token: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
+const BaseResetPasswordSchema = z.object({
+  newPassword: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long." }),
+  confirmPassword: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long." }),
+});
+
+const ResetPasswordSchema = BaseResetPasswordSchema.refine(
+  (data) => data.newPassword === data.confirmPassword,
+  {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  });
-
+  }
+);
 
 type ResetPasswordSchemaType = z.infer<typeof ResetPasswordSchema>;
 export default function ResetPasswordForm({
@@ -50,11 +47,10 @@ export default function ResetPasswordForm({
       confirmPassword: "",
     },
   });
-  const { mutate, isError, isPending, isSuccess } = usePostVerifyAuth({
+  const { mutate, isError, isPending, isSuccess, error } = usePostVerifyAuth({
     endpoint: "/reset-password",
-    formSchema: ResetPasswordSchema.transform((data) => data),
-    startTime: true,
-    second: 60,
+    params: { token },
+    formSchema: BaseResetPasswordSchema.pick({ newPassword: true }),
     redirect: true,
     redirectUrl: "/auth/sign-in",
   });
@@ -62,11 +58,8 @@ export default function ResetPasswordForm({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) =>
-          mutate({
-            password: values.newPassword,
-            token,
-          })
+        onSubmit={form.handleSubmit(
+          ({ newPassword }) => (mutate({ newPassword }), form.reset())
         )}
         className="space-y-4"
       >
@@ -85,6 +78,7 @@ export default function ResetPasswordForm({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -105,16 +99,18 @@ export default function ResetPasswordForm({
                   {...field}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
-
         {isError && (
-          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-            Something went wrong
+          <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
+            <AlertTriangleIcon className="text-red-600" />
+            <div className="text-sm text-red-600  ">
+              {catchAxiosErrorMessage(error) || "Something went wrong"}
+            </div>
           </div>
         )}
-
         <Button
           type="submit"
           className="w-full"

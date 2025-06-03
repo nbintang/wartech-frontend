@@ -26,7 +26,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="flex  gap-2 bg-muted rounded-md p-4">
+    <div className="flex   gap-x-4 bg-muted rounded-md p-4">
       {isLoading && (
         <>
           <div className="flex gap-2 items-center">

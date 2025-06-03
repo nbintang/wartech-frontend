@@ -1,6 +1,5 @@
 "use client";
 
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,6 @@ import Cookies from "js-cookie";
 import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignInForm, signInSchema } from "../schema/signInSchema";
 import jwtDecode from "@/helpers/jwtDecoder";
 import { signin } from "../service/signin";
@@ -47,8 +44,8 @@ export default function SignInForm() {
       toast.success("Signed in successfully");
       form.reset();
     } catch (error) {
-      console.log(error);
-      catchAxiosErrorMessage(error);
+      const message = catchAxiosErrorMessage(error);
+      toast.error(message);
     }
   };
 
