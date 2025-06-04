@@ -21,6 +21,7 @@ import { type SignInForm, signInSchema } from "../schema/signInSchema";
 import jwtDecode from "@/helpers/jwtDecoder";
 import { signin } from "../service/signin";
 import catchAxiosError from "@/helpers/catchAxiosError";
+import { useEffect, useState } from "react";
 export default function SignInForm() {
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -45,7 +46,10 @@ export default function SignInForm() {
       form.reset();
     } catch (error) {
       const message = catchAxiosError(error);
-      toast.error(message);
+      toast.error(message, {
+        richColors: true,
+      });
+      form.reset();
     }
   };
 
@@ -97,7 +101,6 @@ export default function SignInForm() {
             </FormItem>
           )}
         />
-
         <Button
           type="submit"
           className="w-full"

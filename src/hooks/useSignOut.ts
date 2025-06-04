@@ -1,16 +1,18 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { useRouter } from "next/navigation";
-import React from "react";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { useMutation } from "@tanstack/react-query";
+import { useProgress } from '@bprogress/next';
 
-export default function SignOut() {
+const useSignOut = () => {
   const router = useRouter();
-  const { mutate, isPending, isSuccess } = useMutation({
+  const { start, stop } = useProgress(); 
+
+  return useMutation({
     mutationFn: async () => {
+      start();
       const response = await axiosInstance.delete("/auth/signout");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
@@ -21,12 +23,13 @@ export default function SignOut() {
       router.refresh();
       router.push("/auth/sign-in");
     },
-
+    onSettled: () => {
+      stop(); 
+    },
+    onError: () => {
+      stop();
+    },
   });
+};
 
-  return (
-    <Button className="w-full cursor-pointer" onClick={() => mutate()}>
-      Sign Out
-    </Button>
-  );
-}
+export default useSignOut;

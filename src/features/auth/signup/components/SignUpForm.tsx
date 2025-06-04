@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { LoaderCircleIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import useSignUp from "../hooks/useSignup";
+import Link from "next/link";
 
 export default function SignUpForm() {
   const { form, signupMutation } = useSignUp();
@@ -138,6 +139,7 @@ export default function SignUpForm() {
                   </FormLabel>
                   <FormDescription className="text-xs">
                     By signing up, you agree to our terms and conditions.
+                    <Link className="text-[10px] text-blue-300 underline hover:text-blue-500" href="/auth/terms-and-conditions"> See the terms and conditions here</Link>
                   </FormDescription>
                   <FormMessage className="text-xs" />
                 </div>

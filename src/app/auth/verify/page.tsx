@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import ResendEmailForm from "@/features/auth/resend-email/components/ResendEmailForm";
 import catchAxiosError from "@/helpers/catchAxiosError";
-import AuthCard from "@/components/AuthCard";
+import AuthCard from "@/components/dashboard/AuthCard";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const getVerifyUser = async (token: string) =>
   await axiosInstance.post(`/auth/verify`, undefined, {
@@ -21,7 +22,7 @@ export default function VerifyUserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") as string;
-
+  
   const { mutate, isPending, isSuccess } = useMutation({
     mutationKey: ["verify-user"],
     mutationFn: async () => {
@@ -45,9 +46,7 @@ export default function VerifyUserPage() {
   });
 
   useEffect(() => {
-    if (token) {
-      mutate();
-    }
+    if(token) mutate();
   }, [token, mutate]);
 
   return (
@@ -60,23 +59,25 @@ export default function VerifyUserPage() {
           <div className="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4">
             <Mail className="w-8 h-8 text-blue-600" />
           </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Didn't receive the email? Check your spam folder or request a new
-            verification email.
-          </p>
         </div>
         <ResendEmailForm
+        isTokenMissing={!token}
           isVerifying={isPending}
           isSuccessVerifying={isSuccess}
         />
-        <div className="text-center">
-          <Link
-            href="/auth/sign-in"
-            className="text-sm text-blue-600 hover:underline"
-          >
+        <p className="text-xs text-center text-muted-foreground mb-4">
+          Didn't receive the email? Check your spam folder or request a new
+          verification email.
+        </p>
+        <Button
+          className="grid place-items-center text-blue-600"
+          variant={"link"}
+          asChild
+        >
+          <Link href="/auth/sign-in" className="text-sm  hover:underline">
             Back to sign in
           </Link>
-        </div>
+        </Button>
       </div>
     </AuthCard>
   );

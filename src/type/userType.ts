@@ -1,11 +1,10 @@
-import { z } from 'zod';
-const userProfileSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string().email(),
-  verified: z.boolean(),
-  image: z.string().nullable(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
-export type UserProfileResponse = z.infer<typeof userProfileSchema>;
+
+export type UserProfileResponse = {
+  id: string;
+  name: string;
+  email: string;
+  verified: boolean;
+  image: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

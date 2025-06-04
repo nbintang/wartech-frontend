@@ -23,9 +23,11 @@ type ResendEmailForm = z.infer<typeof resendEmailSchema>;
 export default function ResendEmailForm({
   isVerifying,
   isSuccessVerifying,
+  isTokenMissing,
 }: {
   isVerifying?: boolean;
   isSuccessVerifying?: boolean;
+  isTokenMissing: boolean;
 }) {
   const form = useForm<ResendEmailForm>({
     resolver: zodResolver(resendEmailSchema),
@@ -42,7 +44,11 @@ export default function ResendEmailForm({
     });
 
   const isDisabled =
-    isSuccess || isTimerStarted || isVerifying || isSuccessVerifying;
+    isSuccess ||
+    isTimerStarted ||
+    isVerifying ||
+    isSuccessVerifying ||
+    isTokenMissing;
 
   return (
     <Form {...form}>
@@ -64,7 +70,6 @@ export default function ResendEmailForm({
               <FormControl>
                 <Input
                   id="email"
-                  type="email"
                   placeholder="john@example.com"
                   disabled={isDisabled}
                   {...field}
@@ -79,7 +84,7 @@ export default function ResendEmailForm({
           <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
             A verification email has been sent to your email address.
           </div>
-        )} 
+        )}
         {isError && (
           <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
             <AlertTriangleIcon className="text-red-600" />
@@ -92,7 +97,7 @@ export default function ResendEmailForm({
           type="submit"
           variant="outline"
           className="w-full"
-          disabled={isDisabled}
+          disabled={isDisabled || !form.formState.isDirty}
         >
           {isTimerStarted ? (
             <>

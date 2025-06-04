@@ -2,16 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import jwtDecode, { JwtUserPayload } from "./helpers/jwtDecoder";
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("accessToken")?.value;
+  const accessToken = req.cookies.get("accessToken")?.value;
   const pathname = req.nextUrl.pathname;
+  const tokenQueryConfirmation = req.nextUrl.searchParams.get("token");
 
   const isProtected =
     pathname.startsWith("/admin/dashboard") ||
     pathname.startsWith("/reporter/dashboard");
   const isPublicRequireVerified = pathname.startsWith("/articles");
 
+  // Allow access to /auth/verify even without ?token as long as user has accessToken
+if (pathname === "/auth/verify") {
+  // allow access if token in query OR already logged in
+  if (tokenQueryConfirmation || accessToken) {
+    return NextResponse.next();
+  } else {
+    return NextResponse.redirect(new URL("/auth/sign-in", req.url));
+  }
+}
+
   // jika token gada, dan coba akses protected, redirect ke sign in
-  if (!token) {
+  if (!accessToken) {
     if (isProtected) {
       return NextResponse.redirect(new URL("/auth/sign-in", req.url));
     }
@@ -20,7 +31,7 @@ export async function middleware(req: NextRequest) {
 
   let tokenPayload: JwtUserPayload;
   try {
-    tokenPayload = jwtDecode(token);
+    tokenPayload = jwtDecode(accessToken);
   } catch (error) {
     return NextResponse.redirect(new URL("/auth/sign-in", req.url));
   }
@@ -66,6 +77,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
+    "/auth/verify", // pastikan ini ditulis
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

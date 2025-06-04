@@ -4,6 +4,8 @@ import "./globals.css";
 import RQProvider from "@/components/providers/RQProvider";
 import { Toaster } from "sonner";
 import DialogLayout from "@/components/DialogLayout";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import ProgressLoaderProvider from "@/components/providers/ProgressLoaderProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,15 +28,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <RQProvider>
-          {children}
-          <Toaster position="top-right" />
-          <DialogLayout/>
-        </RQProvider>
+        <ThemeProvider>
+          <RQProvider>
+            <ProgressLoaderProvider>
+              {children}
+              <Toaster position="top-right" />
+              <DialogLayout />
+            </ProgressLoaderProvider>
+          </RQProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

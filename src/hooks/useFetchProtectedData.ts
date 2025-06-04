@@ -3,7 +3,7 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 type FetchParamsKey =
   | "users"
-  | "account"
+  | "profile"
   | "articles"
   | "comments"
   | "tags"
@@ -34,6 +34,6 @@ const useFetchProtectedData = <T>({
   return {
     ...result,
     isUnauthorized,
-  };
+  } as typeof result & { isUnauthorized: boolean };
 };
 export default useFetchProtectedData;

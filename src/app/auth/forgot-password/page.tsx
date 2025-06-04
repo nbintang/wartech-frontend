@@ -1,4 +1,4 @@
-import AuthCard from "@/components/AuthCard";
+import AuthCard from "@/components/dashboard/AuthCard";
 import ForgotPasswordForm from "@/features/auth/forgot-password/components/ForgotPasswordForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
