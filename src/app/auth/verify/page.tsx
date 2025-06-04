@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import ResendEmailForm from "@/features/auth/resend-email/components/ResendEmailForm";
-import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
+import catchAxiosError from "@/helpers/catchAxiosError";
 import AuthCard from "@/components/AuthCard";
 import Link from "next/link";
 
@@ -38,7 +38,7 @@ export default function VerifyUserPage() {
       router.push("/");
     },
     onError: (err) => {
-      const message = catchAxiosErrorMessage(err);
+      const message = catchAxiosError(err);
       message && toast.error(message, { id: "verify" });
     },
     retry: false,

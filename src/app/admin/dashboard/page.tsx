@@ -19,7 +19,6 @@ export default function Dashboard() {
     <main className="grid place-items-center min-h-screen">
       <div className="space-y-3">
         <UserProfile />
-        <SignOut />
       </div>
     </main>
   );

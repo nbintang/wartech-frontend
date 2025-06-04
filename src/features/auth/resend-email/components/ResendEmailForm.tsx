@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangleIcon, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
-import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
+import catchAxiosError from "@/helpers/catchAxiosError";
 
 const resendEmailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -84,7 +84,7 @@ export default function ResendEmailForm({
           <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
             <AlertTriangleIcon className="text-red-600" />
             <div className="text-sm text-red-600  ">
-              {catchAxiosErrorMessage(error) || "Something went wrong"}
+              {catchAxiosError(error) || "Something went wrong"}
             </div>
           </div>
         )}

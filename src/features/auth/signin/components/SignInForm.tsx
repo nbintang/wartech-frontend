@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { type SignInForm, signInSchema } from "../schema/signInSchema";
 import jwtDecode from "@/helpers/jwtDecoder";
 import { signin } from "../service/signin";
-import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
+import catchAxiosError from "@/helpers/catchAxiosError";
 export default function SignInForm() {
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -44,7 +44,7 @@ export default function SignInForm() {
       toast.success("Signed in successfully");
       form.reset();
     } catch (error) {
-      const message = catchAxiosErrorMessage(error);
+      const message = catchAxiosError(error);
       toast.error(message);
     }
   };
