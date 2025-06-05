@@ -7,7 +7,7 @@ import catchAxiosError from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 
-type AllowMutationOptions =
+type IgnoreMutationOptions =
   | "mutationFn"
   | "mutationKey"
   | "onMutate"
@@ -34,7 +34,7 @@ type BaseAuthParams<TFormSchema extends z.ZodSchema> =
         z.infer<TFormSchema>,
         unknown
       >,
-      AllowMutationOptions
+      IgnoreMutationOptions
     >);
 type WithRedirect<TFormSchema extends z.ZodSchema> = {
   redirect: true;
