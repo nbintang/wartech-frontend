@@ -23,14 +23,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import { axiosInstance } from "@/lib/axiosInstance";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
 import { UserProfileResponse } from "@/type/userType";
 import { toast } from "sonner";
-import catchAxiosError from "@/helpers/catchAxiosError";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import useMutateProtectedData from "@/hooks/useMutateProtectedData";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -55,9 +53,6 @@ export default function UpdateProfile() {
   const [selectedFile, setSelectedFile] = useState<FileWithPreview | null>(
     null
   );
-
-  const queryClient = useQueryClient();
-  const router = useRouter();
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
   const {
     data: profile,
@@ -96,6 +91,12 @@ export default function UpdateProfile() {
     "image-url": profile?.image,
   });
 
+  const { mutate: updateProfile } = useMutateProtectedData({
+    endpoint: "/users/profile",
+    formSchema: updateProfileSchema,
+    TAG: "profile",
+  });
+
   const handleImageUpdate = useCallback(
     (base64: string | null) => {
       setCroppedImage(base64);
@@ -105,7 +106,6 @@ export default function UpdateProfile() {
     [form]
   );
 
-  
   return (
     <>
       {isError ? (
@@ -120,9 +120,7 @@ export default function UpdateProfile() {
       ) : (
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((values) =>
-              updateProfile.mutate(values)
-            )}
+            onSubmit={form.handleSubmit((values) => updateProfile(values))}
             className="flex w-full md:w-auto gap-2 max-w-md space-y-4 flex-col justify-center"
           >
             <FormField

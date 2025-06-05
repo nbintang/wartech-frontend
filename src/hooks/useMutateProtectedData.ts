@@ -16,7 +16,7 @@ type IgnoreMutationOptions =
   | "onMutate"
   | "onSuccess"
   | "onError";
-  
+
 type MutateParamKeys =
   | "users"
   | "profile"
@@ -27,7 +27,7 @@ type MutateParamKeys =
 type MutateProtectedDataProps<TResponse, TFormSchema extends z.ZodSchema> = {
   TAG: MutateParamKeys;
   endpoint: string;
-  params?: any
+  params?: any;
   formSchema: TFormSchema;
   redirect?: boolean;
   redirectUrl?: string;
@@ -60,7 +60,8 @@ const useMutateProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       const response = await axiosInstance.patch(
         `/protected/${endpoint}`,
-        values
+        values,
+        { params }
       );
       return response.data.data;
     },
