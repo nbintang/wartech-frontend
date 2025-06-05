@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import RQProvider from "@/components/providers/RQProvider";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import { Toaster } from "sonner";
 import DialogLayout from "@/components/DialogLayout";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -33,13 +33,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <RQProvider>
+          <ReactQueryProvider>
             <ProgressLoaderProvider>
               {children}
               <Toaster position="top-right" />
               <DialogLayout />
             </ProgressLoaderProvider>
-          </RQProvider>
+          </ReactQueryProvider>
         </ThemeProvider>
       </body>
     </html>

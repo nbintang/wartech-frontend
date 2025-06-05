@@ -12,9 +12,35 @@ import Cookies from "js-cookie";
 import jwtDecode from "@/helpers/jwtDecoder";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
+import { FileWithPreview, accept } from "@/components/ImageCropper";
+import { useCallback, useState } from "react";
+import { FileWithPath, useDropzone } from "react-dropzone";
+import base64ToFile from "@/helpers/base64ToFile";
 const useSignUp = () => {
   const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
   const { startTimer } = useTimerCountDown();
+  const [selectedFile, setSelectedFile] = useState<FileWithPreview | null>(
+    null
+  );
+  const [openProfileDialog, setOpenProfileDialog] = useState(false);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
+    const file = acceptedFiles[0];
+    if (!file) {
+      alert("Selected image is too large!");
+      return;
+    }
+    const fileWithPreview = Object.assign(file, {
+      preview: URL.createObjectURL(file),
+    });
+    setSelectedFile(fileWithPreview);
+    setOpenProfileDialog(true);
+  }, []);
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept,
+  });
+
   const router = useRouter();
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
@@ -45,12 +71,17 @@ const useSignUp = () => {
     },
     onSuccess: async (_data, variables) => {
       try {
+        const formData = new FormData();
+        if (croppedImage) {
+          formData.append("file", base64ToFile(croppedImage, "profile.png"));
+        }
         const accessToken = await signin({
           email: variables.email,
           password: variables.password,
         });
+
         Cookies.set("accessToken", accessToken);
-        setOpenDialog("signup",  {
+        setOpenDialog("signup", {
           message: "Creating your account...",
           isLoading: true,
           isSuccess: false,
@@ -71,7 +102,7 @@ const useSignUp = () => {
         useHandleDialog.getState().closeDialog();
       } catch (error) {
         const message = catchAxiosError(error) ?? "An unknown error occurred.";
-        setOpenDialog("signup",  {
+        setOpenDialog("signup", {
           message,
           isError: true,
           isLoading: false,
@@ -80,17 +111,36 @@ const useSignUp = () => {
       }
     },
     onError: (error) => {
-      const message =
-        catchAxiosError(error) ?? "An unknown error occurred.";
-      setOpenDialog("signup",  {
+      const message = catchAxiosError(error) ?? "An unknown error occurred.";
+      setOpenDialog("signup", {
         message,
         isLoading: false,
         isError: true,
       });
     },
   });
-
-  return { form, signupMutation, onOpenChange: setOpenDialog };
+  const handleImageUpdate = useCallback(
+    (base64: string | null) => {
+      setCroppedImage(base64);
+      form.setValue("image", base64 || "No File Selected");
+      form.trigger("image");
+    },
+    [form]
+  );
+  return {
+    form,
+    signupMutation,
+    onOpenChange: setOpenDialog,
+    handleImageUpdate,
+    selectedFile,
+    setSelectedFile,
+    croppedImage,
+    setCroppedImage,
+    getRootProps,
+    getInputProps,
+    openProfileDialog,
+    setOpenProfileDialog,
+  };
 };
 
 export default useSignUp;

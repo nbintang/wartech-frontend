@@ -1,5 +1,11 @@
 "use client";
-import { Search, Calendar, ExternalLink, BotIcon } from "lucide-react";
+import {
+  Search,
+  Calendar,
+  ExternalLink,
+  BotIcon,
+  MenuIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +15,16 @@ import useFetchProtectedData from "@/hooks/useFetchProtectedData";
 import { UserProfileResponse } from "@/type/userType";
 import UserProfile from "@/components/UserProfile";
 import useSignOut from "@/hooks/useSignOut";
-
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 export default function NewsLandingPage() {
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -27,7 +42,7 @@ export default function NewsLandingPage() {
     });
 
   const { mutate } = useSignOut();
-
+  const mobileView = useIsMobile();
   const categories = [
     "World News",
     "Politics",
@@ -200,43 +215,108 @@ export default function NewsLandingPage() {
       <header className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top bar */}
-          <div className="flex items-center justify-between py-2 text-sm ">
-            <div className="flex items-center gap-x-4 justify-center">
-              <Button variant={"outline"} size={"icon"} asChild>
-                <Link href="/">
-                  <BotIcon className="size-6" />
-                </Link>
-              </Button>
-              <div className="flex flex-col">
-                <p className="text-xs"> Warta Technologies</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {currentDate}
-                </p>
+          {mobileView ? (
+            <>
+              <Sheet>
+                <SheetTrigger className="fixed top-3 left-3 z-50" asChild>
+                  <Button
+                    variant={"outline"}
+                    className="p-2 "
+                    size={"icon"}
+                    asChild
+                  >
+                    <MenuIcon className="" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <div className="flex items-center gap-x-4 justify-start">
+                      <Button variant={"outline"} size={"icon"} asChild>
+                        <Link href="/">
+                          <BotIcon className="size-6" />
+                        </Link>
+                      </Button>
+                      <div className="flex flex-col">
+                        <SheetTitle className="text-xs">
+                          {" "}
+                          Warta Technologies
+                        </SheetTitle>
+                        <SheetDescription className="text-[10px] text-muted-foreground">
+                          {currentDate}
+                        </SheetDescription>
+                      </div>
+                    </div>
+                       <div className="flex items-start flex-col-reverse gap-2">
+                    <div className="flex flex-row gap-2 items-center">
+               
+                      <Input
+                        placeholder="Search..."
+                        className="w-48 h-8 text-sm"
+                      />
+                    </div>
+                    <UserProfile
+                      data={data}
+                      isSuccess={isSuccess}
+                      isLoading={isLoading}
+                    />
+                    {isSuccess && (
+                      <Button variant={"outline"} onClick={() => mutate()}>
+                        Sign Out
+                      </Button>
+                    )}
+                    {isError && (
+                      <Button variant={"outline"} asChild>
+                        <Link href={"/auth/sign-in"}>Sign In</Link>
+                      </Button>
+                    )}
+                  </div>
+                  </SheetHeader>
+               
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+            <div className="flex items-center justify-between py-2 text-sm ">
+              <div className="flex items-center gap-x-4 justify-center">
+                <Button variant={"outline"} size={"icon"} asChild>
+                  <Link href="/">
+                    <BotIcon className="size-6" />
+                  </Link>
+                </Button>
+                <div className="flex flex-col">
+                  <p className="text-xs"> Warta Technologies</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {currentDate}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <p className="text-muted-foreground text-sm">
+                    Press{" "}
+                    <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
+                      <span className="text-xs">⌘</span>J
+                    </kbd>
+                  </p>
+                  <Input placeholder="Search..." className="w-48 h-8 text-sm" />
+                  <UserProfile
+                    data={data}
+                    isSuccess={isSuccess}
+                    isLoading={isLoading}
+                  />
+                  {isSuccess ? (
+                    <Button variant={"outline"} onClick={() => mutate()}>
+                      Sign Out
+                    </Button>
+                  ) : (
+                    <Button variant={"outline"} asChild>
+                      <Link href={"/auth/sign-in"}>Sign In</Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span>Top Menu</span>
-              <div className="flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                <Input placeholder="Search..." className="w-48 h-8 text-sm" />
-                <UserProfile
-                  data={data}
-                  isSuccess={isSuccess}
-                  isLoading={isLoading}
-                />
-                {isSuccess ? (
-                  <Button variant={"outline"} onClick={() => mutate()}>
-                    Sign Out
-                  </Button>
-                ) : (
-                  <Button variant={"outline"} asChild>
-                    <Link href={"/auth/sign-in"}>Sign In</Link>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
+          )}
           {/* Logo and Navigation */}
           <div className="py-4">
             <div className="text-center mb-4">
@@ -245,19 +325,22 @@ export default function NewsLandingPage() {
               </h1>
             </div>
 
-            <nav className="border-t border-b  py-2">
-              <div className="flex items-center justify-center space-x-8">
-                {categories.map((category) => (
-                  <Link
-                    key={category}
-                    href="#"
-                    className="text-sm font-medium  transition-colors"
-                  >
-                    {category}
-                  </Link>
-                ))}
-              </div>
-            </nav>
+            <ScrollArea className="max-w-96 md:max-w-2xl mx-auto">
+              <nav className="border-t border-b  py-2">
+                <div className="flex items-center justify-center space-x-8">
+                  {categories.map((category) => (
+                    <Link
+                      key={category}
+                      href="#"
+                      className="text-sm font-medium  transition-colors"
+                    >
+                      {category}
+                    </Link>
+                  ))}
+                </div>
+              </nav>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
         </div>
       </header>

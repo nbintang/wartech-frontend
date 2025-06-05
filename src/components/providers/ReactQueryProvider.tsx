@@ -7,11 +7,11 @@ type RQProviderProps = {
 };
 
 const queryClient = new QueryClient();
-export default function RQProvider({ children }: RQProviderProps) {
+export default function ReactQueryProvider({ children }: RQProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
     </QueryClientProvider>
   );
 }

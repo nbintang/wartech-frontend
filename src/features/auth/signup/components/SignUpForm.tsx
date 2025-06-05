@@ -15,24 +15,77 @@ import { LoaderCircleIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import useSignUp from "../hooks/useSignup";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ImageCropper } from "@/components/ImageCropper";
 
 export default function SignUpForm() {
-  const { form, signupMutation } = useSignUp();
+  const {
+    form,
+    signupMutation,
+    selectedFile,
+    setSelectedFile,
+    croppedImage,
+    handleImageUpdate,
+    openProfileDialog,
+    setOpenProfileDialog,
+    getInputProps,
+    getRootProps,
+  } = useSignUp();
   return (
     <>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) =>
             signupMutation.mutate(values)
-            
           )}
           className="grid gap-6"
         >
           <FormField
             control={form.control}
+            name="image"
+            render={({ field }) => (
+              <FormItem className="mx-auto">
+                <FormControl>
+                  {selectedFile ? (
+                    <ImageCropper
+                      className="mx-auto"
+                      size="14"
+                      croppedImage={croppedImage}
+                      setCroppedImage={handleImageUpdate}
+                      dialogOpen={openProfileDialog}
+                      setOpenDialog={setOpenProfileDialog}
+                      selectedFile={selectedFile}
+                      setSelectedFile={setSelectedFile}
+                    />
+                  ) : (
+                    <Avatar
+                      {...getRootProps()}
+                      className="size-14 cursor-pointer mx-auto"
+                    >
+                      <input {...getInputProps()} />
+                      <AvatarImage
+                        src={
+                          "/images/question-mark.jpg"
+                        }
+                        alt={"@shadcn"}
+                      />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                  )}
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Add Profile Picture
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="firstName"
             render={({ field }) => (
-              <FormItem className="grid ">
+              <FormItem className="grid relative ">
                 <FormLabel htmlFor="firstName">Full Name</FormLabel>
                 <FormDescription>Please enter your full name</FormDescription>
                 <FormControl>
@@ -42,8 +95,10 @@ export default function SignUpForm() {
                     type="text"
                     {...field}
                   />
-                  
                 </FormControl>
+                <span className="absolute right-2  bottom-0 text-red-500 text-lg">
+                  *
+                </span>
                 <FormMessage />
               </FormItem>
             )}
@@ -52,15 +107,18 @@ export default function SignUpForm() {
             control={form.control}
             name="lastName"
             render={({ field }) => (
-              <FormItem className="">
+              <FormItem className="relative">
                 <FormControl>
                   <Input
                     id="lastName"
-                    placeholder="Enter your Last Name"
+                    placeholder="Enter your Last Name "
                     type="text"
                     {...field}
                   />
                 </FormControl>
+                <span className="absolute right-2  bottom-0 text-red-500 text-lg">
+                  *
+                </span>
                 <FormMessage />
               </FormItem>
             )}
@@ -69,8 +127,7 @@ export default function SignUpForm() {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem className="grid gap-3">
-                <FormLabel htmlFor="email">Email</FormLabel>
+              <FormItem className="grid gap-3 relative">
                 <FormControl>
                   <Input
                     id="email"
@@ -79,6 +136,9 @@ export default function SignUpForm() {
                     {...field}
                   />
                 </FormControl>
+                <span className="absolute right-2  bottom-0 text-red-500 text-lg">
+                  *
+                </span>
                 <FormMessage />
               </FormItem>
             )}
@@ -88,8 +148,7 @@ export default function SignUpForm() {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem className="grid gap-3">
-                <FormLabel htmlFor="password">Password</FormLabel>
+              <FormItem className="grid gap-3 relative">
                 <FormControl>
                   <Input
                     id="password"
@@ -98,6 +157,9 @@ export default function SignUpForm() {
                     {...field}
                   />
                 </FormControl>
+                <span className="absolute right-2  bottom-0 text-red-500 text-lg">
+                  *
+                </span>
                 <FormMessage />
               </FormItem>
             )}
@@ -139,7 +201,13 @@ export default function SignUpForm() {
                   </FormLabel>
                   <FormDescription className="text-xs">
                     By signing up, you agree to our terms and conditions.
-                    <Link className="text-[10px] text-blue-300 underline hover:text-blue-500" href="/auth/terms-and-conditions"> See the terms and conditions here</Link>
+                    <Link
+                      className="text-[10px] text-blue-300 underline hover:text-blue-500"
+                      href="/auth/terms-and-conditions"
+                    >
+                      {" "}
+                      See the terms and conditions here
+                    </Link>
                   </FormDescription>
                   <FormMessage className="text-xs" />
                 </div>

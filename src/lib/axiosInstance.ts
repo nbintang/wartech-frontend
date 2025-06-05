@@ -1,5 +1,5 @@
 import axios from "axios";
-import { setupInterceptorsTo } from "../hooks/axiosInterceptors";
+import { setupInterceptorsTo } from "../helpers/axiosInterceptors";
 
 
 export const BASE_URL = "https://wartech-backend.vercel.app";
