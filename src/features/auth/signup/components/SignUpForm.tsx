@@ -22,14 +22,6 @@ export default function SignUpForm() {
   const {
     form,
     signupMutation,
-    selectedFile,
-    setSelectedFile,
-    croppedImage,
-    handleImageUpdate,
-    openProfileDialog,
-    setOpenProfileDialog,
-    getInputProps,
-    getRootProps,
   } = useSignUp();
   return (
     <>
@@ -40,47 +32,6 @@ export default function SignUpForm() {
           )}
           className="grid gap-6"
         >
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
-              <FormItem className="mx-auto">
-                <FormControl>
-                  {selectedFile ? (
-                    <ImageCropper
-                      className="mx-auto"
-                      size="14"
-                      croppedImage={croppedImage}
-                      setCroppedImage={handleImageUpdate}
-                      dialogOpen={openProfileDialog}
-                      setOpenDialog={setOpenProfileDialog}
-                      selectedFile={selectedFile}
-                      setSelectedFile={setSelectedFile}
-                    />
-                  ) : (
-                    <Avatar
-                      {...getRootProps()}
-                      className="size-14 cursor-pointer mx-auto"
-                    >
-                      <input {...getInputProps()} />
-                      <AvatarImage
-                        src={
-                          "/images/question-mark.jpg"
-                        }
-                        alt={"@shadcn"}
-                      />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                  )}
-                </FormControl>
-                <FormDescription className="text-xs">
-                  Add Profile Picture
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <FormField
             control={form.control}
             name="firstName"

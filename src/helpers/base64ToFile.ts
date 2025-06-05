@@ -1,4 +1,5 @@
-const base64ToFile = (base64: string, filename: string): File => {
+const base64ToFile = (base64: string, filename: string): File  => {
+
   const arr = base64.split(",");
   const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
   const bstr = atob(arr[1]);

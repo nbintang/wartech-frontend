@@ -1,3 +1,4 @@
+import base64ToFile from "@/helpers/base64ToFile";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
@@ -8,10 +9,10 @@ type ProfileResponse = {
   createdAt: string;
 };
 type PostImageProps = {
-  folder: string;
-  "image-url"?: string;
+  folder: "users" | "articles";
+  "image-url"?: string | null;
 } & Omit<
-  UseMutationOptions<ProfileResponse, unknown, File, unknown>,
+  UseMutationOptions<ProfileResponse, unknown, File | string | null, unknown>,
   "mutationFn" | "mutationKey" | "onError"
 >;
 
@@ -22,28 +23,37 @@ const usePostImage = ({
 }: PostImageProps) => {
   return useMutation({
     mutationKey: [folder],
-    mutationFn: async (file: File): Promise<ProfileResponse> => {
+    mutationFn: async (
+      file: File | string | null
+    ): Promise<ProfileResponse> => {
+      const formData = new FormData();
+      const isBase64String = typeof file === "string";
+      if (!file) return { secureUrl: "", publicId: "", createdAt: "" };
+      let convertedFile: File;
+      if (isBase64String) {
+        convertedFile = base64ToFile(file, "image.png");
+      } else convertedFile = file;
+      formData.append("file", convertedFile);
       const profileResponse = await axiosInstance.post(
         "/protected/upload",
-        file,
+        formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
           params: {
             folder,
-            "image-url": imageUrl,
+            "image-url": imageUrl ?? null,
           },
         }
       );
       const data = profileResponse.data.data;
-      return data;
+      return data as ProfileResponse;
     },
     onError: async (err) => {
       const message = catchAxiosError(err) ?? "An unknown error occurred.";
       toast.error(message);
     },
-
     ...options,
   });
 };

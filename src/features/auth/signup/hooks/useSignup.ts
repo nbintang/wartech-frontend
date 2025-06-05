@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
@@ -9,38 +9,13 @@ import { useHandleDialog } from "@/hooks/useHandleDialog";
 import { useMutation } from "@tanstack/react-query";
 import { signin } from "../../signin/service/signin";
 import Cookies from "js-cookie";
-import jwtDecode from "@/helpers/jwtDecoder";
+import jwtDecode, { JwtUserPayload } from "@/helpers/jwtDecoder";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
-import { FileWithPreview, accept } from "@/components/ImageCropper";
-import { useCallback, useState } from "react";
-import { FileWithPath, useDropzone } from "react-dropzone";
-import base64ToFile from "@/helpers/base64ToFile";
+
 const useSignUp = () => {
   const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
   const { startTimer } = useTimerCountDown();
-  const [selectedFile, setSelectedFile] = useState<FileWithPreview | null>(
-    null
-  );
-  const [openProfileDialog, setOpenProfileDialog] = useState(false);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
-    const file = acceptedFiles[0];
-    if (!file) {
-      alert("Selected image is too large!");
-      return;
-    }
-    const fileWithPreview = Object.assign(file, {
-      preview: URL.createObjectURL(file),
-    });
-    setSelectedFile(fileWithPreview);
-    setOpenProfileDialog(true);
-  }, []);
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept,
-  });
-
   const router = useRouter();
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
@@ -53,15 +28,22 @@ const useSignUp = () => {
       acceptedTOS: false,
     },
   });
+
   const signupMutation = useMutation({
     mutationFn: async (values: SignUpForm) => {
-      const { lastName, firstName, ...rest } = values;
+      const { lastName, firstName,  ...rest } = values;
       const name = `${firstName} ${lastName}`;
-      const response = await axiosInstance.post(`/auth/signup`, {
+      await axiosInstance.post(`/auth/signup`, {
         name,
         ...rest,
       });
-      return response.data;
+      const accessToken = await signin({
+        email: values.email,
+        password: values.password,
+      });
+      Cookies.set("accessToken", accessToken);
+      const userInfo = jwtDecode<JwtUserPayload>(accessToken);
+      return userInfo;
     },
     onMutate: async () => {
       setOpenDialog("signup", {
@@ -69,26 +51,15 @@ const useSignUp = () => {
         isLoading: true,
       });
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (data, variables) => {
       try {
-        const formData = new FormData();
-        if (croppedImage) {
-          formData.append("file", base64ToFile(croppedImage, "profile.png"));
-        }
-        const accessToken = await signin({
-          email: variables.email,
-          password: variables.password,
-        });
-
-        Cookies.set("accessToken", accessToken);
         setOpenDialog("signup", {
           message: "Creating your account...",
           isLoading: true,
           isSuccess: false,
           isError: false,
         });
-        const tokenInfo = jwtDecode(accessToken);
-        if (!tokenInfo.verified) {
+        if (!data.verified) {
           startTimer(60);
           setOpenDialog("signup", {
             message: "Redirecting...",
@@ -119,27 +90,11 @@ const useSignUp = () => {
       });
     },
   });
-  const handleImageUpdate = useCallback(
-    (base64: string | null) => {
-      setCroppedImage(base64);
-      form.setValue("image", base64 || "No File Selected");
-      form.trigger("image");
-    },
-    [form]
-  );
+
   return {
     form,
     signupMutation,
     onOpenChange: setOpenDialog,
-    handleImageUpdate,
-    selectedFile,
-    setSelectedFile,
-    croppedImage,
-    setCroppedImage,
-    getRootProps,
-    getInputProps,
-    openProfileDialog,
-    setOpenProfileDialog,
   };
 };
 
