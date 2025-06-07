@@ -29,25 +29,14 @@ import useFetchProtectedData from "@/hooks/useFetchProtectedData";
 import { UserProfileResponse } from "@/type/userType";
 import useSignOut from "@/hooks/useSignOut";
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
+export function NavUser(dataProps: {
+  isLoading?: boolean;
+  isSuccess?: boolean;
+  data?: UserProfileResponse;
 }) {
   const { isMobile } = useSidebar();
-  const { data, isLoading, isSuccess, isUnauthorized, isError, error } =
-    useFetchProtectedData<UserProfileResponse>({
-      TAG: "profile",
-      endpoint: "/users/profile",
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 10,
-      retry: false,
-    });
   const { mutate } = useSignOut();
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -57,11 +46,7 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <UserProfile
-                isLoading={isLoading}
-                isSuccess={isSuccess}
-                data={data}
-              />
+              <UserProfile {...dataProps} />
               <IconDotsVertical className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -72,18 +57,7 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
+              <UserProfile className="px-1" {...dataProps} />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -101,8 +75,8 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => mutate()}>
-              <IconLogout />
+            <DropdownMenuItem className="text-destructive" onClick={() => mutate()}>
+              <IconLogout className="text-destructive" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
+  IconArticle,
   IconCamera,
   IconChartBar,
   IconDashboard,
@@ -17,12 +18,13 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
-} from "@tabler/icons-react"
+  IconUsersGroup,
+} from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/dashboard/nav-documents"
-import { NavMain } from "@/components/dashboard/nav-main"
-import { NavSecondary } from "@/components/dashboard/nav-secondary"
-import { NavUser } from "@/components/dashboard/nav-user"
+import { NavDocuments } from "@/components/dashboard/nav-documents";
+import { NavMain } from "@/components/dashboard/nav-main";
+import { NavSecondary } from "@/components/dashboard/nav-secondary";
+import { NavUser } from "@/components/dashboard/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -31,7 +33,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import useFetchProtectedData from "@/hooks/useFetchProtectedData";
+import { UserProfileResponse } from "@/type/userType";
+import useSignOut from "@/hooks/useSignOut";
+import { BotIcon } from "lucide-react";
+import Link from "next/link";
 
 const data = {
   user: {
@@ -41,19 +48,19 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
+      title: "Overview",
+      url: "/admin/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "Users",
+      url: "/admin/dashboard/users",
+      icon: IconUsersGroup,
     },
     {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
+      title: "Articles",
+      url: "/admin/dashboard/articles",
+      icon: IconArticle,
     },
     {
       title: "Projects",
@@ -148,9 +155,23 @@ const data = {
       icon: IconFileWord,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const {
+    data: userData,
+    isLoading,
+    isSuccess,
+    isUnauthorized,
+    isError,
+    error,
+  } = useFetchProtectedData<UserProfileResponse>({
+    TAG: "profile",
+    endpoint: "/users/profile",
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    retry: false,
+  });
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -160,10 +181,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
+              <Link href="/">
+                <BotIcon className="!size-5" />
+                <span className="text-base font-semibold">Wartech Inc.</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -174,8 +195,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser data={userData} isLoading={isLoading} isSuccess={isSuccess} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

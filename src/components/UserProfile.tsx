@@ -3,20 +3,27 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { UserProfileResponse } from "@/type/userType";
+import { cn } from "@/lib/utils";
 export default function UserProfile({
+  className,
   isLoading,
   isSuccess,
   data,
 }: {
   isLoading?: boolean;
   isSuccess?: boolean;
-  data?: UserProfileResponse
+  className?: string;
+  data?: UserProfileResponse;
 }) {
-
   if (isLoading) {
     return (
       <>
-        <div className="flex items-center gap-x-2">
+        <div
+          className={cn(
+            "flex items-center gap-2  py-1.5 text-left text-sm",
+            className
+          )}
+        >
           <Skeleton className="h-8 w-8 bg-muted-foreground rounded-lg grayscale" />
           <div className="flex flex-col h-6 justify-between text-black">
             <Skeleton className="h-2.5 w-14 bg-muted-foreground" />
@@ -28,7 +35,12 @@ export default function UserProfile({
   }
   if (isSuccess) {
     return (
-      <>
+      <div
+        className={cn(
+          "flex items-center gap-2  py-1.5 text-left text-sm",
+          className
+        )}
+      >
         <Avatar className="h-8 w-8 rounded-lg grayscale">
           <AvatarImage src={data?.image ?? "https://github.com/shadcn.png"} />
           <AvatarFallback className="rounded-lg">
@@ -41,7 +53,7 @@ export default function UserProfile({
             {data?.email}
           </span>
         </div>
-      </>
+      </div>
     );
   }
 }
