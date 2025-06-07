@@ -29,14 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import PublicUserProfile from "@/components/PublicUserProfile";
 export default function NewsLandingPage() {
   const currentDate = new Date().toLocaleDateString("en-US", {

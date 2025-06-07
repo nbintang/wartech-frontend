@@ -25,8 +25,6 @@ import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
 import { UserProfileResponse } from "@/type/userType";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import useMutateProtectedData from "@/hooks/useMutateProtectedData";
 

@@ -22,6 +22,7 @@ import jwtDecode from "@/helpers/jwtDecoder";
 import { signin } from "../service/signin";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { useEffect, useState } from "react";
+import { useProgress } from "@bprogress/next";
 export default function SignInForm() {
   const form = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
@@ -31,26 +32,31 @@ export default function SignInForm() {
     },
   });
   const router = useRouter();
-  const onSubmit = async (values: SignInForm) => {
-    try {
-      const accessToken = await signin(values);
-      Cookies.set("accessToken", accessToken);
-      const tokenInfo = jwtDecode(accessToken);
-      const role = tokenInfo.role;
-      if (role === "ADMIN" || role === "REPORTER") {
-        router.push(`/${role.toLowerCase()}/dashboard`);
-      } else {
-        router.push("/");
-      }
-      toast.success("Signed in successfully");
-      form.reset();
-    } catch (error) {
-      const message = catchAxiosError(error);
-      toast.error(message, {
+  const loader = useProgress();
+  const onSubmit = async (values: SignInForm) =>
+    toast
+      .promise(signin(values), {
+        loading: "Signing in...",
+        success: (accessToken) => {
+          Cookies.set("accessToken", accessToken);
+          const tokenInfo = jwtDecode(accessToken);
+          const role = tokenInfo.role;
+          loader.start();
+          if (role === "ADMIN" || role === "REPORTER") {
+            router.push(`/${role.toLowerCase()}/dashboard`);
+          } else router.push("/");
+          return "Signed in successfully";
+        },
+        error: (err) => {
+          loader.stop();
+          return catchAxiosError(err) ?? "An unknown error occurred.";
+        },
+        finally: () => {
+          loader.stop();
+          form.reset();
+        },
         richColors: true,
-      });
-    }
-  };
+      })
 
   return (
     <Form {...form}>

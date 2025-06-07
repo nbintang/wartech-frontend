@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 const ProgressLoaderProvider = ({ children }: { children: React.ReactNode }) => {
-  const { systemTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const ProgressLoaderProvider = ({ children }: { children: React.ReactNode }) => 
   return (
     <ProgressProvider
       height="4px"
-      color={systemTheme === "dark" ? "#fff" : "#000"}
+      color={resolvedTheme === "dark" ? "#fff" : "#000"}
       options={{ showSpinner: false }}
       shallowRouting
     >

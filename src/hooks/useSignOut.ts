@@ -8,12 +8,12 @@ import { useProgress } from "@bprogress/next";
 
 const useSignOut = () => {
   const router = useRouter();
-  const { start, stop } = useProgress();
+  const loader = useProgress();
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["signout"],
     mutationFn: async () => {
-      start();
+      loader.start();
       const response = await axiosInstance.delete("/auth/signout");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
@@ -25,10 +25,10 @@ const useSignOut = () => {
       queryClient.removeQueries();
     },
     onSettled: () => {
-      stop();
+      loader.stop();
     },
     onError: () => {
-      stop();
+      loader.stop();
     },
   });
 };

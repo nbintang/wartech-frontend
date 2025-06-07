@@ -28,6 +28,7 @@ import UserProfile from "../UserProfile";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
 import { UserProfileResponse } from "@/type/userType";
 import useSignOut from "@/hooks/useSignOut";
+import Link from "next/link";
 
 export function NavUser(dataProps: {
   isLoading?: boolean;
@@ -61,9 +62,11 @@ export function NavUser(dataProps: {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href="/admin/dashboard/account-settings">
+                  <IconUserCircle />
+                  Account
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <IconCreditCard />
@@ -75,7 +78,10 @@ export function NavUser(dataProps: {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" onClick={() => mutate()}>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => mutate()}
+            >
               <IconLogout className="text-destructive" />
               Log out
             </DropdownMenuItem>
