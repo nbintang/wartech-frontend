@@ -26,14 +26,14 @@ import {
 } from "@/components/ui/sidebar";
 import UserProfile from "../UserProfile";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileResponse } from "@/type/userType";
+import { UserProfileApiResponse } from "@/types/api/userApiResponse";
 import useSignOut from "@/hooks/useSignOut";
 import Link from "next/link";
 
 export function NavUser(dataProps: {
   isLoading?: boolean;
   isSuccess?: boolean;
-  data?: UserProfileResponse;
+  data?: UserProfileApiResponse;
 }) {
   const { isMobile } = useSidebar();
   const { mutate } = useSignOut();

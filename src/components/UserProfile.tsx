@@ -2,7 +2,7 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
-import { UserProfileResponse } from "@/type/userType";
+import { UserProfileApiResponse } from "@/types/api/userApiResponse";
 import { cn } from "@/lib/utils";
 export default function UserProfile({
   className,
@@ -13,7 +13,7 @@ export default function UserProfile({
   isLoading?: boolean;
   isSuccess?: boolean;
   className?: string;
-  data?: UserProfileResponse;
+  data?: UserProfileApiResponse;
 }) {
   if (isLoading) {
     return (

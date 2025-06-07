@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LockIcon, LogOutIcon, UserIcon } from "lucide-react";
 import useSignOut from "@/hooks/useSignOut";
-import { UserProfileResponse } from "@/type/userType";
+import { UserProfileApiResponse } from "@/types/api/userApiResponse";
 export default function PublicUserProfile(dataProps: {
   isLoading?: boolean;
   isSuccess?: boolean;
-  data?: UserProfileResponse;
+  data?: UserProfileApiResponse;
 }) {
   const { mutate } = useSignOut();
   return (

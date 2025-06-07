@@ -8,8 +8,6 @@ import {
   IconSettings,
   IconUsersGroup,
 } from "@tabler/icons-react";
-
-import { NavDocuments } from "@/components/dashboard/nav-documents";
 import { NavMain } from "@/components/dashboard/nav-main";
 import { NavSecondary } from "@/components/dashboard/nav-secondary";
 import { NavUser } from "@/components/dashboard/nav-user";
@@ -23,7 +21,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileResponse } from "@/type/userType";
+import { UserProfileApiResponse } from "@/types/api/userApiResponse";
 import useSignOut from "@/hooks/useSignOut";
 import { BotIcon } from "lucide-react";
 import Link from "next/link";
@@ -69,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     isUnauthorized,
     isError,
     error,
-  } = useFetchProtectedData<UserProfileResponse>({
+  } = useFetchProtectedData<UserProfileApiResponse>({
     TAG: "profile",
     endpoint: "/users/profile",
     staleTime: 1000 * 60 * 5,

@@ -1,3 +1,13 @@
+import { userColumns } from "@/features/admin/components/userColumns";
+import { DataTable } from "@/features/admin/components/DataTable";
+import { UsersApiResponse } from "@/types/api/userApiResponse";
+import { ScrollArea } from "./ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { ArticleApiResponse } from "@/types/api/articleApiResponse";
+import { articleColumns } from "@/features/admin/components/articleColumns";
+import CardUserComment from "@/features/admin/components/CardUserComment";
+import CardChart from "@/features/admin/components/CardChart";
+
 interface Feature {
   title: string;
   description: string;
@@ -11,75 +21,86 @@ interface Feature166Props {
   feature4: Feature;
 }
 
-const GridPages = ({
-  feature1 = {
-    title: "UI/UX Design",
-    description:
-      "Creating intuitive user experiences with modern interface design principles and user-centered methodologies.",
-    image: "https://shadcnblocks.com/images/block/placeholder-1.svg",
-  },
-  feature2 = {
-    title: "Responsive Development",
-    description:
-      "Building websites that look and function perfectly across all devices and screen sizes.",
-    image: "https://shadcnblocks.com/images/block/placeholder-2.svg",
-  },
-  feature3 = {
-    title: "Brand Integration",
-    description:
-      "Seamlessly incorporating your brand identity into every aspect of your website's design.",
-    image: "https://shadcnblocks.com/images/block/placeholder-1.svg",
-  },
-  feature4 = {
-    title: "Performance Optimization",
-    description:
-      "Ensuring fast loading times and smooth performance through optimized code and assets.",
-    image: "https://shadcnblocks.com/images/block/placeholder-2.svg",
-  },
-}: Feature166Props) => {
+const dummyUsers: UsersApiResponse[] = Array.from(
+  { length: 15 },
+  (_, index) => ({
+    id: `${index + 1}`,
+    name: `User ${index + 1}`,
+    email: `user${index + 1}@example.com`,
+    createdAt: new Date().toISOString(),
+    image: `https://dummyimage.com/600x400/000/fff&text=User+${index + 1}`,
+    updatedAt: new Date().toISOString(),
+    verified: index % 2 === 0,
+    role: index % 2 === 0 ? "ADMIN" : "USER",
+  })
+);
+
+export const dummyArticles: ArticleApiResponse[] = Array.from(
+  { length: 15 },
+  (_, i) => ({
+    id: `article-${i + 1}`,
+    title: `Article ${i + 1}`,
+    slug: `article-${i + 1}`,
+    image: `https://dummyimage.com/600x400/000/fff&text=Article+${i + 1}`,
+    status: i % 2 === 0 ? "PUBLISHED" : "DRAFT",
+    publishedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    category: {
+      id: `category-${i + 1}`,
+      name: i % 2 === 0 ? "Technology" : "Health",
+      slug: i % 2 === 0 ? "technology" : "health",
+    },
+    author: {
+      id: "admin-id",
+      name: "Admin",
+    },
+    commentsCount: Math.floor(Math.random() * 10),
+    likesCount: Math.floor(Math.random() * 20),
+    tagsCount: 2,
+    tags: [
+      {
+        id: `tag-js-${i + 1}`,
+        name: "JavaScript",
+        slug: "javascript",
+      },
+      {
+        id: `tag-startup-${i + 1}`,
+        name: "Startup",
+        slug: "startup",
+      },
+    ],
+  })
+);
+
+const GridPages = () => {
   return (
     <section className="py-5 px-3">
       <div className=" container">
+        <div className="mb-3 ml-4 max-w-lg">
+          <h1 className="text-4xl font-semibold">Recent Activities</h1>
+          <p className="text-muted-foreground text-sm mt-2">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Aut
+            suscipit explicabo ipsum asperiores animi accusantium harum hic amet
+            et non do
+          </p>
+        </div>
         <div className="relative flex justify-center">
-          <div className="border-muted relative flex rounded-lg  flex-col border w-full">
+          <div className="border-muted relative flex rounded-lg  flex-col border w-full overflow-hidden">
             <div className="relative flex flex-col lg:flex-row">
-              <div className="border-muted flex flex-col justify-between border-b border-solid p-10 lg:w-3/5 lg:border-r lg:border-b-0">
-                <h2 className="text-xl font-semibold">{feature1.title}</h2>
-                <p className="text-muted-foreground">{feature1.description}</p>
-                <img
-                  src={feature1.image}
-                  alt={feature1.title}
-                  className="mt-8 aspect-[1.5] h-full w-full object-cover lg:aspect-[2.4]"
-                />
+              <div className="border-muted flex flex-col justify-between border-b border-solid lg:w-3/5 lg:border-r lg:border-b-0 overflow-hidden">
+                <DataTable columns={articleColumns} data={dummyArticles} />
               </div>
-              <div className="flex flex-col justify-between p-10 lg:w-2/5">
-                <h2 className="text-xl font-semibold">{feature2.title}</h2>
-                <p className="text-muted-foreground">{feature2.description}</p>
-                <img
-                  src={feature2.image}
-                  alt={feature2.title}
-                  className="mt-8 aspect-[1.45] h-full w-full object-cover"
-                />
+              <div className="flex flex-col justify-between  lg:w-2/5">
+                <CardUserComment />
               </div>
             </div>
             <div className="border-muted relative flex flex-col border-t border-solid lg:flex-row">
-              <div className="border-muted2 flex flex-col justify-between border-b border-solid p-10 lg:w-2/5 lg:border-r lg:border-b-0">
-                <h2 className="text-xl font-semibold">{feature3.title}</h2>
-                <p className="text-muted-foreground">{feature3.description}</p>
-                <img
-                  src={feature3.image}
-                  alt={feature3.title}
-                  className="mt-8 aspect-[1.45] h-full w-full object-cover"
-                />
+              <div className="border-muted2 flex flex-col justify-between border-b border-solid lg:w-2/5 lg:border-r lg:border-b-0">
+                <CardChart />
               </div>
-              <div className="flex flex-col justify-between p-10 lg:w-3/5">
-                <h2 className="text-xl font-semibold">{feature4.title}</h2>
-                <p className="text-muted-foreground">{feature4.description}</p>
-                <img
-                  src={feature4.image}
-                  alt={feature4.title}
-                  className="mt-8 aspect-[1.5] h-full w-full object-cover lg:aspect-[2.4]"
-                />
+              <div className="flex flex-col justify-between lg:w-3/5 overflow-hidden">
+                <DataTable columns={userColumns} data={dummyUsers} />
               </div>
             </div>
           </div>

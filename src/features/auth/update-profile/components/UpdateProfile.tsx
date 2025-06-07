@@ -24,7 +24,7 @@ import { z } from "zod";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileResponse } from "@/type/userType";
+import { UserProfileApiResponse } from "@/types/api/userApiResponse";
 import Link from "next/link";
 import useMutateProtectedData from "@/hooks/useMutateProtectedData";
 
@@ -56,7 +56,7 @@ export default function UpdateProfile() {
     data: profile,
     isLoading,
     isError,
-  } = useFetchProtectedData<UserProfileResponse>({
+  } = useFetchProtectedData<UserProfileApiResponse>({
     endpoint: "/users/profile",
     TAG: "profile",
     gcTime: 1000 * 60 * 10,
