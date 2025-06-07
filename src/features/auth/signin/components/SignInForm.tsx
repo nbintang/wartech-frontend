@@ -49,7 +49,6 @@ export default function SignInForm() {
       toast.error(message, {
         richColors: true,
       });
-      form.reset();
     }
   };
 

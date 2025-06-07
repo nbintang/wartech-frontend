@@ -18,13 +18,13 @@ type BaseAuthParams<TFormSchema extends z.ZodSchema> =
       startTime?: false;
       second?: never;
       formSchema: TFormSchema;
-      params?:any;
+      params?: any;
       endpoint: string;
     }
   | ({
       startTime: true;
       second: number;
-      params?: any
+      params?: any;
       formSchema: TFormSchema;
       endpoint: string;
     } & Omit<
@@ -69,11 +69,11 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
     mutationKey: [endpoint],
     mutationFn: async (values: z.infer<typeof formSchema>) =>
       await axiosInstance.post(`/auth${endpoint}`, values, {
-        params
+        params,
       }),
     onMutate: () => {
       setOpenDialog(endpoint, {
-        message: "Processing...",
+        message: "Verifying your data...",
         isLoading: true,
         isError: false,
         isSuccess: false,
@@ -81,8 +81,15 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
     },
     onSuccess: (response) => {
       const message = response.data.message;
+      console.log(response.data);
       if (response.status === 201) {
-        startTime && startTimer(second);
+        const isFromResendEmail =
+          endpoint === "/resend-verification" && response.data.data.expiresIn;
+        if (isFromResendEmail) {
+          startTimer(isFromResendEmail);
+        } else if (startTime && second) {
+          startTimer(second);
+        }
         setOpenDialog(endpoint, {
           message,
           isSuccess: true,
@@ -95,8 +102,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
       return message;
     },
     onError: (err) => {
-      const message =
-        catchAxiosError(err) ?? "An unknown error occurred.";
+      const message = catchAxiosError(err) ?? "An unknown error occurred.";
       setOpenDialog(endpoint, {
         message,
         isError: true,

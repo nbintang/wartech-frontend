@@ -15,8 +15,6 @@ import { LoaderCircleIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import useSignUp from "../hooks/useSignup";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ImageCropper } from "@/components/ImageCropper";
 
 export default function SignUpForm() {
   const {
@@ -37,8 +35,6 @@ export default function SignUpForm() {
             name="firstName"
             render={({ field }) => (
               <FormItem className="grid relative ">
-                <FormLabel htmlFor="firstName">Full Name</FormLabel>
-                <FormDescription>Please enter your full name</FormDescription>
                 <FormControl>
                   <Input
                     id="firstName"
@@ -82,7 +78,7 @@ export default function SignUpForm() {
                 <FormControl>
                   <Input
                     id="email"
-                    placeholder="m@example.com"
+                    placeholder="Enter your email"
                     type="email"
                     {...field}
                   />
@@ -103,7 +99,7 @@ export default function SignUpForm() {
                 <FormControl>
                   <Input
                     id="password"
-                    placeholder="********"
+                    placeholder="Enter your password"
                     type="password"
                     {...field}
                   />

@@ -3,14 +3,15 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import { useMutation } from "@tanstack/react-query";
-import { useProgress } from '@bprogress/next';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useProgress } from "@bprogress/next";
 
 const useSignOut = () => {
   const router = useRouter();
-  const { start, stop } = useProgress(); 
-
+  const { start, stop } = useProgress();
+  const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ["signout"],
     mutationFn: async () => {
       start();
       const response = await axiosInstance.delete("/auth/signout");
@@ -21,10 +22,10 @@ const useSignOut = () => {
     onSuccess: () => {
       toast.success("Signed out successfully!");
       router.refresh();
-      router.push("/auth/sign-in");
+      queryClient.removeQueries();
     },
     onSettled: () => {
-      stop(); 
+      stop();
     },
     onError: () => {
       stop();

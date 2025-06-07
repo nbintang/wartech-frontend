@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import { Toaster } from "sonner";
-import DialogLayout from "@/components/DialogLayout";
+import DialogAuth from "@/components/DialogAuth";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ProgressLoaderProvider from "@/components/providers/ProgressLoaderProvider";
 
@@ -37,7 +37,7 @@ export default function RootLayout({
             <ProgressLoaderProvider>
               {children}
               <Toaster position="top-right" />
-              <DialogLayout />
+              <DialogAuth />
             </ProgressLoaderProvider>
           </ReactQueryProvider>
         </ThemeProvider>

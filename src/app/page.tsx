@@ -5,6 +5,9 @@ import {
   ExternalLink,
   BotIcon,
   MenuIcon,
+  UserIcon,
+  LockIcon,
+  LogOutIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +28,16 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Loader2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import PublicUserProfile from "@/components/PublicUserProfile";
 export default function NewsLandingPage() {
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -32,7 +45,7 @@ export default function NewsLandingPage() {
     month: "long",
     day: "numeric",
   });
-  const { data, isSuccess, isLoading, isError, error } =
+  const { data, isSuccess, isLoading, isError, error, isUnauthorized } =
     useFetchProtectedData<UserProfileResponse>({
       TAG: "profile",
       endpoint: "/users/profile",
@@ -41,7 +54,6 @@ export default function NewsLandingPage() {
       retry: false,
     });
 
-  const { mutate } = useSignOut();
   const mobileView = useIsMobile();
   const categories = [
     "World News",
@@ -246,32 +258,33 @@ export default function NewsLandingPage() {
                         </SheetDescription>
                       </div>
                     </div>
-                       <div className="flex items-start flex-col-reverse gap-2">
-                    <div className="flex flex-row gap-2 items-center">
-               
-                      <Input
-                        placeholder="Search..."
-                        className="w-48 h-8 text-sm"
-                      />
+                    <div className="flex items-start flex-col-reverse gap-2">
+                      <div className="flex flex-row gap-2 items-center">
+                        <Input
+                          placeholder="Search..."
+                          className="w-48 h-8 text-sm"
+                        />
+                      </div>
+
+                      {isSuccess && (
+                        <PublicUserProfile
+                          data={data}
+                          isSuccess={isSuccess}
+                          isLoading={isLoading}
+                        />
+                      )}
+                      {isUnauthorized && (
+                        <Button variant={"outline"} asChild>
+                          <Link href={"/auth/sign-in"}>Sign In</Link>
+                        </Button>
+                      )}
+                      {isLoading && (
+                        <Button variant={"outline"} disabled>
+                          <Loader2 className="animate-spin" />
+                        </Button>
+                      )}
                     </div>
-                    <UserProfile
-                      data={data}
-                      isSuccess={isSuccess}
-                      isLoading={isLoading}
-                    />
-                    {isSuccess && (
-                      <Button variant={"outline"} onClick={() => mutate()}>
-                        Sign Out
-                      </Button>
-                    )}
-                    {isError && (
-                      <Button variant={"outline"} asChild>
-                        <Link href={"/auth/sign-in"}>Sign In</Link>
-                      </Button>
-                    )}
-                  </div>
                   </SheetHeader>
-               
                 </SheetContent>
               </Sheet>
             </>
@@ -299,16 +312,21 @@ export default function NewsLandingPage() {
                     </kbd>
                   </p>
                   <Input placeholder="Search..." className="w-48 h-8 text-sm" />
-                  <UserProfile
-                    data={data}
-                    isSuccess={isSuccess}
-                    isLoading={isLoading}
-                  />
-                  {isSuccess ? (
-                    <Button variant={"outline"} onClick={() => mutate()}>
-                      Sign Out
+
+                  {isSuccess && (
+                    <PublicUserProfile
+                      data={data}
+                      isSuccess={isSuccess}
+                      isLoading={isLoading}
+                    />
+                  )}
+
+                  {isLoading && (
+                    <Button variant={"outline"} disabled>
+                      <Loader2 className="animate-spin" />
                     </Button>
-                  ) : (
+                  )}
+                  {isUnauthorized && (
                     <Button variant={"outline"} asChild>
                       <Link href={"/auth/sign-in"}>Sign In</Link>
                     </Button>

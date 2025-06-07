@@ -22,7 +22,7 @@ export default function SignUpLayout({
         </div>
       </div>
       <div className="bg-muted relative hidden lg:block">
-        <div className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale bg-black" />
+        <div className="absolute inset-0 h-full w-full object-cover bg-secondary" />
       </div>
     </main>
   );

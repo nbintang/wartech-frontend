@@ -15,6 +15,7 @@ import { AlertTriangleIcon, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
 import catchAxiosError from "@/helpers/catchAxiosError";
+import { useEffect, useState } from "react";
 
 const resendEmailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -29,6 +30,8 @@ export default function ResendEmailForm({
   isSuccessVerifying?: boolean;
   isTokenMissing: boolean;
 }) {
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
+
   const form = useForm<ResendEmailForm>({
     resolver: zodResolver(resendEmailSchema),
     defaultValues: {
@@ -43,17 +46,23 @@ export default function ResendEmailForm({
       second: 60,
     });
 
-  const isDisabled =
-    isSuccess ||
-    isTimerStarted ||
-    isVerifying ||
-    isSuccessVerifying ||
-    isTokenMissing;
+  const isDisabled = isTimerStarted || isVerifying || isSuccessVerifying;
+  useEffect(() => {
+    if ((form.formState.isSubmitSuccessful && isSuccess) || isError) {
+      setShowSuccess(true);
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [form.formState.isSubmitSuccessful]);
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values))}
+        onSubmit={form.handleSubmit(
+          (values) => (mutate(values), isSuccess && form.reset())
+        )}
         className="space-y-4"
       >
         <FormField
@@ -80,11 +89,12 @@ export default function ResendEmailForm({
           )}
         />
 
-        {form.formState.isSubmitSuccessful && isSuccess && (
+        {showSuccess && (
           <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
             A verification email has been sent to your email address.
           </div>
         )}
+
         {isError && (
           <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
             <AlertTriangleIcon className="text-red-600" />
