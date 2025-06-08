@@ -2,7 +2,7 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
-import { UserProfileApiResponse } from "@/types/api/userApiResponse";
+import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import { cn } from "@/lib/utils";
 export default function UserProfile({
   className,

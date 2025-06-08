@@ -14,10 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
-import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileApiResponse } from "@/types/api/userApiResponse";
+import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import UserProfile from "@/components/UserProfile";
-import useSignOut from "@/hooks/useSignOut";
+import useSignOut from "@/hooks/hooks-api/useSignOut";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Sheet,

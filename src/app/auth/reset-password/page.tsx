@@ -1,5 +1,5 @@
 "use client";
-import AuthCard from "@/components/AuthCard";
+import AuthCard from "@/features/auth/components/AuthCardLayout";
 import ResetPasswordForm from "@/features/auth/reset-password/components/ResetPasswordForm";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

@@ -1,18 +1,20 @@
 import base64ToFile from "@/helpers/base64ToFile";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { type UploadImageApiResponse } from "@/types/api/UploadImageApiResponse";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
-type ProfileResponse = {
-  secureUrl: string;
-  publicId: string;
-  createdAt: string;
-};
+
 type PostImageProps = {
   folder: "users" | "articles";
   "image-url"?: string | null;
 } & Omit<
-  UseMutationOptions<ProfileResponse, unknown, File | string | null, unknown>,
+  UseMutationOptions<
+    UploadImageApiResponse,
+    unknown,
+    File | string | null,
+    unknown
+  >,
   "mutationFn" | "mutationKey" | "onError"
 >;
 
@@ -25,7 +27,7 @@ const usePostImage = ({
     mutationKey: [folder],
     mutationFn: async (
       file: File | string | null
-    ): Promise<ProfileResponse> => {
+    ): Promise<UploadImageApiResponse> => {
       const formData = new FormData();
       const isBase64String = typeof file === "string";
       if (!file) return { secureUrl: "", publicId: "", createdAt: "" };
@@ -48,7 +50,7 @@ const usePostImage = ({
         }
       );
       const data = profileResponse.data.data;
-      return data as ProfileResponse;
+      return data as UploadImageApiResponse;
     },
     onError: async (err) => {
       const message = catchAxiosError(err) ?? "An unknown error occurred.";

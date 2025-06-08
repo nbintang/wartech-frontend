@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import useSearchMenu from "@/hooks/useSearchMenu";
+import useSearchDashboardMenu from "@/hooks/useSearchDashboardMenu";
 import { IconSearch } from "@tabler/icons-react";
 export function NavSecondary({
   items,
@@ -24,7 +24,7 @@ export function NavSecondary({
     icon: Icon;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
-  const { setOpen } = useSearchMenu();
+  const { setOpen } = useSearchDashboardMenu();
   const pathname = usePathname();
   return (
     <SidebarGroup {...props}>

@@ -8,21 +8,18 @@ import {
   CommandItem,
   CommandDialog,
 } from "@/components/ui/command";
-import useSearchMenu from "@/hooks/useSearchMenu";
+import useSearchDashboardMenu from "@/hooks/useSearchDashboardMenu";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { navData } from "./dashboard/app-sidebar";
-import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@bprogress/next";
 
-export function SearchMenu() {
-  const { open, setOpen, toggleOpen } = useSearchMenu();
+export default function SearchDashboardMenu() {
+  const { open, setOpen, toggleOpen } = useSearchDashboardMenu();
   const router = useRouter();
   const loader = useProgress();
   const pathname = usePathname();
-  const [search, setSearch] = useState("");
-
   const firstVisibleItemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -57,11 +54,11 @@ export function SearchMenu() {
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog  open={open} onOpenChange={setOpen}>
       <CommandInput
         placeholder="Type a command or search..."
       />
-      <CommandList>
+      <CommandList >
         <CommandEmpty>No results found.</CommandEmpty>
         {Object.entries(navData).map(([key , items]) => (
           <CommandGroup key={key} heading={key}>
@@ -75,7 +72,7 @@ export function SearchMenu() {
                 }}
                 onSelect={() => handleSelect(item.url)}
                 className={cn(
-                  "cursor-pointer",
+                  "cursor-pointer my-0.5",
                   pathname === item.url ? "bg-muted" : ""
                 )}
               >

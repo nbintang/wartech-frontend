@@ -1,8 +1,8 @@
 import { axiosInstance } from "@/lib/axiosInstance";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { z } from "zod";
-import useTimerCountDown from "./useTimerCountDown";
-import { useHandleDialog } from "./useHandleDialog";
+import useTimerCountDown from "../useTimerCountDown";
+import { useHandleDialog } from "../useHandleDialog";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";

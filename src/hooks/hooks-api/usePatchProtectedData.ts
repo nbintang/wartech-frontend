@@ -24,7 +24,7 @@ type MutateParamKeys =
   | "comments"
   | "tags"
   | "categories";
-type MutateProtectedDataProps<TResponse, TFormSchema extends z.ZodSchema> = {
+type PatchProtectedDataProps<TFormSchema extends z.ZodSchema, TResponse> = {
   TAG: MutateParamKeys;
   endpoint: string;
   params?: any;
@@ -33,14 +33,14 @@ type MutateProtectedDataProps<TResponse, TFormSchema extends z.ZodSchema> = {
   redirectUrl?: string;
 } & Omit<
   UseMutationOptions<
-    AxiosResponse<TResponse>,
+    TResponse,
     unknown,
     z.infer<TFormSchema>,
     unknown
   >,
   IgnoreMutationOptions
 >;
-const useMutateProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
+const usePatchProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
   TAG,
   endpoint,
   redirect,
@@ -48,28 +48,31 @@ const useMutateProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
   params,
   formSchema,
   ...mutateOptions
-}: MutateProtectedDataProps<TResponse, TFormSchema>) => {
+}: PatchProtectedDataProps<TFormSchema, ApiResponse<TResponse>>) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   return useMutation<
-    AxiosResponse<TResponse>,
+    ApiResponse<TResponse>,
     unknown,
     z.infer<typeof formSchema>
   >({
     mutationKey: [TAG],
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
+    mutationFn: async (values: z.infer<typeof formSchema>) : Promise<ApiResponse<TResponse>> => {
       const response = await axiosInstance.patch(
-        `/protected/${endpoint}`,
+        `/protected${endpoint}`,
         values,
         { params }
       );
-      return response.data.data;
+      return response.data;
     },
     onMutate: () => {
-      toast.loading("Updating profile...", { id: TAG });
+      toast.loading(`Updating ${TAG}...`, { id: TAG });
     },
     onSuccess: () => {
-      toast.success("Profile updated successfully!", { id: TAG });
+      toast.success(
+        `${TAG.slice(0, 1).toUpperCase() + TAG.slice(1)} updated successfully!`,
+        { id: TAG }
+      );
       if (redirect && redirectUrl) router.push(redirectUrl);
       queryClient.invalidateQueries({ queryKey: [TAG] });
     },
@@ -81,4 +84,4 @@ const useMutateProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
   });
 };
 
-export default useMutateProtectedData;
+export default usePatchProtectedData;

@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
-import { SearchMenu } from "@/components/SearchMenu";
+import SearchDashboardMenu from "@/components/SearchDashboardMenu";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 export default function Layout({
   children,
@@ -21,7 +21,7 @@ export default function Layout({
           <div className="flex flex-1 flex-col">{children}</div>
         </SidebarInset>
       </SidebarProvider>
-      <SearchMenu />
+      <SearchDashboardMenu />
     </>
   );
 }

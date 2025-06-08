@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import ResendEmailForm from "@/features/auth/resend-email/components/ResendEmailForm";
 import catchAxiosError from "@/helpers/catchAxiosError";
-import AuthCard from "@/components/AuthCard";
+import AuthCard from "@/features/auth/components/AuthCardLayout";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 

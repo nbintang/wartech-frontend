@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import catchAxiosError from "@/helpers/catchAxiosError";
-import usePostVerifyAuth from "@/hooks/usePostVerifyAuth";
+import usePostVerifyAuth from "@/hooks/hooks-api/usePostVerifyAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangleIcon, Loader2 } from "lucide-react";
 import React from "react";

@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArticleApiResponse } from "@/types/api/articleApiResponse";
+import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
 import { format } from "date-fns";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,6 @@ export const articleColumns: ColumnDef<ArticleApiResponse>[] = [
       </Badge>
     ),
   },
-
   {
     accessorKey: "publishedAt",
     header: "Published",

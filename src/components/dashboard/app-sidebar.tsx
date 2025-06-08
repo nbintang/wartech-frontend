@@ -20,9 +20,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileApiResponse } from "@/types/api/userApiResponse";
-import useSignOut from "@/hooks/useSignOut";
+import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import useSignOut from "@/hooks/hooks-api/useSignOut";
 import { BotIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     retry: false,
   });
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar className="z-[50]" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

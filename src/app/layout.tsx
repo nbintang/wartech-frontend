@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import { Toaster } from "sonner";
-import DialogAuth from "@/components/DialogAuth";
+import DialogAuth from "@/features/auth/components/DialogAuth";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ProgressLoaderProvider from "@/components/providers/ProgressLoaderProvider";
 

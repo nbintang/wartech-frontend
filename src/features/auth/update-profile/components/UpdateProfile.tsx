@@ -18,15 +18,15 @@ import {
   ImageCropper,
 } from "@/components/ImageCropper";
 import { FileWithPath, useDropzone } from "react-dropzone";
-import usePostImage from "@/hooks/usePostImage";
+import usePostImage from "@/hooks/hooks-api/usePostImage";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileApiResponse } from "@/types/api/userApiResponse";
+import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import { type  UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import Link from "next/link";
-import useMutateProtectedData from "@/hooks/useMutateProtectedData";
+import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -89,12 +89,11 @@ export default function UpdateProfile() {
     "image-url": profile?.image,
   });
 
-  const { mutate: updateProfile } = useMutateProtectedData({
+  const { mutate: updateProfile, data } = usePatchProtectedData({
     endpoint: "/users/profile",
     formSchema: updateProfileSchema,
     TAG: "profile",
   });
-
   const handleImageUpdate = useCallback(
     (base64: string | null) => {
       setCroppedImage(base64);

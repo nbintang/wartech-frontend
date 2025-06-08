@@ -25,9 +25,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import UserProfile from "../UserProfile";
-import useFetchProtectedData from "@/hooks/useFetchProtectedData";
-import { UserProfileApiResponse } from "@/types/api/userApiResponse";
-import useSignOut from "@/hooks/useSignOut";
+import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import useSignOut from "@/hooks/hooks-api/useSignOut";
 import Link from "next/link";
 
 export function NavUser(dataProps: {
