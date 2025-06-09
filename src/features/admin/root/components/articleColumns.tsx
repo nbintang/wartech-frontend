@@ -1,10 +1,10 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
 import { format } from "date-fns";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
 export const articleColumns: ColumnDef<ArticleApiResponse>[] = [
   {
     accessorKey: "title",

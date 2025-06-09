@@ -12,7 +12,10 @@ type FetchParamsProps<TResponse> = {
   TAG: FetchParamsKey;
   params?: any;
   endpoint: string;
-} & Omit<UseQueryOptions<TResponse>, "queryKey" | "queryFn">;
+} & Omit<
+  UseQueryOptions<TResponse>,
+  "queryKey" | "queryFn" | "placeholderData"
+>;
 
 const useFetchProtectedData = <TResponse>({
   TAG,
@@ -21,13 +24,13 @@ const useFetchProtectedData = <TResponse>({
   ...queryOptions
 }: FetchParamsProps<TResponse>) => {
   const result = useQuery({
-    queryKey: [TAG],
+    queryKey: [TAG, params],
     queryFn: async (): Promise<TResponse> => {
       const res = await axiosInstance.get(`/protected${endpoint}`, { params });
       const data = res.data.data;
       return data as TResponse;
     },
-    
+    placeholderData: (prev) => prev,
     ...queryOptions,
   });
   const isUnauthorized =

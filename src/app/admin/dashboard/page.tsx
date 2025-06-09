@@ -1,5 +1,5 @@
 
-import GridPages from "@/features/admin/components/GridPages";
+import RootDashboardPage from "@/features/admin/root";
 
 export default function Page() {
   return (
@@ -15,7 +15,7 @@ export default function Page() {
         </div>
         <div className="relative flex justify-center">
           <div className="border-muted relative flex w-full space-y-3 py-3  flex-col mx-auto ">
-            <GridPages />
+            <RootDashboardPage />
           </div>
         </div>
       </div>

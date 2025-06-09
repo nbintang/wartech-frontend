@@ -12,7 +12,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import DashboardCardLayout from "../../components/DashboardCardLayout";
+import DashboardCardLayout from "./DashboardRootCardLayout";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
 
 type UserChartProps = {

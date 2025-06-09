@@ -87,17 +87,13 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
           endpoint === "/resend-verification" && response.data.data.expiresIn;
         if (isFromResendEmail) {
           startTimer(isFromResendEmail);
-        } else if (startTime && second) {
-          startTimer(second);
-        }
+        } else if (startTime && second) startTimer(second);
         setOpenDialog(endpoint, {
           message,
           isSuccess: true,
           isLoading: false,
         });
-        if (redirect && redirectUrl) {
-          router.push(redirectUrl);
-        }
+        if (redirect && redirectUrl) router.push(redirectUrl);
       }
       return message;
     },

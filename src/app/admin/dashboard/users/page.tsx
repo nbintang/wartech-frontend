@@ -1,5 +1,7 @@
-export default function Page() {
+import UserDashboardPage from "@/features/admin/users";
+
+export default function UserPage() {
     return (
-        <div>tes</div>
+         <UserDashboardPage />
     );
 }

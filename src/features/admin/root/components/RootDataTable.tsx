@@ -32,12 +32,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-import DashboardCardLayout from "../../components/DashboardCardLayout";
+import DashboardCardLayout from "./DashboardRootCardLayout";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
+import useTable from "../../hooks/useTable";
 
 interface DataTableProps<TData, TValue>
   extends React.ComponentProps<typeof DashboardCardLayout> {
@@ -55,27 +56,9 @@ export default function RootDataTable<TData, TValue>({
   redirectUrl,
   filterSearch,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-  const table = useReactTable({
-    data,
+  const { table } = useTable({
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
+    data,
   });
   return (
     <DashboardCardLayout
@@ -87,7 +70,9 @@ export default function RootDataTable<TData, TValue>({
       <div className="flex items-center border-b  rounded-b-md dark:bg-neutral-900 bg-white pb-2 sticky top-0 z-10">
         <Input
           placeholder={`Filter ${filterSearch}s...`}
-          value={(table.getColumn(filterSearch)?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn(filterSearch)?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
             table.getColumn(filterSearch)?.setFilterValue(event.target.value)
           }

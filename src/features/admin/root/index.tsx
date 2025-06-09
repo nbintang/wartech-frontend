@@ -4,13 +4,13 @@ import RootDataTable from "@/features/admin/root/components/RootDataTable";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
 import { ScrollArea } from "../../../components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
 import { articleColumns } from "@/features/admin/root/components/articleColumns";
 import CommentsUsers from "@/features/admin/root/components/UsersComment";
 import UserChart from "@/features/admin/root/components/UsersChart";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
-import SkeletonDashboardCard from "./Skeletons";
+import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
+import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
 
 interface Feature {
   title: string;
@@ -77,7 +77,7 @@ export const dummyArticles: ArticleApiResponse[] = Array.from(
   })
 );
 
-const GridPages = () => {
+const RootDashboardPage = () => {
   const { data: articles, ...articlesRest } = useFetchProtectedData<
     PaginatedApiResponse<ArticleApiResponse>
   >({
@@ -155,4 +155,4 @@ const GridPages = () => {
   );
 };
 
-export default GridPages;
+export default RootDashboardPage;

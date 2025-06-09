@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import DashboardCardLayout from "../../components/DashboardCardLayout";
+import DashboardCardLayout from "./DashboardRootCardLayout";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
