@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, ArrowRightToLineIcon } from "lucide-react";
 import Link from "next/link";
 
-interface DashboardCardLayoutProps extends React.ComponentProps<typeof Card> {
+interface DashboardRootCardLayoutProps extends React.ComponentProps<typeof Card> {
   title: string;
   description?: string;
   redirectUrl?: string
   redirectName?: string
 }
-function DashboardCardLayout({
+function DashboardRootCardLayout({
   className,
   title,
   description,
@@ -28,7 +28,7 @@ function DashboardCardLayout({
   redirectUrl,
   redirectName = "See More",
   ...props
-}: DashboardCardLayoutProps) {
+}: DashboardRootCardLayoutProps) {
   return (
     <Card className={cn(" h-[400px] md:h-[500px]", className)} {...props}>
       <CardHeader className="flex-shrink-0 pb-4">
@@ -54,4 +54,4 @@ function DashboardCardLayout({
   );
 }
 
-export default DashboardCardLayout;
+export default DashboardRootCardLayout;

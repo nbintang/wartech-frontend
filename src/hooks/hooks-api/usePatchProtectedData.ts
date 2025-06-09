@@ -56,7 +56,7 @@ const usePatchProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
     unknown,
     z.infer<typeof formSchema>
   >({
-    mutationKey: [TAG],
+    mutationKey:typeof TAG === "string" ? [TAG, params] : TAG,
     mutationFn: async (values: z.infer<typeof formSchema>) : Promise<ApiResponse<TResponse>> => {
       const response = await axiosInstance.patch(
         `/protected${endpoint}`,

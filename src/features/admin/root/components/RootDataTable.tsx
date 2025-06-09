@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-import DashboardCardLayout from "./DashboardRootCardLayout";
+import DashboardRootCardLayout from "./DashboardRootCardLayout";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ import { ChevronDown } from "lucide-react";
 import useTable from "../../hooks/useTable";
 
 interface DataTableProps<TData, TValue>
-  extends React.ComponentProps<typeof DashboardCardLayout> {
+  extends React.ComponentProps<typeof DashboardRootCardLayout> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterSearch: string;
@@ -61,7 +61,7 @@ export default function RootDataTable<TData, TValue>({
     data,
   });
   return (
-    <DashboardCardLayout
+    <DashboardRootCardLayout
       title={title}
       redirectUrl={redirectUrl}
       description={description}
@@ -157,6 +157,6 @@ export default function RootDataTable<TData, TValue>({
         <ScrollBar orientation="horizontal" />
         <ScrollBar orientation="vertical" />
       </ScrollArea>
-    </DashboardCardLayout>
+    </DashboardRootCardLayout>
   );
 }

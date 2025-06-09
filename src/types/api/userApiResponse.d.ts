@@ -14,7 +14,7 @@ export type UsersApiResponse = {
   email: string;
   verified: boolean;
   image: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
+  role: "READER" | "REPORTER" | "ADMIN";
+  createdAt: Date;
+  updatedAt: Date;
 };

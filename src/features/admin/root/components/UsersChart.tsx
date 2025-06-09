@@ -12,7 +12,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import DashboardCardLayout from "./DashboardRootCardLayout";
+import DashboardRootCardLayout from "./DashboardRootCardLayout";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
 
 type UserChartProps = {
@@ -48,7 +48,7 @@ function UserChart({ users, redirectUrl }: UserChartProps) {
   }, [users]);
 
   return (
-    <DashboardCardLayout
+    <DashboardRootCardLayout
       redirectUrl={redirectUrl}
       title="User Growth"
       description="Jumlah user baru per bulan berdasarkan tanggal pendaftaran."
@@ -87,7 +87,7 @@ function UserChart({ users, redirectUrl }: UserChartProps) {
           />
         </LineChart>
       </ChartContainer>
-    </DashboardCardLayout>
+    </DashboardRootCardLayout>
   );
 }
 

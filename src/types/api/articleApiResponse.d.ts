@@ -5,8 +5,8 @@ export type ArticleApiResponse = {
   image: string;
   status: string;
   publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
   category: {
     id: string;
     name: string;

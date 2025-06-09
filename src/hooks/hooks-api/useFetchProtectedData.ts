@@ -8,10 +8,12 @@ type FetchParamsKey =
   | "comments"
   | "tags"
   | "categories";
+
 type FetchParamsProps<TResponse> = {
   TAG: FetchParamsKey;
   params?: any;
   endpoint: string;
+  id?: string;
 } & Omit<
   UseQueryOptions<TResponse>,
   "queryKey" | "queryFn" | "placeholderData"
@@ -20,13 +22,16 @@ type FetchParamsProps<TResponse> = {
 const useFetchProtectedData = <TResponse>({
   TAG,
   endpoint,
+  id,
   params,
   ...queryOptions
 }: FetchParamsProps<TResponse>) => {
   const result = useQuery({
-    queryKey: [TAG, params],
+    queryKey: [TAG,id],
     queryFn: async (): Promise<TResponse> => {
-      const res = await axiosInstance.get(`/protected${endpoint}`, { params });
+      const res = await axiosInstance.get(`/protected${endpoint}`, {
+        params,
+      });
       const data = res.data.data;
       return data as TResponse;
     },

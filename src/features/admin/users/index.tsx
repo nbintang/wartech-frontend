@@ -1,14 +1,14 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
-import UsersDataTable from "./components/UsersDataTable";
+import DataTable from "../components/DataTable";
 import usersPageColumn from "./components/usersColumn";
 import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
-import DashboardCardLayout from "../root/components/DashboardRootCardLayout";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
 import { useSearchParams } from "next/navigation";
 import useTable from "../hooks/useTable";
+import TableFilters from "../components/TableFIlters";
+import DashboardCardLayout from "../components/DashboardCardLayout";
 
 export default function UserDashboardPage() {
   const searchParams = useSearchParams();
@@ -26,7 +26,7 @@ export default function UserDashboardPage() {
       limit,
     },
   });
-  const { table } = useTable({
+  const { table } = useTable<UsersApiResponse>({
     columns: usersPageColumn,
     data: data?.items ?? [],
   });
@@ -35,19 +35,16 @@ export default function UserDashboardPage() {
   return (
     <>
       {usersRest.isLoading && (
-        <SkeletonDashboardCard className="md:h-[800px] min-h-screen md:mx-6 mx-3 my-6" />
+        <SkeletonDashboardCard className="md:h-[700px] min-h-screen  md:mx-6 mx-3 my-6" />
       )}
       {usersRest.isSuccess && data && (
         <DashboardCardLayout
           title="Users"
           description="List of all users in the system"
-          className="md:h-[800px] min-h-screen md:mx-6 mx-3 my-6"
+          className=" min-h-screen md:mx-6 mx-3 my-6"
         >
-          <UsersDataTable
-            data={data}
-            columns={usersPageColumn}
-            filterSearch={"email"}
-          />
+          <TableFilters filterSearch="email" table={table} />
+          <DataTable<UsersApiResponse> table={table} />
           <div className="flex justify-between w-full mt-3 px-3">
             <div className="text-sm text-muted-foreground">
               {selectedRowCount} of {visibleRowCountOnPage} Row(s) selected

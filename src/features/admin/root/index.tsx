@@ -25,57 +25,6 @@ interface Feature166Props {
   feature4: Feature;
 }
 
-const dummyUsers: UsersApiResponse[] = Array.from(
-  { length: 15 },
-  (_, index) => ({
-    id: `${index + 1}`,
-    name: `User ${index + 1}`,
-    email: `user${index + 1}@example.com`,
-    createdAt: new Date().toISOString(),
-    image: `https://dummyimage.com/600x400/000/fff&text=User+${index + 1}`,
-    updatedAt: new Date().toISOString(),
-    verified: index % 2 === 0,
-    role: index % 2 === 0 ? "ADMIN" : "USER",
-  })
-);
-
-export const dummyArticles: ArticleApiResponse[] = Array.from(
-  { length: 15 },
-  (_, i) => ({
-    id: `article-${i + 1}`,
-    title: `Article ${i + 1}`,
-    slug: `article-${i + 1}`,
-    image: `https://dummyimage.com/600x400/000/fff&text=Article+${i + 1}`,
-    status: i % 2 === 0 ? "PUBLISHED" : "DRAFT",
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    category: {
-      id: `category-${i + 1}`,
-      name: i % 2 === 0 ? "Technology" : "Health",
-      slug: i % 2 === 0 ? "technology" : "health",
-    },
-    author: {
-      id: "admin-id",
-      name: "Admin",
-    },
-    commentsCount: Math.floor(Math.random() * 10),
-    likesCount: Math.floor(Math.random() * 20),
-    tagsCount: 2,
-    tags: [
-      {
-        id: `tag-js-${i + 1}`,
-        name: "JavaScript",
-        slug: "javascript",
-      },
-      {
-        id: `tag-startup-${i + 1}`,
-        name: "Startup",
-        slug: "startup",
-      },
-    ],
-  })
-);
 
 const RootDashboardPage = () => {
   const { data: articles, ...articlesRest } = useFetchProtectedData<

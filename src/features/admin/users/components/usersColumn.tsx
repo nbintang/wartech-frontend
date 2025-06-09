@@ -18,6 +18,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import Link from "next/link";
+import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
 const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
   {
     id: "select",
@@ -96,6 +99,21 @@ const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
+      const setOpenDialog = useHandleWarningDialog(
+        (state) => state.setOpenDialog
+      );
+      const userId = row.original.id;
+      const { mutate } = useDeleteProtectedData({
+        TAG: "users",
+        endpoint: `/users/${userId}`,
+      });
+      const handleDelete = () =>
+        setOpenDialog({
+          title: `Delete User`,
+          description: "Are you sure you want to delete this user?",
+          isOpen: true,
+          onConfirm: () => mutate(),
+        });
       const user = row.original;
       return (
         <DropdownMenu>
@@ -110,13 +128,22 @@ const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
             <DropdownMenuItem
               onClick={() => (
                 navigator.clipboard.writeText(user.id),
-                toast.success("Copied user ID to clipboard")
+                toast.success("Copied user ID to clipboard", {
+                  position: "bottom-right",
+                })
               )}
             >
               Copy {user.name} ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View user details</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href={`/admin/dashboard/users/${user.id}`}>
+                View user details
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
+              Delete {user.name}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -1,8 +1,8 @@
 export interface CommentApiResponse {
   id: string;
   content: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
   isEdited: boolean;
   user: {
     id: string;

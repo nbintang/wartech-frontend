@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
 import SearchDashboardMenu from "@/components/SearchDashboardMenu";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import WarningDialog from "@/components/WarningDialog";
 export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -22,6 +23,7 @@ export default function Layout({
         </SidebarInset>
       </SidebarProvider>
       <SearchDashboardMenu />
+      <WarningDialog />
     </>
   );
 }

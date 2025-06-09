@@ -11,9 +11,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
-type IconProps = React.HTMLAttributes<SVGElement>;
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const ChevronRightIcon = (props: IconProps): React.JSX.Element => (
+type SvgIconProps = React.HTMLAttributes<SVGElement>;
+
+const DefaultSeparatorIcon = (props: SvgIconProps): React.JSX.Element => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -28,86 +30,90 @@ const ChevronRightIcon = (props: IconProps): React.JSX.Element => (
   </svg>
 );
 
-interface BaseProps extends React.ComponentProps<"nav"> {
-  pathname: string;
+interface DynamicBreadcrumbProps extends React.ComponentProps<typeof Breadcrumb> {
+  path: string;
   formatLabel?: (label: string) => string;
   separatorClassName?: string;
   excludeSegments?: string[];
+  appendSegments?: string[];
+  showSeparator?: boolean;
+  SeparatorIcon?: (props: SvgIconProps) => React.JSX.Element;
 }
-type DynamicBreadcrumbProps =
-  | (BaseProps & {
-      allowSeparator?: false;
-      Separator?: never;
-    })
-  | (BaseProps & {
-      allowSeparator?: true;
-      Separator?: (props: IconProps) => React.JSX.Element;
-    });
+
+/**
+ * 
+ * @example 
+ * how to use it
+ * <DynamicBreadcrumb path={pathname} />
+ * free to modify the options
+ * 
+ * @returns 
+ */
 
 const DynamicBreadcrumb = ({
-  pathname,
+  path,
   className,
-  formatLabel = (label) => label,
-  allowSeparator = true,
+  formatLabel = (label) =>
+    label.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()),
+  showSeparator = true,
   excludeSegments,
-  Separator = ChevronRightIcon,
+  appendSegments,
+  SeparatorIcon = DefaultSeparatorIcon,
   separatorClassName,
   ...props
 }: DynamicBreadcrumbProps) => {
-  const currentPath = pathname;
-  const pathSegments = currentPath.split("/").filter((x) => x && !excludeSegments?.includes(x));
-  // Limit to 3 segments, but you can change this number either
-  const maxSegments = 3;
-  const shouldShowEllipsis = pathSegments.length > maxSegments;
+  const isMobile = useIsMobile();
+
+  let pathSegments = path.split("/").filter(Boolean);
+  if (excludeSegments && excludeSegments.length > 0) {
+    pathSegments = pathSegments.filter((segment) => !excludeSegments.includes(segment));
+  }
+  if (appendSegments && appendSegments.length > 0) {
+    pathSegments = [...pathSegments, ...appendSegments];
+  }
+
+  const maxVisibleSegments = 2;
+  const shouldShowEllipsis = pathSegments.length > maxVisibleSegments && isMobile;
   return (
     <Breadcrumb className={cn(className)} {...props}>
       <BreadcrumbList>
         {pathSegments.map((segment, index) => {
-          const combinedPath = pathSegments.slice(0, index + 1).join("/");
-          const href = `/${combinedPath}`;
-          const isFirst = index === 0;
-          const isEllipsisPosition = shouldShowEllipsis && index === 1;
-          const isLast = index === pathSegments.length - 1;
-          const isLastBeforeEllipsis = shouldShowEllipsis && index === 2;
-          // last segment before ellipsis
-          const isVisible =
-            !shouldShowEllipsis || isFirst || isLast || isLastBeforeEllipsis;
-          /**
-           *    Format label (remove dashes, capitalize),
-           *   but you can customize this letter
-           *  whatever you want in the formatLabel prop.
-           */
-          const formattedLabel =
-            formatLabel?.(segment) ??
-            segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+          const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
+          const isFirstSegment = index === 0;
+          const isLastSegment = index === pathSegments.length - 1;
+          const isEllipsisInsertionPoint = shouldShowEllipsis && index === 1;
+          const isLastVisibleBeforeEllipsis =
+            shouldShowEllipsis && index === pathSegments.length - 2;
+
+          const isSegmentVisible =
+            !shouldShowEllipsis ||
+            isFirstSegment ||
+            isLastSegment ||
+            isLastVisibleBeforeEllipsis;
+
+          const formattedSegmentLabel = formatLabel(segment);
+
           return (
             <React.Fragment key={segment}>
-              {isEllipsisPosition ? (
+              {isEllipsisInsertionPoint ? (
                 <BreadcrumbItem>
                   <BreadcrumbEllipsis />
                 </BreadcrumbItem>
-              ) : isVisible ? (
+              ) : isSegmentVisible ? (
                 <BreadcrumbItem>
-                  {isLast ? (
-                    <BreadcrumbPage>{formattedLabel}</BreadcrumbPage>
+                  {isLastSegment ? (
+                    <BreadcrumbPage>{formattedSegmentLabel}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink href={href}>
-                      {formattedLabel}
+                      {formattedSegmentLabel}
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
               ) : null}
-              {allowSeparator && isVisible && !isLast && (
-                /**
-                 *   Separator Component by default is the DefaultSeparator component
-                 *    from shadcnUI Breadcrumb Component,
-                 *   but you can customize this component
-                 *  by passing in the Separator prop
-                 *   allowing flexibility of your own styles.
-                 *    example: <DynamicBreadcrumb Separator={YourCustomSeparator} />
-                 */
+
+              {showSeparator && isSegmentVisible && !isLastSegment && (
                 <BreadcrumbSeparator>
-                  <Separator
+                  <SeparatorIcon
                     role="presentation"
                     aria-hidden="true"
                     className={cn("w-3.5 h-3.5", separatorClassName)}
@@ -121,7 +127,5 @@ const DynamicBreadcrumb = ({
     </Breadcrumb>
   );
 };
-
-DynamicBreadcrumb.displayName = "DynamicBreadcrumb";
 
 export default DynamicBreadcrumb;
