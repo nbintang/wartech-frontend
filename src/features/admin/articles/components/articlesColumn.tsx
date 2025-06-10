@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
 import useHandleImageDialog from "@/hooks/useHandlerImageDialog";
 import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
@@ -18,7 +19,7 @@ import { format } from "date-fns";
 import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 
 const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
@@ -55,20 +56,29 @@ const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
       const setOpenDialog = useHandleImageDialog(
         (state) => state.setOpenDialog
       );
+         const [imageLoading, setImageLoading] = useState(true);
       return (
-        <Image
-          src={row.getValue("image")}
-          alt={row.getValue("title")}
-          width={60}
-          height={60}
-          className="rounded-md"
-          onClick={() =>
-            setOpenDialog({
-              isOpen: true,
-              image: row.getValue("image"),
-            })
-          }
-        />
+ <div className="relative w-[60px] h-[60px] overflow-hidden rounded-md">
+          {imageLoading && (
+            <Skeleton className="absolute top-0 left-0 w-full h-full" />
+          )}
+          <Image
+            src={row.getValue("image")}
+            alt={row.getValue("title")}
+            width={60}
+            height={60}
+            className={`rounded-md object-cover transition-opacity duration-300 ${
+              imageLoading ? "opacity-0" : "opacity-100"
+            }`}
+            onClick={() =>
+              setOpenDialog({
+                isOpen: true,
+                image: row.getValue("image"),
+              })
+            }
+            onLoadingComplete={() => setImageLoading(false)}
+          />
+        </div>
       );
     },
   },

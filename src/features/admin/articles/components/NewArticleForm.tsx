@@ -20,14 +20,15 @@ import { Input } from "@/components/ui/input";
 import { MinimalTiptapEditor } from "@/components/ui/minimal-tiptap";
 import { TagsInput } from "@/components/ui/tags-input";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { cn } from "@/lib/utils";
 import { CategoriesApiResponse } from "@/types/api/CategoriesApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Paperclip, Trash2Icon } from "lucide-react";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
+import { type Editor } from "@tiptap/react";
 const FileSvgDraw = () => {
   return (
     <>
@@ -125,6 +126,7 @@ const articleInputSchema = z.object({
 type ArticleInput = z.infer<typeof articleInputSchema>;
 
 const NewArticleForm = () => {
+  const editorRef = useRef<Editor | null>(null);
   const [value, setValue] = useState<string[]>([]);
   const form = useForm<ArticleInput>({
     resolver: zodResolver(articleInputSchema),
@@ -136,6 +138,15 @@ const NewArticleForm = () => {
       tagIds: [],
     },
   });
+  const handleCreate = useCallback(
+    ({ editor }: { editor: Editor }) => {
+      if (form.getValues("content") && editor.isEmpty) {
+        editor.commands.setContent(form.getValues("content"));
+      }
+      editorRef.current = editor;
+    },
+    [form]
+  );
   return (
     <Form {...form}>
       <form className="space-y-6">
@@ -231,13 +242,25 @@ const NewArticleForm = () => {
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-2xl">Content</FormLabel>
-              <FormDescription>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Incidunt mollitia inventore totam?
-              </FormDescription>
+              <FormLabel className="sr-only">Description</FormLabel>
               <FormControl>
-                <MinimalTiptapEditor className="min-h-screen" />
+                <MinimalTiptapEditor
+                  {...field}
+                  throttleDelay={0}
+                  className={cn("w-full min-h-screen", {
+                    "border-destructive focus-within:border-destructive":
+                      form.formState.errors.content,
+                  })}
+                  editorContentClassName="some-class"
+                  output="html"
+                  placeholder="Type your description here..."
+                  onCreate={handleCreate}
+                  autofocus={true}
+                  immediatelyRender={true}
+                  editable={true}
+                  injectCSS={true}
+                  editorClassName="focus:outline-none p-5"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

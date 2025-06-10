@@ -48,7 +48,6 @@ export default function SignInForm() {
           return "Signed in successfully";
         },
         error: (err) => {
-          loader.stop();
           return catchAxiosError(err) ?? "An unknown error occurred.";
         },
         finally: () => {

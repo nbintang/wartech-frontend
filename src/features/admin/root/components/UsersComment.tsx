@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
+import Link from "next/link";
 
 const CommentsUsers = ({ comments }: { comments: CommentApiResponse[] }) =>
   comments.map((comment) => (
@@ -31,7 +32,7 @@ const CommentsUsers = ({ comments }: { comments: CommentApiResponse[] }) =>
           </div>
           <div className="flex">
             <p className="text-muted-foreground text-xs">
-              Commented on {comment.article.title}
+              Commented on <Link className="underline text-blue-400" href={`/admin/dashboard/articles/${comment.article.id}`}>{comment.article.title}</Link>
             </p>
           </div>
           <div className="mt-1">

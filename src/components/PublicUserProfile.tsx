@@ -20,8 +20,9 @@ export default function PublicUserProfile(dataProps: {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-          <UserProfile {...dataProps}  />
-        
+       <div>
+           <UserProfile {...dataProps}  />
+       </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>

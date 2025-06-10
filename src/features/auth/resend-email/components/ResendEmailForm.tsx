@@ -22,10 +22,12 @@ const resendEmailSchema = z.object({
 });
 type ResendEmailForm = z.infer<typeof resendEmailSchema>;
 export default function ResendEmailForm({
+  isVerified,
   isVerifying,
   isSuccessVerifying,
   isTokenMissing,
 }: {
+  isVerified?: boolean,
   isVerifying?: boolean;
   isSuccessVerifying?: boolean;
   isTokenMissing: boolean;
@@ -46,7 +48,7 @@ export default function ResendEmailForm({
       second: 60,
     });
 
-  const isDisabled = isTimerStarted || isVerifying || isSuccessVerifying;
+  const isDisabled = isTimerStarted || isVerifying || isSuccessVerifying || isVerified 
   useEffect(() => {
     if ((form.formState.isSubmitSuccessful && isSuccess) || isError) {
       setShowSuccess(true);

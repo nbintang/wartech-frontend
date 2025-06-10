@@ -41,8 +41,9 @@ export default function AuthDialog() {
           useHandleAuthDialog.getState().closeDialog();
         }
       }}
+      
     >
-      <DialogContent className="max-w-md">
+      <DialogContent showCloseButton={false} className="max-w-md">
         <DialogHeader>
           <div
             className={cn(

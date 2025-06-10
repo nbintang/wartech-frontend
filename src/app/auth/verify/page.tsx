@@ -11,6 +11,8 @@ import catchAxiosError from "@/helpers/catchAxiosError";
 import AuthCard from "@/features/auth/components/AuthCardLayout";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 
 const getVerifyUser = async (token: string) =>
   await axiosInstance.post(`/auth/verify`, undefined, {
@@ -22,7 +24,13 @@ export default function VerifyUserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") as string;
-  
+  const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
+    TAG: "profile",
+    endpoint: "/users/profile",
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    retry: false,
+  });
   const { mutate, isPending, isSuccess } = useMutation({
     mutationKey: ["verify-user"],
     mutationFn: async () => {
@@ -44,9 +52,14 @@ export default function VerifyUserPage() {
     },
     retry: false,
   });
+useEffect(() => {
+  if (profile?.verified) {
+    router.push("/");
+  }
+}, [profile, router]);
 
   useEffect(() => {
-    if(token) mutate();
+    if (token) mutate();
   }, [token, mutate]);
 
   return (
@@ -61,7 +74,8 @@ export default function VerifyUserPage() {
           </div>
         </div>
         <ResendEmailForm
-        isTokenMissing={!token}
+          isVerified={profile?.verified}
+          isTokenMissing={!token}
           isVerifying={isPending}
           isSuccessVerifying={isSuccess}
         />

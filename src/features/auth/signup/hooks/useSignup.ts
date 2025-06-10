@@ -12,10 +12,12 @@ import Cookies from "js-cookie";
 import jwtDecode, { JwtUserPayload } from "@/helpers/jwtDecoder";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
+import { useProgress } from "@bprogress/next";
 
 const useSignUp = () => {
   const setOpenDialog = useHandleAuthDialog((state) => state.setOpenDialog);
   const { startTimer } = useTimerCountDown();
+  const loader = useProgress();
   const router = useRouter();
   const form = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
@@ -31,7 +33,7 @@ const useSignUp = () => {
 
   const signupMutation = useMutation({
     mutationFn: async (values: SignUpForm) => {
-      const { lastName, firstName,  ...rest } = values;
+      const { lastName, firstName, ...rest } = values;
       const name = `${firstName} ${lastName}`;
       await axiosInstance.post(`/auth/signup`, {
         name,
@@ -46,40 +48,32 @@ const useSignUp = () => {
       return userInfo;
     },
     onMutate: async () => {
+      loader.start();
       setOpenDialog("signup", {
         message: "Processing...",
         isLoading: true,
       });
     },
     onSuccess: async (data, variables) => {
-      try {
+      setOpenDialog("signup", {
+        message: "Creating your account...",
+        isLoading: true,
+        isSuccess: false,
+        isError: false,
+      });
+      if (!data.verified) {
+        startTimer(60);
         setOpenDialog("signup", {
-          message: "Creating your account...",
-          isLoading: true,
-          isSuccess: false,
-          isError: false,
-        });
-        if (!data.verified) {
-          startTimer(60);
-          setOpenDialog("signup", {
-            message: "Redirecting...",
-            isSuccess: true,
-            isLoading: false,
-          });
-          // Lanjutkan redirect
-          router.push("/auth/verify");
-          form.reset();
-        }
-        useHandleAuthDialog.getState().closeDialog();
-      } catch (error) {
-        const message = catchAxiosError(error) ?? "An unknown error occurred.";
-        setOpenDialog("signup", {
-          message,
-          isError: true,
+          message: "Redirecting...",
+          isSuccess: true,
           isLoading: false,
-          isSuccess: false,
         });
+        loader.stop();
+        // Lanjutkan redirect
+        router.push("/auth/verify");
+        form.reset();
       }
+      useHandleAuthDialog.getState().closeDialog();
     },
     onError: (error) => {
       const message = catchAxiosError(error) ?? "An unknown error occurred.";
@@ -89,6 +83,7 @@ const useSignUp = () => {
         isError: true,
       });
     },
+    onSettled: () => loader.stop(),
   });
 
   return {

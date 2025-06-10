@@ -102,7 +102,7 @@ const DynamicBreadcrumb = ({
               ) : isSegmentVisible ? (
                 <BreadcrumbItem>
                   {isLastSegment ? (
-                    <BreadcrumbPage>{formattedSegmentLabel}</BreadcrumbPage>
+                    <BreadcrumbPage >{formattedSegmentLabel}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink href={href}>
                       {formattedSegmentLabel}

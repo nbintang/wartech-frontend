@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+
+@source inline("ProseMirror");
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
