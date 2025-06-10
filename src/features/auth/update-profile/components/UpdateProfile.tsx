@@ -16,7 +16,7 @@ import {
   accept,
   FileWithPreview,
   ImageCropper,
-} from "@/components/ImageCropper";
+} from "@/components/ui/image-cropper";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import usePostImage from "@/hooks/hooks-api/usePostImage";
 import { zodResolver } from "@hookform/resolvers/zod";

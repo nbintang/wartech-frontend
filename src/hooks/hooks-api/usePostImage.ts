@@ -30,7 +30,7 @@ const usePostImage = ({
     ): Promise<UploadImageApiResponse> => {
       const formData = new FormData();
       const isBase64String = typeof file === "string";
-      if (!file) return { secureUrl: "", publicId: "", createdAt: "" };
+      if (!file) return { secureUrl: "", publicId: "", createdAt: null };
       let convertedFile: File;
       if (isBase64String) {
         convertedFile = base64ToFile(file, "image.png");
