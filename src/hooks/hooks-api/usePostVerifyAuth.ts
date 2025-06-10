@@ -2,7 +2,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import useTimerCountDown from "../useTimerCountDown";
-import { useHandleDialog } from "../useHandleDialog";
+import useHandleAuthDialog from "../useHandleAuthDialog";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
 }: PostAuthParamsProps<TFormSchema>) => {
   const { startTimer, timer, isTimerStarted } = useTimerCountDown();
   const router = useRouter();
-  const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
+  const setOpenDialog = useHandleAuthDialog((state) => state.setOpenDialog);
   const result = useMutation<
     AxiosResponse<any>,
     unknown,

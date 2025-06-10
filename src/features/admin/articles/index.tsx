@@ -1,31 +1,36 @@
 "use client";
+
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
-import { UsersApiResponse } from "@/types/api/UserApiResponse";
-import DataTable from "../components/DataTable";
-import usersPageColumn from "./components/usersColumn";
+import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
+import React from "react";
+import useTable from "../hooks/useTable";
+import articlePageColumn from "./components/articlesColumn";
 import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
+import DataTableFilters from "../components/DataTableFilters";
+import DataTable from "../components/DataTable";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
 import { useSearchParams } from "next/navigation";
-import useTable from "../hooks/useTable";
-import DataTableFilters from "../components/DataTableFilters";
-export default function UserDashboardPage() {
+import ArticleTableFilters from "./components/ArticleTableFilters";
+
+const ArticleDashboardPage = () => {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page") ?? "1");
   const limit = Number(searchParams.get("limit") ?? "10");
-  const { data, isLoading, isSuccess } = useFetchProtectedData<
-    PaginatedApiResponse<UsersApiResponse>
+  const { data, isSuccess, isLoading } = useFetchProtectedData<
+    PaginatedApiResponse<ArticleApiResponse>
   >({
-    endpoint: "/users",
-    TAG: "users",
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 20,
+    TAG: "articles",
+    endpoint: "/articles",
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
     params: {
+      "is-paginated": true,
       page,
       limit,
     },
   });
-  const { table } = useTable<UsersApiResponse>({
-    columns: usersPageColumn,
+  const { table } = useTable<ArticleApiResponse>({
+    columns: articlePageColumn,
     data: data?.items ?? [],
   });
   const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
@@ -33,12 +38,13 @@ export default function UserDashboardPage() {
   return (
     <>
       {isLoading && (
-        <SkeletonDashboardCard className="md:h-[500px]   " />
+        <SkeletonDashboardCard className="h-[700px]   " />
       )}
+
       {isSuccess && data && (
-   <>
-      <DataTableFilters<UsersApiResponse> filterSearch="email" table={table} />
-          <DataTable<UsersApiResponse> table={table} />
+        <>
+          <ArticleTableFilters filterSearch="title" table={table} />
+          <DataTable<ArticleApiResponse> table={table} />
           <div className="flex justify-between w-full mt-3 px-3">
             <div className="text-sm text-muted-foreground">
               {selectedRowCount} of {visibleRowCountOnPage} Row(s) selected
@@ -49,8 +55,10 @@ export default function UserDashboardPage() {
               totalCount={data?.meta.totalItems ?? 0}
             />
           </div>
-          </>
+        </>
       )}
     </>
   );
-}
+};
+
+export default ArticleDashboardPage;

@@ -1,3 +1,4 @@
+import ArticleImageDialog from "@/components/ArticleDialog";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
 import SearchDashboardMenu from "@/components/SearchDashboardMenu";
@@ -24,6 +25,7 @@ export default function Layout({
       </SidebarProvider>
       <SearchDashboardMenu />
       <WarningDialog />
+      <ArticleImageDialog />
     </>
   );
 }

@@ -26,12 +26,6 @@ export const userColumns: ColumnDef<UsersApiResponse>[] = [
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: "Created At",
-    cell: ({ row }) =>
-      format(new Date(row.original.createdAt), "hh:mm dd MMM yyyy"),
-  },
-  {
     accessorKey: "verified",
     header: "User Status",
     cell: ({ row }) => {

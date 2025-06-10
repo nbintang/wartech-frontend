@@ -8,17 +8,17 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useShallow } from "zustand/shallow";
-import { useHandleDialog } from "@/hooks/useHandleDialog";
+import useHandleAuthDialog from "@/hooks/useHandleAuthDialog";
 import { CheckCircle, Loader2, BadgeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../../../components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function DialogAuth() {
+export default function AuthDialog() {
   const router = useRouter();
   const { key, isOpen, setOpenDialog, message, isLoading, isSuccess, isError } =
-    useHandleDialog(
+    useHandleAuthDialog(
       useShallow((state) => ({
         key: state.key,
         isOpen: state.isOpen,
@@ -38,7 +38,7 @@ export default function DialogAuth() {
       open={isOpen}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          useHandleDialog.getState().closeDialog();
+          useHandleAuthDialog.getState().closeDialog();
         }
       }}
     >

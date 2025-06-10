@@ -10,18 +10,19 @@ import {
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 const SkeletonDashboardCard = ({ className }: { className?: string }) => (
-  <Card className={cn(" h-[400px] md:h-[500px]", className)}>
-    <CardHeader className="flex-shrink-0 pb-4">
-      <Skeleton className="h-6 w-1/12 " />
-      <Skeleton className="h-4 w-1/2 " />
+  <>
+    <CardHeader className="flex flex-row items-center justify-between mb-2 gap-4">
+      <Skeleton className="h-7 w-1/6 " />
+      <Skeleton className="h-7 w-1/12 " />
     </CardHeader>
-    <CardContent className=" py-2 w-full  flex-1 overflow-hidden">
+    <CardContent className={cn(" w-full  flex-1 ", className)}>
       <Skeleton className="h-full w-full " />
     </CardContent>
-    <CardFooter className="flex justify-end">
+    <CardFooter className="flex justify-between mt-3">
+      <Skeleton className="h-6 w-1/12 " />
       <Skeleton className="h-6 w-1/12 " />
     </CardFooter>
-  </Card>
+  </>
 );
 
 export default SkeletonDashboardCard;

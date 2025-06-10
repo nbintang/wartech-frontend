@@ -5,7 +5,7 @@ import { useController, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
-import { useHandleDialog } from "@/hooks/useHandleDialog";
+import useHandleAuthDialog from "@/hooks/useHandleAuthDialog";
 import { useMutation } from "@tanstack/react-query";
 import { signin } from "../../signin/service/signin";
 import Cookies from "js-cookie";
@@ -14,7 +14,7 @@ import catchAxiosError from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
 
 const useSignUp = () => {
-  const setOpenDialog = useHandleDialog((state) => state.setOpenDialog);
+  const setOpenDialog = useHandleAuthDialog((state) => state.setOpenDialog);
   const { startTimer } = useTimerCountDown();
   const router = useRouter();
   const form = useForm<SignUpForm>({
@@ -70,7 +70,7 @@ const useSignUp = () => {
           router.push("/auth/verify");
           form.reset();
         }
-        useHandleDialog.getState().closeDialog();
+        useHandleAuthDialog.getState().closeDialog();
       } catch (error) {
         const message = catchAxiosError(error) ?? "An unknown error occurred.";
         setOpenDialog("signup", {

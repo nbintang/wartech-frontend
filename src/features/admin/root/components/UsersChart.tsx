@@ -48,11 +48,7 @@ function UserChart({ users, redirectUrl }: UserChartProps) {
   }, [users]);
 
   return (
-    <DashboardRootCardLayout
-      redirectUrl={redirectUrl}
-      title="User Growth"
-      description="Jumlah user baru per bulan berdasarkan tanggal pendaftaran."
-    >
+
       <ChartContainer
         config={chartConfig}
         className="aspect-auto h-[250px] min-w-[200px] w-full"
@@ -87,7 +83,6 @@ function UserChart({ users, redirectUrl }: UserChartProps) {
           />
         </LineChart>
       </ChartContainer>
-    </DashboardRootCardLayout>
   );
 }
 

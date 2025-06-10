@@ -1,10 +1,10 @@
 
-import RootDashboardPage from "@/features/admin/root";
+import RootListDashboardPage from "@/features/admin/root";
 
 export default function Page() {
   return (
-    <section className="py-5 px-3">
-      <div className=" container">
+    <section className="py-5 px-3 ">
+      <div className=" container mx-auto">
         <div className="mb-3 ml-4 max-w-lg">
           <h1 className="text-4xl font-semibold">Recent Activities</h1>
           <p className="text-muted-foreground text-sm mt-2">
@@ -15,7 +15,7 @@ export default function Page() {
         </div>
         <div className="relative flex justify-center">
           <div className="border-muted relative flex w-full space-y-3 py-3  flex-col mx-auto ">
-            <RootDashboardPage />
+            <RootListDashboardPage />
           </div>
         </div>
       </div>

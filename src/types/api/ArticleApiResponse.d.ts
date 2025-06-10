@@ -3,7 +3,7 @@ export type ArticleApiResponse = {
   title: string;
   slug: string;
   image: string;
-  status: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   publishedAt: string;
   createdAt: Date;
   updatedAt: Date;

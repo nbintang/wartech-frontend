@@ -61,28 +61,21 @@ const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: "Created At",
-    cell: ({ row }) =>
-      format(new Date(row.original.createdAt), "hh:mm dd MMM yyyy"),
-  },
-  {
     accessorKey: "verified",
     header: "User Status",
     cell: ({ row }) => {
       return (
         <Badge
-          variant="secondary"
-          className={cn(
+          variant={
             row.original.verified
-              ? "bg-blue-500 text-white dark:bg-blue-600"
-              : "bg-destructive text-white dark:bg-destructive/60"
-          )}
+              ? "default"
+              : "destructive"
+          }
         >
           {row.original.verified ? (
             <>
-              <BadgeCheckIcon className="mr-2 size-4" />
-              Verified
+              <BadgeCheckIcon className=" size-4" />
+             <p> Verified</p>
             </>
           ) : (
             "Unverified"
@@ -102,10 +95,10 @@ const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
       const setOpenDialog = useHandleWarningDialog(
         (state) => state.setOpenDialog
       );
-      const userId = row.original.id;
+      const user = row.original;
       const { mutate } = useDeleteProtectedData({
         TAG: "users",
-        endpoint: `/users/${userId}`,
+        endpoint: `/users/${user.id}`,
       });
       const handleDelete = () =>
         setOpenDialog({
@@ -114,7 +107,7 @@ const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
           isOpen: true,
           onConfirm: () => mutate(),
         });
-      const user = row.original;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -136,12 +129,15 @@ const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
               Copy {user.name} ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <Link href={`/admin/dashboard/users/${user.id}`}>
                 View user details
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={handleDelete}
+            >
               Delete {user.name}
             </DropdownMenuItem>
           </DropdownMenuContent>

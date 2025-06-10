@@ -1,8 +1,7 @@
 "use client";
 import { userColumns } from "@/features/admin/root/components/userColumns";
-import RootDataTable from "@/features/admin/root/components/RootDataTable";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
-import { ScrollArea } from "../../../components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { articleColumns } from "@/features/admin/root/components/articleColumns";
 import CommentsUsers from "@/features/admin/root/components/UsersComment";
@@ -11,22 +10,13 @@ import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
 import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
+import DashboardRootCardLayout from "./components/DashboardRootCardLayout";
+import DataTable from "../components/DataTable";
+import useTable from "../hooks/useTable";
+import DashboardCardWrapper from "./components/DashboardCardWrapper";
+import DataTableFilters from "../components/DataTableFilters";
 
-interface Feature {
-  title: string;
-  description: string;
-  image: string;
-}
-
-interface Feature166Props {
-  feature1: Feature;
-  feature2: Feature;
-  feature3: Feature;
-  feature4: Feature;
-}
-
-
-const RootDashboardPage = () => {
+const RootListDashboardPage = () => {
   const { data: articles, ...articlesRest } = useFetchProtectedData<
     PaginatedApiResponse<ArticleApiResponse>
   >({
@@ -58,50 +48,81 @@ const RootDashboardPage = () => {
     gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,
   });
+  const { table: userTables } = useTable<UsersApiResponse>({
+    columns: userColumns,
+    data: users?.items || [],
+  });
+  const { table: articleTables } = useTable<ArticleApiResponse>({
+    columns: articleColumns,
+    data: articles?.items || [],
+  });
   return (
     <>
-      {(articlesRest.isLoading || articlesRest.isFetching) && (
-        <SkeletonDashboardCard />
-      )}
-      {articlesRest.isSuccess && (
-        <RootDataTable
-          redirectUrl="/articles"
+      <DashboardCardWrapper
+        isLoading={articlesRest.isLoading}
+        isFetching={articlesRest.isFetching}
+        isSuccess={articlesRest.isSuccess}
+        title="Articles"
+        description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
+        redirectUrl="/articles"
+      >
+        <DataTableFilters<ArticleApiResponse>
+          table={articleTables}
           filterSearch="title"
-          title="Articles"
-          description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita laboriosam, odit molestias, eligendi, recusanda"
-          columns={articleColumns}
-          data={articles?.items || []}
         />
-      )}
-      {(commentsRest.isLoading || commentsRest.isFetching) && (
-        <SkeletonDashboardCard />
-      )}
+        <ScrollArea className="h-full w-full">
+          <DataTable<ArticleApiResponse> table={articleTables} />
+          <ScrollBar orientation="vertical" />
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </DashboardCardWrapper>
 
-      {commentsRest.isSuccess && (
-        <CommentsUsers
-          redirectUrl="/articles"
-          comments={comments?.items || []}
+      <DashboardCardWrapper
+        isLoading={commentsRest.isLoading}
+        isFetching={commentsRest.isFetching}
+        isSuccess={commentsRest.isSuccess}
+        title="Comments"
+        description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
+        redirectUrl="/articles"
+      >
+        <ScrollArea className="h-full w-full">
+          <CommentsUsers comments={comments?.items || []} />
+          <ScrollBar orientation="vertical" />
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </DashboardCardWrapper>
+
+      <DashboardCardWrapper
+        isLoading={usersRest.isLoading}
+        isFetching={usersRest.isFetching}
+        isSuccess={usersRest.isSuccess}
+        title="Users Growth"
+        description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
+        redirectUrl="/users"
+      >
+        <UserChart users={users?.items || []} redirectUrl="/users" />
+      </DashboardCardWrapper>
+
+      <DashboardCardWrapper
+        isLoading={usersRest.isLoading}
+        isFetching={usersRest.isFetching}
+        isSuccess={usersRest.isSuccess}
+        title="Users"
+        description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
+        redirectUrl="/users"
+      >
+        <DataTableFilters<UsersApiResponse>
+          table={userTables}
+          filterSearch="email"
         />
-      )}
-
-      {(usersRest.isLoading || usersRest.isFetching) && (
-        <SkeletonDashboardCard />
-      )}
-      {usersRest.isSuccess && (
-        <>
-          <UserChart users={users?.items || []} redirectUrl={"/users"} />
-          <RootDataTable
-            redirectUrl="/users"
-            filterSearch="name"
-            title="Users"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita laboriosam, odit molestias, eligendi, recusanda"
-            columns={userColumns}
-            data={users?.items || []}
-          />
-        </>
-      )}
+        <ScrollArea className="h-full w-full">
+          <DataTable<UsersApiResponse> table={userTables} />
+          <ScrollBar orientation="vertical" />
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </DashboardCardWrapper>
     </>
   );
 };
 
-export default RootDashboardPage;
+export default RootListDashboardPage;

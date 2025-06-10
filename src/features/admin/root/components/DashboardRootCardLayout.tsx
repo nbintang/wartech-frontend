@@ -6,12 +6,10 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRightIcon, ArrowRightToLineIcon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 
 interface DashboardRootCardLayoutProps extends React.ComponentProps<typeof Card> {
@@ -36,11 +34,8 @@ function DashboardRootCardLayout({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className=" py-2 w-full  flex-1 overflow-hidden">
-        <ScrollArea className="h-full w-full">
+    
           {children}
-          <ScrollBar orientation="vertical" />
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
       </CardContent>
       <CardFooter className="flex justify-end">
         <Button className="" variant="ghost" asChild>

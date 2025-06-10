@@ -13,6 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useProgress } from '@bprogress/next';
 
 export interface PaginationWithLinksProps {
   pageSizeSelectOptions?: {
@@ -49,7 +50,6 @@ export function PaginationWithLinks({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const totalPageCount = Math.ceil(totalCount / pageSize);
 
   const buildLink = useCallback(
@@ -60,6 +60,7 @@ export function PaginationWithLinks({
       newSearchParams.set(key, String(newPage));
       return `${pathname}?${newSearchParams.toString()}`;
     },
+
     [searchParams, pathname],
   );
 
