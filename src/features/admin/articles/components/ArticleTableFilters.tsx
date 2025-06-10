@@ -32,7 +32,7 @@ const ArticleTableFilters = <TData,>({
 
   <div className="flex  items-center gap-2">
     <Button variant="default" asChild>
-      <Link href="/admin/dashboard/articles/new">New Article</Link>
+      <Link href="/admin/dashboard/articles/new-articles">New Article</Link>
     </Button>
 
     <DropdownMenu>
