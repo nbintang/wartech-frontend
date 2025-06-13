@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MinimalTiptapEditor } from "@/components/ui/minimal-tiptap";
-import { TagsInput } from "@/components/ui/tags-input";
+import AsyncTagsInput from "@/components/ui/async-tags-input";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
 import { CategoriesApiResponse } from "@/types/api/CategoriesApiResponse";
@@ -29,6 +29,7 @@ import React, { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { type Editor } from "@tiptap/react";
+import { DropzoneOptions } from "react-dropzone";
 const FileSvgDraw = () => {
   return (
     <>
@@ -62,10 +63,9 @@ const FileSvgDraw = () => {
 const FileUploaderTest = () => {
   const [files, setFiles] = useState<File[] | null>(null);
   const [images, setImages] = useState<string[]>([]);
-  const dropZoneConfig = {
-    maxFiles: 2,
+  const dropZoneConfig: DropzoneOptions = {
     maxSize: 1024 * 1024 * 4,
-    multiple: true,
+    multiple: false,
   };
   return (
     <FileUploader
@@ -78,7 +78,7 @@ const FileUploaderTest = () => {
         {files && files.length > 0 ? (
           files.map((file, i) => {
             return (
-              <div className=" z-30">
+              <div key={i} className=" z-30">
                 <Image
                   src={URL.createObjectURL(file)}
                   alt=""
@@ -126,6 +126,43 @@ const articleInputSchema = z.object({
 type ArticleInput = z.infer<typeof articleInputSchema>;
 
 const NewArticleForm = () => {
+   const [tags, setTags] = useState(['React', 'JavaScript']);
+  const [apiTags, setApiTags] = useState(['Node.js']);
+  
+  // Sample suggestions for static demo
+  const suggestions = [
+    'React', 'Vue', 'Angular', 'Svelte',
+    'JavaScript', 'TypeScript', 'Python', 'Java',
+    'Node.js', 'Express', 'Next.js', 'Nuxt.js',
+    'CSS', 'Tailwind', 'Bootstrap', 'Sass'
+  ];
+
+  // Mock API function that simulates fetching suggestions
+  const fetchSuggestions = async (query) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Mock API responses based on query
+    const mockApiData = [
+      'React Hooks', 'React Router', 'React Native', 'React Testing',
+      'Vue 3', 'Vue Router', 'Vue Composition API', 'Vuex',
+      'Angular Material', 'Angular CLI', 'Angular Universal',
+      'JavaScript ES6+', 'JavaScript Promises', 'JavaScript Async/Await',
+      'TypeScript Generics', 'TypeScript Interfaces', 'TypeScript Decorators',
+      'Node.js Express', 'Node.js MongoDB', 'Node.js Authentication',
+      'Python Django', 'Python Flask', 'Python FastAPI',
+      'CSS Grid', 'CSS Flexbox', 'CSS Animations',
+      'Docker Containers', 'Docker Compose', 'Docker Swarm',
+      'AWS Lambda', 'AWS S3', 'AWS EC2',
+      'MongoDB Atlas', 'PostgreSQL', 'MySQL',
+      'Redis Cache', 'GraphQL', 'REST API'
+    ];
+
+    // Filter based on query
+    return mockApiData.filter(item => 
+      item.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 8); // Limit to 8 results
+  };
   const editorRef = useRef<Editor | null>(null);
   const [value, setValue] = useState<string[]>([]);
   const form = useForm<ArticleInput>({
@@ -196,10 +233,13 @@ const NewArticleForm = () => {
                 Incidunt mollitia inventore totam?
               </FormDescription>
               <FormControl>
-                <TagsInput
-                  value={value}
-                  onValueChange={setValue}
-                  placeholder="Enter anything"
+                <AsyncTagsInput
+                  value={apiTags}
+                  onChange={setApiTags}
+                  onSearch={fetchSuggestions}
+                  debounceDelay={300}
+                  placeholder="Type to search API suggestions..."
+                  maxItems={15}
                   className="w-full"
                 />
               </FormControl>

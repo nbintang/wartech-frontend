@@ -70,7 +70,7 @@ export const FileUploader = ({
   ...props
 }: FileUploaderProps) => {
   const [isFileTooBig, setIsFileTooBig] = useState(false);
-  const [isLOF, setIsLOF] = useState(false);
+  // const [isLOF, setIsLOF] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const {
     accept = {
@@ -80,10 +80,10 @@ export const FileUploader = ({
     maxSize = 4 * 1024 * 1024,
     multiple = true,
   } = dropzoneOptions;
-
+  
+  const isLOF = (value?.length ?? 0) >= maxFiles;
   const reSelectAll = maxFiles === 1 ? true : reSelect;
   const direction: DirectionOptions = dir === "rtl" ? "rtl" : "ltr";
-
   const removeFileFromSet = useCallback(
     (i: number) => {
       if (!value) return;
@@ -191,14 +191,14 @@ export const FileUploader = ({
     [reSelectAll, value]
   );
 
-  useEffect(() => {
-    if (!value) return;
-    if (value.length === maxFiles) {
-      setIsLOF(true);
-      return;
-    }
-    setIsLOF(false);
-  }, [value, maxFiles]);
+  // useEffect(() => {
+  //   if (!value) return;
+  //   if (value.length === maxFiles) {
+  //     setIsLOF(true);
+  //     return;
+  //   }
+  //   setIsLOF(false);
+  // }, [value, maxFiles]);
 
   const opts = dropzoneOptions
     ? dropzoneOptions
