@@ -17,7 +17,7 @@ import DashboardCardWrapper from "./components/DashboardCardWrapper";
 import DataTableFilters from "../components/DataTableFilters";
 
 const RootListDashboardPage = () => {
-  const { data: articles, ...articlesRest } = useFetchProtectedData<
+  const { data: articles, ...articlesQuery } = useFetchProtectedData<
     PaginatedApiResponse<ArticleApiResponse>
   >({
     endpoint: "/articles",
@@ -30,7 +30,7 @@ const RootListDashboardPage = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { data: users, ...usersRest } = useFetchProtectedData<
+  const { data: users, ...usersQuery } = useFetchProtectedData<
     PaginatedApiResponse<UsersApiResponse>
   >({
     endpoint: "/users",
@@ -39,7 +39,7 @@ const RootListDashboardPage = () => {
     gcTime: 1000 * 60 * 20,
   });
 
-  const { data: comments, ...commentsRest } = useFetchProtectedData<
+  const { data: comments, ...commentsQuery } = useFetchProtectedData<
     PaginatedApiResponse<CommentApiResponse>
   >({
     endpoint: "/comments",
@@ -59,9 +59,9 @@ const RootListDashboardPage = () => {
   return (
     <>
       <DashboardCardWrapper
-        isLoading={articlesRest.isLoading}
-        isFetching={articlesRest.isFetching}
-        isSuccess={articlesRest.isSuccess}
+        isLoading={articlesQuery.isLoading}
+        isFetching={articlesQuery.isFetching}
+        isSuccess={articlesQuery.isSuccess}
         title="Articles"
         description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
         redirectUrl="/articles"
@@ -78,9 +78,9 @@ const RootListDashboardPage = () => {
       </DashboardCardWrapper>
 
       <DashboardCardWrapper
-        isLoading={commentsRest.isLoading}
-        isFetching={commentsRest.isFetching}
-        isSuccess={commentsRest.isSuccess}
+        isLoading={commentsQuery.isLoading}
+        isFetching={commentsQuery.isFetching}
+        isSuccess={commentsQuery.isSuccess}
         title="Comments"
         description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
         redirectUrl="/articles"
@@ -93,9 +93,9 @@ const RootListDashboardPage = () => {
       </DashboardCardWrapper>
 
       <DashboardCardWrapper
-        isLoading={usersRest.isLoading}
-        isFetching={usersRest.isFetching}
-        isSuccess={usersRest.isSuccess}
+        isLoading={usersQuery.isLoading}
+        isFetching={usersQuery.isFetching}
+        isSuccess={usersQuery.isSuccess}
         title="Users Growth"
         description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
         redirectUrl="/users"
@@ -104,9 +104,9 @@ const RootListDashboardPage = () => {
       </DashboardCardWrapper>
 
       <DashboardCardWrapper
-        isLoading={usersRest.isLoading}
-        isFetching={usersRest.isFetching}
-        isSuccess={usersRest.isSuccess}
+        isLoading={usersQuery.isLoading}
+        isFetching={usersQuery.isFetching}
+        isSuccess={usersQuery.isSuccess}
         title="Users"
         description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
         redirectUrl="/users"

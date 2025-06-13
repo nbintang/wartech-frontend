@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { type SignInForm, signInSchema } from "../schema/signInSchema";
 import jwtDecode from "@/helpers/jwtDecoder";
-import { signin } from "../service/signin";
+import postSignin from "../../../../helpers/postSignin";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { useEffect, useState } from "react";
 import { useProgress } from "@bprogress/next";
@@ -35,7 +35,7 @@ export default function SignInForm() {
   const loader = useProgress();
   const onSubmit = async (values: SignInForm) =>
     toast
-      .promise(signin(values), {
+      .promise(postSignin(values), {
         loading: "Signing in...",
         success: (accessToken) => {
           Cookies.set("accessToken", accessToken);

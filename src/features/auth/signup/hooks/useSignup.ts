@@ -7,7 +7,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
 import useHandleAuthDialog from "@/hooks/useHandleAuthDialog";
 import { useMutation } from "@tanstack/react-query";
-import { signin } from "../../signin/service/signin";
+import postSignin from "../../../../helpers/postSignin";
 import Cookies from "js-cookie";
 import jwtDecode, { JwtUserPayload } from "@/helpers/jwtDecoder";
 import catchAxiosError from "@/helpers/catchAxiosError";
@@ -39,7 +39,7 @@ const useSignUp = () => {
         name,
         ...rest,
       });
-      const accessToken = await signin({
+      const accessToken = await postSignin({
         email: values.email,
         password: values.password,
       });

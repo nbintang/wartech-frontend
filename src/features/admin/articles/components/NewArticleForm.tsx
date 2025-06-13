@@ -18,15 +18,9 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
 import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CloudUpload,
-  LoaderCircleIcon,
-  Paperclip,
-  Trash2Icon,
-  X,
-} from "lucide-react";
+import { CloudUpload, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { type Editor } from "@tiptap/react";
@@ -38,17 +32,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { validate as validateUUID } from "uuid";
-const fetchCategories = async (name?: string) =>
-  (await axiosInstance.get(`/protected/categories`, { params: { name } })).data
-    .data.items as CategorysApiResponse[];
+import fetchSearchedData from "@/helpers/fetchSearchData";
 
-const fetchTags = async (name?: string) =>
-  (
-    await axiosInstance.get("/protected/tags", { params: { name } })
-  ).data.data.items.map((item: TagApiResponse) => ({
-    id: item.id,
-    label: item.name,
-  }));
 const articleInputSchema = z.object({
   title: z
     .string()
@@ -72,6 +57,7 @@ type ArticleInput = z.infer<typeof articleInputSchema>;
 const NewArticleForm = () => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
   const editorRef = useRef<Editor | null>(null);
+
   const form = useForm<ArticleInput>({
     resolver: zodResolver(articleInputSchema),
     defaultValues: {
@@ -86,6 +72,7 @@ const NewArticleForm = () => {
     maxSize: 1024 * 1024 * 4,
     multiple: false,
   };
+
   const handleCreate = useCallback(
     ({ editor }: { editor: Editor }) => {
       if (form.getValues("content") && editor.isEmpty) {
@@ -100,8 +87,12 @@ const NewArticleForm = () => {
     const content = editorRef.current?.getHTML() ?? "";
     const existedDataTags = tags.filter((tag) => validateUUID(tag.id));
     const newTags = tags.filter((tag) => !validateUUID(tag.id));
-
-    console.log(rest, content, existedDataTags, newTags);
+    const dataToArticles = {
+      ...rest,
+      content,
+      tags: [...existedDataTags],
+    };
+    console.log(dataToArticles)
   };
   return (
     <Form {...form}>
@@ -145,8 +136,10 @@ const NewArticleForm = () => {
                 >
                   <FileInput
                     className={cn(
-                      "h-80 outline-1 overflow-hidden bg-accent/50 outline-white flex items-center justify-center",
-                      files && files.length > 0 ? "" : "outline-dashed"
+                      "h-80  overflow-hidden bg-accent/50 outline-white flex items-center justify-center",
+                      files && files.length > 0
+                        ? ""
+                        : "outline-1 outline-dashed"
                     )}
                   >
                     {files && files.length > 0 ? (
@@ -215,7 +208,11 @@ const NewArticleForm = () => {
                 </FormDescription>
                 <FormControl>
                   <AsyncSelect<CategorysApiResponse>
-                    fetcher={fetchCategories}
+                    fetcher={(query) =>
+                      fetchSearchedData<CategorysApiResponse>("/categories", {
+                        name: query,
+                      })
+                    }
                     renderOption={(item) => <div>{item.name}</div>}
                     getOptionValue={(item) => item.id}
                     getDisplayValue={(item) => <div>{item.name}</div>}
@@ -249,7 +246,16 @@ const NewArticleForm = () => {
                 </FormDescription>
                 <FormControl>
                   <AsyncTagsInput
-                    fecther={fetchTags}
+                    fecther={(query) =>
+                      fetchSearchedData<TagApiResponse>("/tags", {
+                        name: query,
+                      }).then((res) =>
+                        res.map((tag) => ({
+                          id: tag.id,
+                          label: tag.name,
+                        }))
+                      )
+                    }
                     debounceDelay={300}
                     placeholder="Search or create a tag..."
                     maxItems={15}
@@ -294,7 +300,11 @@ const NewArticleForm = () => {
             </>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <div className="flex justify-end">
+          <Button type="submit" className="md:mt-5 min-w-full md:min-w-xs">
+            Submit
+          </Button>
+        </div>
       </form>
     </Form>
   );
