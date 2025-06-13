@@ -1,10 +1,7 @@
 "use client";
 import { AsyncSelect } from "@/components/ui/async-select";
 import { Button } from "@/components/ui/button";
-import {
-  FileInput,
-  FileUploader,
-} from "@/components/ui/file-upload";
+import { FileInput, FileUploader } from "@/components/ui/file-upload";
 import {
   Form,
   FormControl,
@@ -21,7 +18,13 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
 import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CloudUpload, Paperclip, Trash2Icon, X } from "lucide-react";
+import {
+  CloudUpload,
+  LoaderCircleIcon,
+  Paperclip,
+  Trash2Icon,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,7 +37,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
+import { validate as validateUUID } from "uuid";
 const fetchCategories = async (name?: string) =>
   (await axiosInstance.get(`/protected/categories`, { params: { name } })).data
     .data.items as CategorysApiResponse[];
@@ -42,7 +45,10 @@ const fetchCategories = async (name?: string) =>
 const fetchTags = async (name?: string) =>
   (
     await axiosInstance.get("/protected/tags", { params: { name } })
-  ).data.data.items.map((item: TagApiResponse) => item.name);
+  ).data.data.items.map((item: TagApiResponse) => ({
+    id: item.id,
+    label: item.name,
+  }));
 const articleInputSchema = z.object({
   title: z
     .string()
@@ -54,18 +60,17 @@ const articleInputSchema = z.object({
   content: z.string().min(1, { message: "Content is required." }),
   image: z.instanceof(File).optional(),
   categoryId: z.string().uuid(),
-  tagIds: z.array(z.string()).optional(),
+  tags: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+    })
+  ),
 });
-
 type ArticleInput = z.infer<typeof articleInputSchema>;
 
 const NewArticleForm = () => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
-  const dropZoneConfig: DropzoneOptions = {
-    maxSize: 1024 * 1024 * 4,
-    multiple: false,
-  };
-  // Mock API function that simulates fetching suggestions
   const editorRef = useRef<Editor | null>(null);
   const form = useForm<ArticleInput>({
     resolver: zodResolver(articleInputSchema),
@@ -74,9 +79,13 @@ const NewArticleForm = () => {
       content: "",
       categoryId: "",
       image: undefined,
-      tagIds: [],
+      tags: [],
     },
   });
+  const dropZoneConfig: DropzoneOptions = {
+    maxSize: 1024 * 1024 * 4,
+    multiple: false,
+  };
   const handleCreate = useCallback(
     ({ editor }: { editor: Editor }) => {
       if (form.getValues("content") && editor.isEmpty) {
@@ -87,9 +96,12 @@ const NewArticleForm = () => {
     [form]
   );
   const onSubmit = async (data: ArticleInput) => {
+    const { tags, ...rest } = data;
     const content = editorRef.current?.getHTML() ?? "";
-    const { image, ...rest } = data;
-    console.log(rest, content, files);
+    const existedDataTags = tags.filter((tag) => validateUUID(tag.id));
+    const newTags = tags.filter((tag) => !validateUUID(tag.id));
+
+    console.log(rest, content, existedDataTags, newTags);
   };
   return (
     <Form {...form}>
@@ -114,7 +126,7 @@ const NewArticleForm = () => {
         <FormField
           control={form.control}
           name="image"
-          render={({  }) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel className="text-2xl">Image</FormLabel>
               <FormDescription>
@@ -124,11 +136,19 @@ const NewArticleForm = () => {
               <FormControl>
                 <FileUploader
                   value={files}
-                  onValueChange={setFiles}
+                  onValueChange={(newFiles) => {
+                    setFiles(newFiles);
+                    field.onChange(newFiles?.[0]);
+                  }}
                   dropzoneOptions={dropZoneConfig}
                   className="relative  rounded-lg p-2"
                 >
-                  <FileInput className={cn("h-80 outline-1 overflow-hidden bg-accent/50 outline-white flex items-center justify-center", files && files.length > 0 ? "" : "outline-dashed")}>
+                  <FileInput
+                    className={cn(
+                      "h-80 outline-1 overflow-hidden bg-accent/50 outline-white flex items-center justify-center",
+                      files && files.length > 0 ? "" : "outline-dashed"
+                    )}
+                  >
                     {files && files.length > 0 ? (
                       files.map((file, i) => {
                         return (
@@ -182,7 +202,7 @@ const NewArticleForm = () => {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-3">
           <FormField
             control={form.control}
             name="categoryId"
@@ -200,8 +220,15 @@ const NewArticleForm = () => {
                     getOptionValue={(item) => item.id}
                     getDisplayValue={(item) => <div>{item.name}</div>}
                     label="Select Categories"
-                    notFound={<div>Not found</div>}
                     width={"100%"}
+                    loadingSkeleton={
+                      <div className="grid place-items-center">
+                        <div className="text-muted-foreground  flex items-center gap-2 py-5">
+                          <LoaderCircleIcon className="animate-spin size-4" />
+                          <p className="text-sm"> Loading...</p>
+                        </div>
+                      </div>
+                    }
                     triggerClassName={cn("text-muted-foreground font-light")}
                     {...field}
                   />
@@ -212,7 +239,7 @@ const NewArticleForm = () => {
           />
           <FormField
             control={form.control}
-            name="tagIds"
+            name="tags"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xl">Tags</FormLabel>
@@ -222,12 +249,11 @@ const NewArticleForm = () => {
                 </FormDescription>
                 <FormControl>
                   <AsyncTagsInput
-                    value={field.value || []}
-                    onChange={field.onChange}
                     fecther={fetchTags}
                     debounceDelay={300}
                     placeholder="Search or create a tag..."
                     maxItems={15}
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -263,6 +289,7 @@ const NewArticleForm = () => {
                 editable={true}
                 injectCSS={true}
                 editorClassName="focus:outline-none p-5"
+                {...field}
               />
             </>
           )}

@@ -20,14 +20,20 @@ import {
   PopoverAnchor,
 } from "@/components/ui/popover"; // Import Popover components
 
+// Define the structure for a tag object
+interface Tag {
+  id: string;
+  label: string;
+}
+
 interface AsyncTagInputProps {
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: Tag[]; // Changed to Tag[]
+  onChange: (value: Tag[]) => void; // Changed to Tag[]
   placeholder?: string;
   maxItems?: number;
   minItems?: number;
-  suggestions?: string[];
-  fecther?: (query: string) => Promise<string[]>;
+  suggestions?: Tag[]; // Changed to Tag[]
+  fecther?: (query: string) => Promise<Tag[]>; // Changed to Promise<Tag[]>
   debounceDelay?: number;
   className?: string;
   disabled?: boolean;
@@ -54,26 +60,35 @@ const AsyncTagsInput = ({
 }: AsyncTagInputProps) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [activeIndex, setActiveIndex] = useState<number>(-1);
-  const [showSuggestions, setShowSuggestions] = useState<boolean>(false); // This will control Popover open state
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<Tag[]>([]); // Changed to Tag[]
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
     useState<number>(-1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  // containerRef is still useful for focus management, but less critical for popover itself.
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Use debounced value for API calls
   const debouncedInputValue = useDebounce(inputValue, debounceDelay);
+
+  // Helper to check if a tag (by label or ID) already exists in the current value
+  const tagExists = useCallback(
+    (tagToFind: string | Tag): boolean => {
+      if (typeof tagToFind === "string") {
+        return value.some((tag) => tag.label === tagToFind);
+      }
+      return value.some((tag) => tag.id === tagToFind.id || tag.label === tagToFind.label);
+    },
+    [value]
+  );
 
   // Filter suggestions based on input (for static suggestions)
   useEffect(() => {
     if (!fecther && inputValue.trim()) {
       const filtered = suggestions.filter(
         (suggestion) =>
-          suggestion.toLowerCase().includes(inputValue.toLowerCase()) &&
-          !value.includes(suggestion)
+          suggestion.label.toLowerCase().includes(inputValue.toLowerCase()) &&
+          !tagExists(suggestion)
       );
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
@@ -83,7 +98,7 @@ const AsyncTagsInput = ({
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
     }
-  }, [inputValue, suggestions, value, fecther]);
+  }, [inputValue, suggestions, tagExists, fecther]);
 
   // Handle async search with debouncing
   useEffect(() => {
@@ -94,7 +109,7 @@ const AsyncTagsInput = ({
 
         try {
           const results = await fecther(debouncedInputValue);
-          const filtered = results.filter((result) => !value.includes(result));
+          const filtered = results.filter((result) => !tagExists(result));
           setFilteredSuggestions(filtered);
           if (filtered.length > 0 || inputValue.trim()) {
             setShowSuggestions(true);
@@ -118,32 +133,43 @@ const AsyncTagsInput = ({
     };
 
     fetchSuggestions();
-  }, [debouncedInputValue, fecther, value]);
+  }, [debouncedInputValue, fecther, tagExists, inputValue]);
 
   // Add new tag
-  const addTag = useCallback<(key: string) => void>(
+  const addTag = useCallback<(tag: Tag | string) => void>(
     (tag) => {
-      const trimmedTag = tag.trim();
-      if (
-        trimmedTag &&
-        !value.includes(trimmedTag) &&
-        value.length < maxItems
-      ) {
-        onChange([...value, trimmedTag]);
+      let newTag: Tag | null = null;
+
+      if (typeof tag === "string") {
+        const trimmedTag = tag.trim();
+        if (trimmedTag && !tagExists(trimmedTag) && value.length < maxItems) {
+          // For newly created tags, you might need a way to generate a unique ID.
+          // For simplicity, here we'll use the label as the ID. In a real app,
+          // you might want to generate a UUID or get it from a backend.
+          newTag = { id: trimmedTag.toLowerCase().replace(/\s+/g, '-'), label: trimmedTag };
+        }
+      } else {
+        if (!tagExists(tag) && value.length < maxItems) {
+          newTag = tag;
+        }
+      }
+
+      if (newTag) {
+        onChange([...value, newTag]);
         setInputValue("");
         setSelectedSuggestionIndex(-1);
         inputRef.current?.focus();
         setShowSuggestions(false);
       }
     },
-    [value, onChange, maxItems]
+    [value, onChange, maxItems, tagExists]
   );
 
   // Remove tag
-  const removeTag = useCallback<(tagToRemove: string) => void>(
+  const removeTag = useCallback<(tagToRemove: Tag) => void>(
     (tagToRemove) => {
       if (value.length > minItems) {
-        onChange(value.filter((tag) => tag !== tagToRemove));
+        onChange(value.filter((tag) => tag.id !== tagToRemove.id));
       }
     },
     [value, onChange, minItems]
@@ -179,7 +205,7 @@ const AsyncTagsInput = ({
             setActiveIndex((prev) =>
               prev === -1 ? value.length - 1 : Math.max(0, prev - 1)
             );
-            setShowSuggestions(false); // Hide suggestions when navigating tags
+            setShowSuggestions(false);
           }
           break;
 
@@ -198,7 +224,7 @@ const AsyncTagsInput = ({
           if (showSuggestions && selectedSuggestionIndex >= 0) {
             addTag(filteredSuggestions[selectedSuggestionIndex]);
           } else if (createOnEnter && inputValue.trim()) {
-            addTag(inputValue);
+            addTag(inputValue); // Add as string, will be converted to Tag object
           }
           break;
 
@@ -206,7 +232,7 @@ const AsyncTagsInput = ({
           if (createOnComma) {
             e.preventDefault();
             if (inputValue.trim()) {
-              addTag(inputValue);
+              addTag(inputValue); // Add as string
             }
           }
           break;
@@ -214,7 +240,7 @@ const AsyncTagsInput = ({
         case " ":
           if (createOnSpace && inputValue.trim() && !showSuggestions) {
             e.preventDefault();
-            addTag(inputValue);
+            addTag(inputValue); // Add as string
           }
           break;
 
@@ -238,7 +264,7 @@ const AsyncTagsInput = ({
           break;
 
         case "Escape":
-          setShowSuggestions(false); // Close popover
+          setShowSuggestions(false);
           setActiveIndex(-1);
           setSelectedSuggestionIndex(-1);
           break;
@@ -264,22 +290,25 @@ const AsyncTagsInput = ({
     (e) => {
       e.preventDefault();
       const pastedText = e.clipboardData?.getData("text") ?? "";
-      const tags = pastedText
+      const potentialTags = pastedText
         .split(/[\n,;|\t]+/)
         .map((tag) => tag.trim())
         .filter(Boolean);
 
-      const newTags = [...value];
-      tags.forEach((tag) => {
-        if (!newTags.includes(tag) && newTags.length < maxItems) {
-          newTags.push(tag);
+      const newTags: Tag[] = [...value];
+      potentialTags.forEach((pastedTagLabel) => {
+        // For pasted tags, generate a simple ID.
+        // In a real application, you might want more sophisticated ID generation or a confirmation step.
+        const newTag: Tag = { id: pastedTagLabel.toLowerCase().replace(/\s+/g, '-'), label: pastedTagLabel };
+        if (!tagExists(newTag) && newTags.length < maxItems) {
+          newTags.push(newTag);
         }
       });
 
       onChange(newTags);
       setInputValue("");
     },
-    [value, onChange, maxItems]
+    [value, onChange, maxItems, tagExists]
   );
 
   // Handle input change
@@ -288,10 +317,10 @@ const AsyncTagsInput = ({
   >((e) => {
     setInputValue(e.target.value);
     setActiveIndex(-1);
-    setShowSuggestions(true); 
+    setShowSuggestions(true);
   }, []);
 
-  const handleSuggestionClick = useCallback<(suggestion: string) => void>(
+  const handleSuggestionClick = useCallback<(suggestion: Tag) => void>(
     (suggestion) => {
       addTag(suggestion);
     },
@@ -302,7 +331,6 @@ const AsyncTagsInput = ({
   const handleContainerClick = useCallback(() => {
     inputRef.current?.focus();
     setActiveIndex(-1);
-    // setShowSuggestions(true); // Optionally open popover on container click
   }, []);
 
   const canRemoveTag = value.length > minItems;
@@ -314,8 +342,8 @@ const AsyncTagsInput = ({
         <div
           ref={containerRef}
           className={cn(
-            "flex flex-wrap items-center gap-1  rounded-lg text-sm",
-            disabled && "opacity-50 cursor-not-allowed  ",
+            "flex flex-wrap items-center gap-1 rounded-lg text-sm",
+            disabled && "opacity-50 cursor-not-allowed",
             className
           )}
           onClick={handleContainerClick}
@@ -323,7 +351,7 @@ const AsyncTagsInput = ({
         >
           {value.map((tag, index) => (
             <Badge
-              key={`${tag}-${index}`}
+              key={tag.id} // Use tag.id for key
               variant="secondary"
               className={cn(
                 "flex items-center gap-1 pr-1",
@@ -331,7 +359,7 @@ const AsyncTagsInput = ({
                 !canRemoveTag && "opacity-60"
               )}
             >
-              <span>{tag}</span>
+              <span>{tag.label}</span> {/* Display tag.label */}
               <Button
                 type="button"
                 onClick={(e) => {
@@ -340,7 +368,7 @@ const AsyncTagsInput = ({
                 }}
                 disabled={!canRemoveTag || disabled}
                 className="rounded-full p-0.5 hover:bg-muted-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed size-5"
-                aria-label={`Remove ${tag}`}
+                aria-label={`Remove ${tag.label}`}
                 variant={"ghost"}
               >
                 <X className="h-3 w-3" />
@@ -359,7 +387,7 @@ const AsyncTagsInput = ({
             placeholder={value.length === 0 ? placeholder : ""}
             disabled={!canAddTag || disabled}
             className={cn(
-              "flex-1 min-w-[120px] border-none outline-none  placeholder:text-muted-foreground disabled:cursor-not-allowed",
+              "flex-1 min-w-[120px] border-none outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
               "focus-visible:border-none focus-visible:ring-0 focus-visible:ring-offset-0"
             )}
             autoComplete="off"
@@ -368,8 +396,10 @@ const AsyncTagsInput = ({
       </PopoverAnchor>
 
       <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] p-1 mt-1 max-h-60 overflow-auto " // Adjust width and styling
-        onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus from jumping to the first item
+        className="w-[var(--radix-popover-trigger-width)] p-1 mt-1 max-h-60 overflow-auto"
+        side="bottom"
+        align="start"
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {isLoading ? (
           <div className="flex items-center justify-center py-4">
@@ -382,7 +412,7 @@ const AsyncTagsInput = ({
           <>
             {filteredSuggestions.map((suggestion, index) => (
               <div
-                key={suggestion}
+                key={suggestion.id} // Use suggestion.id for key
                 className={cn(
                   "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
                   "hover:bg-accent hover:text-accent-foreground",
@@ -391,15 +421,14 @@ const AsyncTagsInput = ({
                 )}
                 onClick={() => handleSuggestionClick(suggestion)}
               >
-                <Check className="mr-2 h-4 w-4 opacity-0" />{" "}
-                {/* Consider adding Checkmark if selected or a relevant icon */}
-                {suggestion}
+                <Check className="mr-2 h-4 w-4 opacity-0" />
+                {suggestion.label} {/* Display suggestion.label */}
               </div>
             ))}
 
             {/* Create new option */}
             {inputValue.trim() &&
-              !filteredSuggestions.includes(inputValue.trim()) && (
+              !tagExists(inputValue.trim()) && ( // Check if label exists
                 <div
                   className={cn(
                     "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
@@ -410,9 +439,12 @@ const AsyncTagsInput = ({
                   onClick={() => addTag(inputValue)}
                 >
                   <Check className="mr-2 h-4 w-4 opacity-0" />
-               <span className="text-sm text-muted-foreground">
-                   Press Enter or Click   to create "{inputValue.trim()}"
-               </span>
+                  <span className="text-sm text-muted-foreground">
+                    Press Enter or Click to create{" "}
+                    <span className="font-semibold dark:text-white text-black">
+                      "{inputValue.trim()}"
+                    </span>
+                  </span>
                 </div>
               )}
 
