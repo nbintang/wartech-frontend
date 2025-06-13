@@ -13,6 +13,12 @@ import { Badge } from "./badge";
 import { Check, Loader2, X } from "lucide-react";
 import { Input } from "./input";
 import { Button } from "./button";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover"; // Import Popover components
 
 interface AsyncTagInputProps {
   value: string[];
@@ -21,7 +27,7 @@ interface AsyncTagInputProps {
   maxItems?: number;
   minItems?: number;
   suggestions?: string[];
-  onSearch?: (query: string) => Promise<string[]>;
+  fecther?: (query: string) => Promise<string[]>;
   debounceDelay?: number;
   className?: string;
   disabled?: boolean;
@@ -29,6 +35,7 @@ interface AsyncTagInputProps {
   createOnComma?: boolean;
   createOnSpace?: boolean;
 }
+
 const AsyncTagsInput = ({
   value = [],
   onChange,
@@ -36,7 +43,7 @@ const AsyncTagsInput = ({
   maxItems = Infinity,
   minItems = 0,
   suggestions = [],
-  onSearch,
+  fecther,
   debounceDelay = 300,
   className,
   disabled = false,
@@ -47,22 +54,22 @@ const AsyncTagsInput = ({
 }: AsyncTagInputProps) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [activeIndex, setActiveIndex] = useState<number>(-1);
-  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false); // This will control Popover open state
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
     useState<number>(-1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  // containerRef is still useful for focus management, but less critical for popover itself.
   const containerRef = useRef<HTMLDivElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Use debounced value for API calls
   const debouncedInputValue = useDebounce(inputValue, debounceDelay);
 
   // Filter suggestions based on input (for static suggestions)
   useEffect(() => {
-    if (!onSearch && inputValue.trim()) {
+    if (!fecther && inputValue.trim()) {
       const filtered = suggestions.filter(
         (suggestion) =>
           suggestion.toLowerCase().includes(inputValue.toLowerCase()) &&
@@ -71,41 +78,47 @@ const AsyncTagsInput = ({
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
       setSelectedSuggestionIndex(-1);
-    } else if (!onSearch && !inputValue.trim()) {
+    } else if (!fecther && !inputValue.trim()) {
       setFilteredSuggestions([]);
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
     }
-  }, [inputValue, suggestions, value, onSearch]);
+  }, [inputValue, suggestions, value, fecther]);
 
   // Handle async search with debouncing
   useEffect(() => {
-    if (onSearch && debouncedInputValue.trim()) {
-      setIsLoading(true);
-      setShowSuggestions(true);
+    const fetchSuggestions = async () => {
+      if (fecther && debouncedInputValue.trim()) {
+        setIsLoading(true);
+        setShowSuggestions(true);
 
-      onSearch(debouncedInputValue)
-        .then((results) => {
+        try {
+          const results = await fecther(debouncedInputValue);
           const filtered = results.filter((result) => !value.includes(result));
           setFilteredSuggestions(filtered);
-          setShowSuggestions(true);
+          if (filtered.length > 0 || inputValue.trim()) {
+            setShowSuggestions(true);
+          } else {
+            setShowSuggestions(false);
+          }
           setSelectedSuggestionIndex(-1);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Error fetching suggestions:", error);
           setFilteredSuggestions([]);
           setShowSuggestions(false);
-        })
-        .finally(() => {
+        } finally {
           setIsLoading(false);
-        });
-    } else if (onSearch && !debouncedInputValue.trim()) {
-      setFilteredSuggestions([]);
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-      setIsLoading(false);
-    }
-  }, [debouncedInputValue, onSearch, value]);
+        }
+      } else if (fecther && !debouncedInputValue.trim()) {
+        setFilteredSuggestions([]);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        setIsLoading(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, [debouncedInputValue, fecther, value]);
 
   // Add new tag
   const addTag = useCallback<(key: string) => void>(
@@ -118,9 +131,9 @@ const AsyncTagsInput = ({
       ) {
         onChange([...value, trimmedTag]);
         setInputValue("");
-        setShowSuggestions(false);
         setSelectedSuggestionIndex(-1);
         inputRef.current?.focus();
+        setShowSuggestions(false);
       }
     },
     [value, onChange, maxItems]
@@ -166,7 +179,7 @@ const AsyncTagsInput = ({
             setActiveIndex((prev) =>
               prev === -1 ? value.length - 1 : Math.max(0, prev - 1)
             );
-            setShowSuggestions(false);
+            setShowSuggestions(false); // Hide suggestions when navigating tags
           }
           break;
 
@@ -225,7 +238,7 @@ const AsyncTagsInput = ({
           break;
 
         case "Escape":
-          setShowSuggestions(false);
+          setShowSuggestions(false); // Close popover
           setActiveIndex(-1);
           setSelectedSuggestionIndex(-1);
           break;
@@ -275,9 +288,9 @@ const AsyncTagsInput = ({
   >((e) => {
     setInputValue(e.target.value);
     setActiveIndex(-1);
+    setShowSuggestions(true); 
   }, []);
 
-  // Handle suggestion click
   const handleSuggestionClick = useCallback<(suggestion: string) => void>(
     (suggestion) => {
       addTag(suggestion);
@@ -285,152 +298,139 @@ const AsyncTagsInput = ({
     [addTag]
   );
 
-  // Handle container click
+  // Handle container click (to focus input)
   const handleContainerClick = useCallback(() => {
     inputRef.current?.focus();
     setActiveIndex(-1);
-  }, []);
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setShowSuggestions(false);
-        setActiveIndex(-1);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // setShowSuggestions(true); // Optionally open popover on container click
   }, []);
 
   const canRemoveTag = value.length > minItems;
   const canAddTag = value.length < maxItems;
 
   return (
-    <div ref={containerRef} className="relative w-full">
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-1 p-2 min-h-[2.5rem] rounded-lg border border-input bg-transparent text-sm ring-offset-background",
-          "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-          disabled && "opacity-50 cursor-not-allowed",
-          className
-        )}
-        onClick={handleContainerClick}
-        {...props}
-      >
-        {value.map((tag, index) => (
-          <Badge
-            key={`${tag}-${index}`}
-            variant="secondary"
-            className={cn(
-              "flex items-center gap-1 pr-1",
-              activeIndex === index && "ring-2 ring-primary ring-offset-1",
-              !canRemoveTag && "opacity-60"
-            )}
-          >
-            <span>{tag}</span>
-            <Button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeTag(tag);
-              }}
-              disabled={!canRemoveTag || disabled}
-              className="rounded-full p-0.5 hover:bg-muted-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed size-5"
-              aria-label={`Remove ${tag}`}
-              variant={"ghost"}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </Badge>
-        ))}
-
-        <Input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          onFocus={() => setActiveIndex(-1)}
-          placeholder={value.length === 0 ? placeholder : ""}
-          disabled={!canAddTag || disabled}
-          className={cn(
-            "flex-1 min-w-[120px]  border-none outline-none placeholder:text-white disabled:cursor-not-allowed",
-            "focus-visible:border-none focus-visible:ring-0 focus-visible:ring-offset-0"
-          )}
-          autoComplete="off"
-        />
-      </div>
-
-      {/* Suggestions dropdown */}
-      {showSuggestions && (
+    <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
+      <PopoverAnchor asChild>
         <div
-          ref={suggestionsRef}
-          className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
+          ref={containerRef}
+          className={cn(
+            "flex flex-wrap items-center gap-1  rounded-lg text-sm",
+            disabled && "opacity-50 cursor-not-allowed  ",
+            className
+          )}
+          onClick={handleContainerClick}
+          {...props}
         >
-          {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              <span className="text-sm text-muted-foreground">
-                Loading suggestions...
-              </span>
-            </div>
-          ) : (
-            <>
-              {filteredSuggestions.map((suggestion, index) => (
+          {value.map((tag, index) => (
+            <Badge
+              key={`${tag}-${index}`}
+              variant="secondary"
+              className={cn(
+                "flex items-center gap-1 pr-1",
+                activeIndex === index && "ring-2 ring-primary ring-offset-1",
+                !canRemoveTag && "opacity-60"
+              )}
+            >
+              <span>{tag}</span>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeTag(tag);
+                }}
+                disabled={!canRemoveTag || disabled}
+                className="rounded-full p-0.5 hover:bg-muted-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed size-5"
+                aria-label={`Remove ${tag}`}
+                variant={"ghost"}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </Badge>
+          ))}
+
+          <Input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onBlur={() => setShowSuggestions(false)}
+            placeholder={value.length === 0 ? placeholder : ""}
+            disabled={!canAddTag || disabled}
+            className={cn(
+              "flex-1 min-w-[120px] border-none outline-none  placeholder:text-muted-foreground disabled:cursor-not-allowed",
+              "focus-visible:border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            )}
+            autoComplete="off"
+          />
+        </div>
+      </PopoverAnchor>
+
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-1 mt-1 max-h-60 overflow-auto " // Adjust width and styling
+        onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus from jumping to the first item
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span className="text-sm text-muted-foreground">
+              Loading suggestions...
+            </span>
+          </div>
+        ) : (
+          <>
+            {filteredSuggestions.map((suggestion, index) => (
+              <div
+                key={suggestion}
+                className={cn(
+                  "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  selectedSuggestionIndex === index &&
+                    "bg-accent text-accent-foreground"
+                )}
+                onClick={() => handleSuggestionClick(suggestion)}
+              >
+                <Check className="mr-2 h-4 w-4 opacity-0" />{" "}
+                {/* Consider adding Checkmark if selected or a relevant icon */}
+                {suggestion}
+              </div>
+            ))}
+
+            {/* Create new option */}
+            {inputValue.trim() &&
+              !filteredSuggestions.includes(inputValue.trim()) && (
                 <div
-                  key={suggestion}
                   className={cn(
                     "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
                     "hover:bg-accent hover:text-accent-foreground",
-                    selectedSuggestionIndex === index &&
-                      "bg-accent text-accent-foreground"
+                    filteredSuggestions.length > 0 &&
+                      "border-t border-border mt-1 pt-2"
                   )}
-                  onClick={() => handleSuggestionClick(suggestion)}
+                  onClick={() => addTag(inputValue)}
                 >
                   <Check className="mr-2 h-4 w-4 opacity-0" />
-                  {suggestion}
+               <span className="text-sm text-muted-foreground">
+                   Press Enter or Click   to create "{inputValue.trim()}"
+               </span>
                 </div>
-              ))}
+              )}
 
-              {/* Create new option */}
-              {inputValue.trim() &&
-                !filteredSuggestions.includes(inputValue.trim()) && (
-                  <div
-                    className={cn(
-                      "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-                      "hover:bg-accent hover:text-accent-foreground",
-                      filteredSuggestions.length > 0 &&
-                        "border-t border-border mt-1 pt-2"
-                    )}
-                    onClick={() => addTag(inputValue)}
-                  >
-                    <Check className="mr-2 h-4 w-4 opacity-0" />
-                    Create "{inputValue.trim()}"
-                  </div>
-                )}
-
-              {/* No results message */}
-              {!isLoading &&
-                filteredSuggestions.length === 0 &&
-                inputValue.trim() &&
-                onSearch && (
-                  <div className="flex items-center justify-center py-4">
-                    <span className="text-sm text-muted-foreground">
-                      No suggestions found
-                    </span>
-                  </div>
-                )}
-            </>
-          )}
-        </div>
-      )}
-    </div>
+            {/* No results message */}
+            {!isLoading &&
+              filteredSuggestions.length === 0 &&
+              inputValue.trim() &&
+              fecther && (
+                <div className="flex items-center justify-center py-4">
+                  <span className="text-sm text-muted-foreground">
+                    No suggestions found
+                  </span>
+                </div>
+              )}
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 };
 

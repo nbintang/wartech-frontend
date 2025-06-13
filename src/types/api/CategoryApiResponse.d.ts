@@ -1,4 +1,4 @@
-export interface CategoriesApiResponse {
+export interface CategorysApiResponse {
   id: string
   slug: string
   name: string

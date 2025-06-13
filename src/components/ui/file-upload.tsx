@@ -47,9 +47,9 @@ export const useFileUpload = () => {
 };
 
 interface FileUploaderProps extends React.ComponentProps<"div"> {
-  value: File[] | null;
+  value: File[] | null | undefined;
   reSelect?: boolean;
-  onValueChange: (value: File[] | null) => void;
+  onValueChange: (value: File[] | null | undefined) => void;
   dropzoneOptions: DropzoneOptions;
   orientation?: "horizontal" | "vertical";
 }

@@ -119,7 +119,9 @@ export function AsyncSelect<T>({
         setLoading(true);
         setError(null);
         // If we have a value, use it for the initial search
+
         const data = await fetcher(value);
+        
         setOriginalOptions(data);
         setOptions(data);
       } catch (err) {
@@ -182,7 +184,7 @@ export function AsyncSelect<T>({
             disabled && "opacity-50 cursor-not-allowed",
             triggerClassName
           )}
-          style={{ width: width }}
+          style={{ width }}
           disabled={disabled}
         >
           {selectedOption ? (
@@ -193,8 +195,8 @@ export function AsyncSelect<T>({
           <ChevronsUpDown className="opacity-50" size={10} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent style={{ width: width }} className={cn("p-0", className)}>
-        <Command shouldFilter={false}>
+      <PopoverContent  className={cn("p-0 w-[var(--radix-popover-trigger-width)]", className)}>
+        <Command shouldFilter={false} className="w-full">
           <div className="relative border-b w-full">
             <CommandInput
               placeholder={`Search ${label.toLowerCase()}...`}
