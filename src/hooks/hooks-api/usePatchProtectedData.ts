@@ -24,23 +24,18 @@ type MutateParamKeys =
   | "comments"
   | "tags"
   | "categories";
-type PatchProtectedDataProps<TFormSchema extends z.ZodSchema, TResponse> = {
-  TAG: MutateParamKeys;
+type PatchProtectedDataProps<TResponse, TFormSchema extends z.ZodSchema> = {
+  TAG: MutateParamKeys | string[];
   endpoint: string;
   params?: any;
   formSchema: TFormSchema;
   redirect?: boolean;
   redirectUrl?: string;
 } & Omit<
-  UseMutationOptions<
-    TResponse,
-    unknown,
-    z.infer<TFormSchema>,
-    unknown
-  >,
+  UseMutationOptions<TResponse, unknown, z.infer<TFormSchema>, unknown>,
   IgnoreMutationOptions
 >;
-const usePatchProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
+const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
   TAG,
   endpoint,
   redirect,
@@ -48,7 +43,7 @@ const usePatchProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
   params,
   formSchema,
   ...mutateOptions
-}: PatchProtectedDataProps<TFormSchema, ApiResponse<TResponse>>) => {
+}: PatchProtectedDataProps<ApiResponse<TResponse>, TFormSchema>) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   return useMutation<
@@ -56,8 +51,10 @@ const usePatchProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
     unknown,
     z.infer<typeof formSchema>
   >({
-    mutationKey:typeof TAG === "string" ? [TAG, params] : TAG,
-    mutationFn: async (values: z.infer<typeof formSchema>) : Promise<ApiResponse<TResponse>> => {
+    mutationKey: typeof TAG === "string" ? [TAG, params] : TAG,
+    mutationFn: async (
+      values: z.infer<typeof formSchema>
+    ): Promise<ApiResponse<TResponse>> => {
       const response = await axiosInstance.patch(
         `/protected${endpoint}`,
         values,
@@ -66,19 +63,26 @@ const usePatchProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
       return response.data;
     },
     onMutate: () => {
-      toast.loading(`Updating ${TAG}...`, { id: TAG });
+      toast.loading(`Updating ${TAG[0]}...`, {
+        id: typeof TAG === "string" ? TAG : (TAG[0] as MutateParamKeys),
+      });
     },
     onSuccess: () => {
       toast.success(
-        `${TAG.slice(0, 1).toUpperCase() + TAG.slice(1)} updated successfully!`,
-        { id: TAG }
+        `${
+          TAG[0].slice(0, 1).toUpperCase() + TAG[0].slice(1)
+        } updated successfully!`,
+        { id: TAG[0] as MutateParamKeys }
       );
       if (redirect && redirectUrl) router.push(redirectUrl);
       queryClient.invalidateQueries({ queryKey: [TAG] });
     },
     onError: (err) => {
       const message = catchAxiosError(err);
-      message && toast.error(message, { id: TAG });
+      message &&
+        toast.error(message, {
+          id: TAG[0] as MutateParamKeys,
+        });
     },
     ...mutateOptions,
   });

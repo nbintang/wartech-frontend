@@ -331,7 +331,7 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
                         </div>
                       </div>
                     }
-                    triggerClassName={cn("text-muted-foreground font-light")}
+                    triggerClassName={cn("text-muted-foreground ")}
                     {...field}
                   />
                 </FormControl>

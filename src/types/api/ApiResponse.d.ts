@@ -1,11 +1,11 @@
-type ApiResponse<T = any> = {
+ type ApiResponse<T = any> = {
   statusCode: number;
   success: boolean;
   message: string;
   data?: T | null;
 };
 
-type PaginatedApiResponse<T = any> = {
+ type PaginatedApiResponse<T = any> = {
   items: T[];
   meta: {
     totalItems: number;

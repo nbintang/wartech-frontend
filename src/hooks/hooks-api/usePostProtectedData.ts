@@ -23,8 +23,9 @@ type MutateParamKeys =
   | "comments"
   | "tags"
   | "categories";
-type PostProtectedDataProps<TFormSchema extends z.ZodSchema, TResponse> = {
-  TAG: MutateParamKeys;
+type ProtectedDataTags = MutateParamKeys | MutateParamKeys[] | string[];
+type PostProtectedDataProps<TResponse, TFormSchema extends z.ZodSchema> = {
+  TAG: ProtectedDataTags;
   endpoint: string;
   params?: any;
   formSchema: TFormSchema;
@@ -35,7 +36,7 @@ type PostProtectedDataProps<TFormSchema extends z.ZodSchema, TResponse> = {
   IgnoreMutationOptions
 >;
 
-const usePostProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
+const usePostProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
   TAG,
   endpoint,
   redirect,
@@ -43,32 +44,43 @@ const usePostProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
   params,
   formSchema,
   ...mutateOptions
-}: PostProtectedDataProps<TFormSchema, TResponse>) => {
+}: PostProtectedDataProps<ApiResponse<TResponse>, TFormSchema>) => {
   const queryClient = useQueryClient();
   const router = useRouter();
-  return useMutation<TResponse, unknown, z.infer<typeof formSchema>>({
-    mutationKey: [TAG, params],
+  return useMutation<
+    ApiResponse<TResponse>,
+    unknown,
+    z.infer<typeof formSchema>
+  >({
+    mutationKey: typeof TAG === "string" ? [...TAG, params] : TAG,
     mutationFn: async (
       values: z.infer<typeof formSchema>
-    ): Promise<TResponse> => {
+    ): Promise<ApiResponse<TResponse>> => {
       const response = await axiosInstance.post(
         `/protected${endpoint}`,
         values,
         { params }
       );
-      return response.data;
+      return response.data as ApiResponse<TResponse>;
     },
     onMutate: () => {
-      toast.loading(`Creating ${TAG}...`, { id: TAG });
+      toast.loading(`Creating ${typeof TAG === "string" ? TAG : TAG[0]}...`, {
+        id: TAG[0] as MutateParamKeys,
+      });
     },
     onSuccess: () => {
-      toast.success(`${TAG} created successfully!`, { id: TAG });
+      toast.success(
+        `${typeof TAG === "string" ? TAG : TAG[0]} created successfully!`,
+        {
+          id: TAG[0],
+        }
+      );
       if (redirect && redirectUrl) router.push(redirectUrl);
       queryClient.invalidateQueries({ queryKey: [TAG, params] });
     },
     onError: (err) => {
       const message = catchAxiosError(err);
-      message && toast.error(message, { id: TAG });
+      message && toast.error(message, { id: TAG as MutateParamKeys });
     },
     ...mutateOptions,
   });

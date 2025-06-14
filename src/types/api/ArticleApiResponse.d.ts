@@ -46,3 +46,15 @@ export interface ArticlebySlugApiResponse
     image: string | null;
   };
 }
+
+export interface ArticleApiPostResponse {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  image: string;
+  authorId: string;
+  categoryId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
