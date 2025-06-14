@@ -9,7 +9,7 @@ import useHandleAuthDialog from "@/hooks/useHandleAuthDialog";
 import { useMutation } from "@tanstack/react-query";
 import postSignin from "../../../../helpers/postSignin";
 import Cookies from "js-cookie";
-import jwtDecode, { JwtUserPayload } from "@/helpers/jwtDecoder";
+import  {jwtDecode,type  JwtUserPayload } from "@/lib/utils";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
 import { useProgress } from "@bprogress/next";

@@ -18,7 +18,7 @@ import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { type SignInForm, signInSchema } from "../schema/signInSchema";
-import jwtDecode from "@/helpers/jwtDecoder";
+import {jwtDecode} from "@/lib/utils";
 import postSignin from "../../../../helpers/postSignin";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { useEffect, useState } from "react";

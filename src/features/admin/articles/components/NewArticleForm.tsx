@@ -32,7 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { validate as validateUUID } from "uuid";
-import fetchSearchedData from "@/helpers/fetchSearchData";
+import fetchSearchedData from "@/lib/fetchSearchData";
 interface TagInput extends TagApiResponse {
   label: string;
 }

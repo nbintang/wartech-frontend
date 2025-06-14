@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwtDecode, { JwtUserPayload } from "./helpers/jwtDecoder";
+import { jwtDecode, type JwtUserPayload } from "./lib/utils";
 
 export async function middleware(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;

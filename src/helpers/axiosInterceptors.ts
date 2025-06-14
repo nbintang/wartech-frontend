@@ -6,7 +6,7 @@ import axios, {
 } from "axios";
 import Cookies from "js-cookie";
 import { BASE_URL } from "../lib/axiosInstance";
-import isExpiredToken from "@/helpers/isExpiredToken";
+import { isExpiredToken } from "@/lib/utils";
 
 
 
