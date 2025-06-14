@@ -30,14 +30,7 @@ export const userColumns: ColumnDef<UsersApiResponse>[] = [
     header: "User Status",
     cell: ({ row }) => {
       return (
-        <Badge
-          variant="secondary"
-          className={cn(
-            row.original.verified
-              ? "bg-blue-500 text-white dark:bg-blue-600"
-              : "bg-destructive text-white dark:bg-destructive/60"
-          )}
-        >
+        <Badge variant={row.original.verified ? "default" : "destructive"}>
           {row.original.verified ? (
             <>
               <BadgeCheckIcon className="mr-2 size-4" />

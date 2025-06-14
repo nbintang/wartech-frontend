@@ -404,7 +404,7 @@ const AsyncTagsInput = <T extends TagApiResponse>({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {isLoading ? (
-          (value.length === 0 || loadingSkeleton) && (
+          loadingSkeleton || (
             <DefaultLoadingSkeleton label={label ?? "suggestions"} />
           )
         ) : (

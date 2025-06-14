@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
 import useHandleImageDialog from "@/hooks/useHandlerImageDialog";
 import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
-import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
+import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { MoreHorizontal } from "lucide-react";
@@ -22,7 +22,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
-const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
+const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -56,9 +56,9 @@ const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
       const setOpenDialog = useHandleImageDialog(
         (state) => state.setOpenDialog
       );
-         const [imageLoading, setImageLoading] = useState(true);
+      const [imageLoading, setImageLoading] = useState(true);
       return (
- <div className="relative w-[60px] h-[60px] overflow-hidden rounded-md">
+        <div className="relative w-[60px] h-[60px] overflow-hidden rounded-md">
           {imageLoading && (
             <Skeleton className="absolute top-0 left-0 w-full h-full" />
           )}
@@ -115,7 +115,12 @@ const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
   {
     accessorKey: "publishedAt",
     header: "Published",
-    cell: ({ row }) => format(new Date(row.getValue("publishedAt")), "PPP"),
+    cell: ({ row }) =>
+      row.original.publishedAt ? (
+        format(new Date(row.getValue("publishedAt")), "PPP")
+      ) : (
+        <p className="text-muted-foreground">N/A</p>
+      ),
   },
   {
     id: "actions",
@@ -155,11 +160,13 @@ const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
                 })
               )}
             >
-              Copy {article.title} ID
+            <span className="block max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                Copy {article.title} ID
+            </span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/admin/dashboard/articles/${article.id}`}>
+              <Link href={`/admin/dashboard/articles/${article.slug}`}>
                 View article details
               </Link>
             </DropdownMenuItem>
@@ -167,7 +174,9 @@ const articlePageColumn: ColumnDef<ArticleApiResponse>[] = [
               className="text-destructive"
               onClick={handleDelete}
             >
-              Delete {article.title}
+              <span className="block max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                Delete {article.title}
+              </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

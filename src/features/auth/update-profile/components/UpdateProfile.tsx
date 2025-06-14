@@ -97,6 +97,8 @@ export default function UpdateProfile() {
       endpoint: `/users/${profile?.id}`,
       formSchema: updateProfileSchema,
       TAG: "profile",
+      redirect: true,
+      redirectUrl: "/",
     });
   const handleImageUpdate = useCallback(
     (base64: string | null) => {
@@ -108,16 +110,9 @@ export default function UpdateProfile() {
   );
   const handleUpdate = async ({ image }: UpdateProfileFormValues) => {
     const updatedImage = await uploadImage(image);
-    if (uploadMutations.isError)
-      return toast.error(catchAxiosError(uploadMutations.error));
     const updatedProfile = await updateProfile({
       image: updatedImage.secureUrl,
     });
-    if (updateProfileMutations.isError) {
-      return toast.error(catchAxiosError(updateProfileMutations.error));
-    }
-    toast.success("Profile updated successfully.");
-    router.push("/");
     return updatedProfile.data;
   };
   return (

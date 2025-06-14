@@ -4,8 +4,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
-export const articleColumns: ColumnDef<ArticleApiResponse>[] = [
+import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
+export const articleColumns: ColumnDef<ArticlesApiResponse>[] = [
   {
     accessorKey: "title",
     header: "Title",
@@ -47,7 +47,11 @@ export const articleColumns: ColumnDef<ArticleApiResponse>[] = [
   {
     accessorKey: "publishedAt",
     header: "Published",
-    cell: ({ row }) =>
-      format(new Date(row.original.publishedAt), "hh:mm dd MMM yyyy"),
+    cell: ({ row }) => {
+      const publishedAt = row.original.publishedAt;
+      return publishedAt
+        ? format(new Date(publishedAt), "hh:mm dd MMM yyyy")
+        : "-";
+    },
   },
 ];

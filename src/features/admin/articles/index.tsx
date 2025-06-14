@@ -1,7 +1,7 @@
 "use client";
 
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
-import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
+import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import React from "react";
 import useTable from "../hooks/useTable";
 import articlePageColumn from "./components/articlesColumn";
@@ -17,7 +17,7 @@ const ArticleDashboardPage = () => {
   const page = Number(searchParams.get("page") ?? "1");
   const limit = Number(searchParams.get("limit") ?? "10");
   const { data, isSuccess, isLoading } = useFetchProtectedData<
-    PaginatedApiResponse<ArticleApiResponse>
+    PaginatedApiResponse<ArticlesApiResponse>
   >({
     TAG: "articles",
     endpoint: "/articles",
@@ -29,7 +29,7 @@ const ArticleDashboardPage = () => {
       limit,
     },
   });
-  const { table } = useTable<ArticleApiResponse>({
+  const { table } = useTable<ArticlesApiResponse>({
     columns: articlePageColumn,
     data: data?.items ?? [],
   });
@@ -44,12 +44,13 @@ const ArticleDashboardPage = () => {
       {isSuccess && data && (
         <>
           <ArticleTableFilters filterSearch="title" table={table} />
-          <DataTable<ArticleApiResponse> table={table} />
-          <div className="flex justify-between w-full mt-3 px-3">
+          <DataTable<ArticlesApiResponse> table={table} />
+          <div className="flex justify-center md:justify-between w-full flex-wrap-reverse items-center gap-4 mt-3 px-3">
             <div className="text-sm text-muted-foreground">
               {selectedRowCount} of {visibleRowCountOnPage} Row(s) selected
             </div>
             <PaginationWithLinks
+   
               page={data?.meta.currentPage ?? page}
               pageSize={data?.meta.itemPerPages ?? limit}
               totalCount={data?.meta.totalItems ?? 0}

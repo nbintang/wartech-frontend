@@ -9,7 +9,7 @@ import UserChart from "@/features/admin/root/components/UsersChart";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
-import { ArticleApiResponse } from "@/types/api/ArticleApiResponse";
+import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import DashboardRootCardLayout from "./components/DashboardRootCardLayout";
 import DataTable from "../components/DataTable";
 import useTable from "../hooks/useTable";
@@ -18,7 +18,7 @@ import DataTableFilters from "../components/DataTableFilters";
 
 const RootListDashboardPage = () => {
   const { data: articles, ...articlesQuery } = useFetchProtectedData<
-    PaginatedApiResponse<ArticleApiResponse>
+    PaginatedApiResponse<ArticlesApiResponse>
   >({
     endpoint: "/articles",
     TAG: "articles",
@@ -52,7 +52,7 @@ const RootListDashboardPage = () => {
     columns: userColumns,
     data: users?.items || [],
   });
-  const { table: articleTables } = useTable<ArticleApiResponse>({
+  const { table: articleTables } = useTable<ArticlesApiResponse>({
     columns: articleColumns,
     data: articles?.items || [],
   });
@@ -66,12 +66,12 @@ const RootListDashboardPage = () => {
         description="Lorem ipsum dolor sit amet consectetur adipisicing elit..."
         redirectUrl="/articles"
       >
-        <DataTableFilters<ArticleApiResponse>
+        <DataTableFilters<ArticlesApiResponse>
           table={articleTables}
           filterSearch="title"
         />
         <ScrollArea className="h-full w-full">
-          <DataTable<ArticleApiResponse> table={articleTables} />
+          <DataTable<ArticlesApiResponse> table={articleTables} />
           <ScrollBar orientation="vertical" />
           <ScrollBar orientation="horizontal" />
         </ScrollArea>

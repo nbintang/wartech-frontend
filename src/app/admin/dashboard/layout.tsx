@@ -20,7 +20,7 @@ export default function Layout({
         <AppSidebar variant="inset" />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex flex-1 flex-col">{children}</div>
+          <div className="flex flex-1 flex-col relative">{children}</div>
         </SidebarInset>
       </SidebarProvider>
       <SearchDashboardMenu />

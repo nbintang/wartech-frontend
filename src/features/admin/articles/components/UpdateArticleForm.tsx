@@ -20,7 +20,7 @@ import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { type Editor } from "@tiptap/react";
@@ -33,10 +33,11 @@ import {
 } from "@/components/ui/tooltip";
 import { validate as validateUUID } from "uuid";
 import fetchSearchedData from "@/lib/fetchSearchData";
-import usePostProtectedData from "@/hooks/hooks-api/usePostProtectedData";
 import usePostImage from "@/hooks/hooks-api/usePostImage";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import { ArticlebySlugApiResponse } from "@/types/api/ArticleApiResponse";
+import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -73,9 +74,13 @@ const articleInputSchema = z.object({
   ),
 });
 type ArticleInput = z.infer<typeof articleInputSchema>;
-const NewArticleForm = () => {
+
+const UpdateArticleForm = ({ slug }: { slug: string }) => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
+  const [isContentReady, setIsContentReady] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const editorRef = useRef<Editor | null>(null);
+
   const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
     TAG: "profile",
     endpoint: "/users/profile",
@@ -83,8 +88,18 @@ const NewArticleForm = () => {
     gcTime: 1000 * 60 * 10,
     retry: false,
   });
+  const { data: article, ...articleQuery } =
+    useFetchProtectedData<ArticlebySlugApiResponse>({
+      TAG: "articles",
+      endpoint: `/articles/${slug}`,
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      retry: false,
+    });
+  console.log(article);
+
   const { mutateAsync: createArticle, ...articleMutations } =
-    usePostProtectedData({
+    usePatchProtectedData({
       formSchema: articleInputSchema.transform((data) => {
         const { tags, image, ...rest } = data;
         return {
@@ -100,19 +115,21 @@ const NewArticleForm = () => {
     });
 
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
-    "image-url": null,
+    "image-url": article?.image,
     folder: "articles",
   });
+
   const form = useForm<ArticleInput>({
     resolver: zodResolver(articleInputSchema),
     defaultValues: {
       title: "",
       content: "",
       categoryId: "",
-      image: undefined,
+      image: null,
       tags: [],
     },
   });
+
   const dropZoneConfig: DropzoneOptions = {
     maxSize: 1024 * 1024 * 4,
     multiple: false,
@@ -120,29 +137,56 @@ const NewArticleForm = () => {
 
   const handleCreate = useCallback(
     ({ editor }: { editor: Editor }) => {
-      if (form.getValues("content") && editor.isEmpty) {
-        editor.commands.setContent(form.getValues("content"));
-      }
       editorRef.current = editor;
+      if (article?.content && editor.isEmpty) {
+        editor.commands.setContent(article.content, false);
+      }
     },
-    [form]
+    [article?.content]
   );
+
+  useEffect(() => {
+    if (article && !isInitialized) {
+      form.reset({
+        title: article.title,
+        content: article.content,
+        categoryId: article.categoryId,
+        image: article.image,
+        tags: article.tags,
+      });
+    if (editorRef.current && article.content) {
+        // Only set if the editor's current content is different to avoid unnecessary updates
+        if (editorRef.current.getHTML() !== article.content) {
+          editorRef.current.commands.setContent(article.content, false);
+        }
+      }
+
+      if (typeof article.image === "string") {
+        setFiles(null);
+      }
+
+      setIsContentReady(true);
+      setIsInitialized(true);
+    }
+  }, [article, isInitialized, form]);
+
   const onSubmit = async (data: ArticleInput) => {
     const { tags, image, ...rest } = data;
     const content = editorRef.current?.getHTML() ?? "";
-    const uploadedImage = await uploadImage(image);
+    // const uploadedImage = await uploadImage(image);
     const existedDataTags = tags.filter((tag) => validateUUID(tag.id));
     const newTags = tags.filter((tag) => !validateUUID(tag.id));
     const dataToArticles = {
       ...rest,
       content,
       tagIds: existedDataTags.map((tag) => tag.id),
-      image: uploadedImage.secureUrl,
+      //   image: uploadedImage.secureUrl,
       authorId: profile?.id,
     };
-    await createArticle(dataToArticles);
+    console.log(dataToArticles);
     form.reset();
   };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -192,29 +236,37 @@ const NewArticleForm = () => {
                     )}
                   >
                     {files && files.length > 0 ? (
-                      files.map((file, i) => {
-                        return (
-                          <div key={i} className=" z-30">
-                            <Image
-                              src={URL.createObjectURL(file)}
-                              alt=""
-                              className="w-full h-full object-contain "
-                              width={100}
-                              height={100}
-                            />
-                          </div>
-                        );
-                      })
+                      // Render newly selected file
+                      files.map((file, i) => (
+                        <div key={i} className="z-30">
+                          <Image
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="w-full h-full object-contain"
+                            width={400}
+                            height={400}
+                          />
+                        </div>
+                      ))
+                    ) : typeof field.value === "string" && field.value ? (
+                      <div className="z-30">
+                        <Image
+                          src={field.value}
+                          alt={form.getValues("title") || "Article Image"}
+                          className="w-full h-full object-contain"
+                          width={400}
+                          height={400}
+                        />
+                      </div>
                     ) : (
+                      // Render upload prompt if no file or URL
                       <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
                         <CloudUpload className="text-muted-foreground" />
-                        <p className="mb-1 text-sm  text-muted-foreground ">
-                          <span className="font-semibold ">
-                            Click to upload
-                          </span>
+                        <p className="mb-1 text-sm text-muted-foreground">
+                          <span className="font-semibold">Click to upload</span>
                           &nbsp; or drag and drop
                         </p>
-                        <p className="text-xs text-muted-foreground ">
+                        <p className="text-xs text-muted-foreground">
                           PNG, JPG and JPEG
                         </p>
                       </div>
@@ -227,7 +279,10 @@ const NewArticleForm = () => {
                           variant={"ghost"}
                           size={"icon"}
                           className="absolute top-2 right-2 z-50"
-                          onClick={() => setFiles(null)}
+                          onClick={() => {
+                            setFiles(null);
+                            field.onChange(article?.image || null);
+                          }}
                         >
                           <Trash2Icon />
                         </Button>
@@ -324,6 +379,7 @@ const NewArticleForm = () => {
                 </FormDescription>
               </div>
               <MinimalTiptapEditor
+          key={field.value}
                 throttleDelay={0}
                 className={cn("w-full min-h-screen", {
                   "border-destructive focus-within:border-destructive":
@@ -335,10 +391,10 @@ const NewArticleForm = () => {
                 onCreate={handleCreate}
                 autofocus={true}
                 immediatelyRender={true}
-                editable={true}
+                editable={isContentReady}
                 injectCSS={true}
                 editorClassName="focus:outline-none p-5"
-                {...field}
+                onChange={(content) => field.onChange?.(content)}
               />
             </>
           )}
@@ -355,23 +411,18 @@ const NewArticleForm = () => {
             }
           >
             {!form.formState.isSubmitting ? (
-              "Create Article"
+              "Update Article"
             ) : (
               <span className="flex items-center gap-2">
-                Creating...
+                Updating...
                 <LoaderCircleIcon className="animate-spin" />
               </span>
             )}
           </Button>
         </div>
       </form>
-      {/* {(uploadMutations.isPending || articleMutations.isPending) && (
-        <div className="absolute inset-0 flex z-[100] items-center justify-center bg-black/50">
-          <LoaderCircleIcon className="animate-spin size-10" />
-        </div>
-      )} */}
     </Form>
   );
 };
 
-export default NewArticleForm;
+export default UpdateArticleForm;
