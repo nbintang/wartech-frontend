@@ -94,7 +94,7 @@ export default function UpdateProfile() {
 
   const { mutateAsync: updateProfile, ...updateProfileMutations } =
     usePatchProtectedData({
-      endpoint: `/users/${profile?.id}`,
+      endpoint: `/users/profile`,
       formSchema: updateProfileSchema,
       TAG: "profile",
       redirect: true,
