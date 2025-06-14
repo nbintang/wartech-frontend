@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/tooltip";
 import { validate as validateUUID } from "uuid";
 import fetchSearchedData from "@/lib/fetchSearchData";
+import usePostProtectedData from "@/hooks/hooks-api/usePostProtectedData";
 interface TagInput extends TagApiResponse {
   label: string;
 }
@@ -61,7 +62,13 @@ type ArticleInput = z.infer<typeof articleInputSchema>;
 const NewArticleForm = () => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
   const editorRef = useRef<Editor | null>(null);
-
+  const {} = usePostProtectedData({
+    formSchema: articleInputSchema,
+    TAG: "articles",
+    endpoint: "/articles",
+    redirect: true,
+    redirectUrl: "/admin/dashboard/articles",
+  });
   const form = useForm<ArticleInput>({
     resolver: zodResolver(articleInputSchema),
     defaultValues: {
@@ -255,7 +262,6 @@ const NewArticleForm = () => {
                         name: query,
                       })
                     }
-                    label={"Select Tags"}
                     maxItems={15}
                     {...field}
                   />
@@ -286,7 +292,7 @@ const NewArticleForm = () => {
                 })}
                 editorContentClassName="some-class"
                 output="html"
-                placeholder="Type your description here..."
+                placeholder="Type your content here..."
                 onCreate={handleCreate}
                 autofocus={true}
                 immediatelyRender={true}

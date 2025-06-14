@@ -24,9 +24,12 @@ import { z } from "zod";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
-import { type  UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import { type UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import Link from "next/link";
 import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
+import { toast } from "sonner";
+import catchAxiosError from "@/helpers/catchAxiosError";
+import { useRouter } from "next/navigation";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -42,7 +45,7 @@ const updateProfileSchema = z.object({
       message: "Please upload a valid image file (JPEG, PNG, or WebP).",
     })
     .or(z.string().url())
-    .optional(),
+    .nullable(),
 });
 
 type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;
@@ -63,7 +66,7 @@ export default function UpdateProfile() {
     staleTime: 1000 * 60 * 10,
     retry: false,
   });
-
+  const router = useRouter();
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const form = useForm<UpdateProfileFormValues>({
     resolver: zodResolver(updateProfileSchema),
@@ -84,16 +87,17 @@ export default function UpdateProfile() {
     onDrop,
     accept,
   });
-  const { mutateAsync: uploadImage } = usePostImage({
+  const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
     folder: "users",
     "image-url": profile?.image,
   });
 
-  const { mutate: updateProfile, data } = usePatchProtectedData({
-    endpoint: "/users/profile",
-    formSchema: updateProfileSchema,
-    TAG: "profile",
-  });
+  const { mutateAsync: updateProfile, ...updateProfileMutations } =
+    usePatchProtectedData({
+      endpoint: `/users/${profile?.id}`,
+      formSchema: updateProfileSchema,
+      TAG: "profile",
+    });
   const handleImageUpdate = useCallback(
     (base64: string | null) => {
       setCroppedImage(base64);
@@ -102,7 +106,20 @@ export default function UpdateProfile() {
     },
     [form]
   );
-
+  const handleUpdate = async ({ image }: UpdateProfileFormValues) => {
+    const updatedImage = await uploadImage(image);
+    if (uploadMutations.isError)
+      return toast.error(catchAxiosError(uploadMutations.error));
+    const updatedProfile = await updateProfile({
+      image: updatedImage.secureUrl,
+    });
+    if (updateProfileMutations.isError) {
+      return toast.error(catchAxiosError(updateProfileMutations.error));
+    }
+    toast.success("Profile updated successfully.");
+    router.push("/");
+    return updatedProfile.data;
+  };
   return (
     <>
       {isError ? (
@@ -117,7 +134,7 @@ export default function UpdateProfile() {
       ) : (
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((values) => updateProfile(values))}
+            onSubmit={form.handleSubmit(handleUpdate)}
             className="flex w-full md:w-auto gap-2 max-w-md space-y-4 flex-col justify-center"
           >
             <FormField
@@ -170,7 +187,12 @@ export default function UpdateProfile() {
                 type="submit"
                 variant={"default"}
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                disabled={
+                  form.formState.isSubmitting ||
+                  updateProfileMutations.isPending ||
+                  uploadMutations.isPending ||
+                  selectedFile === null
+                }
               >
                 {!form.formState.isSubmitting ? (
                   "Update Profile"

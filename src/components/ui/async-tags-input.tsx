@@ -404,11 +404,9 @@ const AsyncTagsInput = <T extends TagApiResponse>({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {isLoading ? (
-          value.length === 0 &&
-          loadingSkeleton &&
-          (loadingSkeleton || (
+          (value.length === 0 || loadingSkeleton) && (
             <DefaultLoadingSkeleton label={label ?? "suggestions"} />
-          ))
+          )
         ) : (
           <>
             {filteredSuggestions.map((suggestion, index) => (
@@ -463,9 +461,9 @@ const AsyncTagsInput = <T extends TagApiResponse>({
 
 function DefaultLoadingSkeleton({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center py-2">
-      <Loader className="mr-2 h-4 w-4 animate-spin" />
-      Loading {label}...
+    <div className="flex text-muted-foreground items-center justify-center py-2">
+      <Loader className="mr-2 size-4 animate-spin" />
+      <p className="text-sm"> Loading {label}...</p>
     </div>
   );
 }

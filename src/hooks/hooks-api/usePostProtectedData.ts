@@ -73,3 +73,4 @@ const usePostProtectedData = <TFormSchema extends z.ZodSchema, TResponse>({
     ...mutateOptions,
   });
 };
+export default usePostProtectedData;
