@@ -16,7 +16,6 @@ export type ArticleApiResponse = {
     id: string;
     name: string;
   };
-
   commentsCount: number;
   tagsCount: number;
   likesCount: number;

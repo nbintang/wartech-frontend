@@ -10,7 +10,7 @@ import {
   ClipboardEventHandler,
 } from "react";
 import { Badge } from "./badge";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader, Loader2, X } from "lucide-react";
 import { Input } from "./input";
 import { Button } from "./button";
 import {
@@ -19,22 +19,20 @@ import {
   PopoverContent,
   PopoverAnchor,
 } from "@/components/ui/popover"; // Import Popover components
+import { TagApiResponse } from "@/types/api/TagApiResponse";
 
-// Define the structure for a tag object
-interface Tag {
-  id: string;
-  label: string;
-}
-
-interface AsyncTagInputProps {
-  value: Tag[]; // Changed to Tag[]
-  onChange: (value: Tag[]) => void; // Changed to Tag[]
+interface AsyncTagInputProps<T extends TagApiResponse> {
+  value: T[];
+  onChange: (value: T[]) => void;
   placeholder?: string;
   maxItems?: number;
   minItems?: number;
-  suggestions?: Tag[]; // Changed to Tag[]
-  fecther?: (query: string) => Promise<Tag[]>; // Changed to Promise<Tag[]>
+  suggestions?: T[];
+  fetcher?: (query: string) => Promise<T[]>;
   debounceDelay?: number;
+  loadingSkeleton?: React.ReactNode;
+  notFound?: React.ReactNode;
+  label?: string;
   className?: string;
   disabled?: boolean;
   createOnEnter?: boolean;
@@ -42,73 +40,75 @@ interface AsyncTagInputProps {
   createOnSpace?: boolean;
 }
 
-const AsyncTagsInput = ({
+const AsyncTagsInput = <T extends TagApiResponse>({
   value = [],
   onChange,
   placeholder = "Type to add tags...",
   maxItems = Infinity,
   minItems = 0,
   suggestions = [],
-  fecther,
+  fetcher,
   debounceDelay = 300,
   className,
+  label = "tags",
+  notFound,
   disabled = false,
+  loadingSkeleton,
   createOnEnter = true,
   createOnComma = true,
   createOnSpace = false,
   ...props
-}: AsyncTagInputProps) => {
+}: AsyncTagInputProps<T>) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<Tag[]>([]); // Changed to Tag[]
+  const [filteredSuggestions, setFilteredSuggestions] = useState<T[]>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] =
     useState<number>(-1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
   const debouncedInputValue = useDebounce(inputValue, debounceDelay);
-
-  // Helper to check if a tag (by label or ID) already exists in the current value
   const tagExists = useCallback(
-    (tagToFind: string | Tag): boolean => {
+    (tagToFind: string | T): boolean => {
       if (typeof tagToFind === "string") {
-        return value.some((tag) => tag.label === tagToFind);
+        return value.some((tag) => tag.name === tagToFind);
       }
-      return value.some((tag) => tag.id === tagToFind.id || tag.label === tagToFind.label);
+      return value.some(
+        (tag) => tag.id === tagToFind.id || tag.name === tagToFind.name
+      );
     },
     [value]
   );
 
   // Filter suggestions based on input (for static suggestions)
   useEffect(() => {
-    if (!fecther && inputValue.trim()) {
+    if (!fetcher && inputValue.trim()) {
       const filtered = suggestions.filter(
         (suggestion) =>
-          suggestion.label.toLowerCase().includes(inputValue.toLowerCase()) &&
+          suggestion.name.toLowerCase().includes(inputValue.toLowerCase()) &&
           !tagExists(suggestion)
       );
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
       setSelectedSuggestionIndex(-1);
-    } else if (!fecther && !inputValue.trim()) {
+    } else if (!fetcher && !inputValue.trim()) {
       setFilteredSuggestions([]);
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
     }
-  }, [inputValue, suggestions, tagExists, fecther]);
+  }, [inputValue, suggestions, tagExists, fetcher]);
 
   // Handle async search with debouncing
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (fecther && debouncedInputValue.trim()) {
+      if (fetcher && debouncedInputValue.trim()) {
         setIsLoading(true);
         setShowSuggestions(true);
 
         try {
-          const results = await fecther(debouncedInputValue);
+          const results = await fetcher(debouncedInputValue);
           const filtered = results.filter((result) => !tagExists(result));
           setFilteredSuggestions(filtered);
           if (filtered.length > 0 || inputValue.trim()) {
@@ -124,7 +124,7 @@ const AsyncTagsInput = ({
         } finally {
           setIsLoading(false);
         }
-      } else if (fecther && !debouncedInputValue.trim()) {
+      } else if (fetcher && !debouncedInputValue.trim()) {
         setFilteredSuggestions([]);
         setShowSuggestions(false);
         setSelectedSuggestionIndex(-1);
@@ -133,20 +133,22 @@ const AsyncTagsInput = ({
     };
 
     fetchSuggestions();
-  }, [debouncedInputValue, fecther, tagExists, inputValue]);
+  }, [debouncedInputValue, fetcher, tagExists, inputValue]);
 
   // Add new tag
-  const addTag = useCallback<(tag: Tag | string) => void>(
+  const addTag = useCallback<(tag: T | string) => void>(
     (tag) => {
-      let newTag: Tag | null = null;
-
+      let newTag: T | null = null;
       if (typeof tag === "string") {
         const trimmedTag = tag.trim();
         if (trimmedTag && !tagExists(trimmedTag) && value.length < maxItems) {
           // For newly created tags, you might need a way to generate a unique ID.
           // For simplicity, here we'll use the label as the ID. In a real app,
           // you might want to generate a UUID or get it from a backend.
-          newTag = { id: trimmedTag.toLowerCase().replace(/\s+/g, '-'), label: trimmedTag };
+          newTag = {
+            id: trimmedTag.toLowerCase().replace(/\s+/g, "-"),
+            name: trimmedTag,
+          } as T;
         }
       } else {
         if (!tagExists(tag) && value.length < maxItems) {
@@ -155,7 +157,7 @@ const AsyncTagsInput = ({
       }
 
       if (newTag) {
-        onChange([...value, newTag]);
+        onChange([...value, newTag as T]);
         setInputValue("");
         setSelectedSuggestionIndex(-1);
         inputRef.current?.focus();
@@ -166,7 +168,7 @@ const AsyncTagsInput = ({
   );
 
   // Remove tag
-  const removeTag = useCallback<(tagToRemove: Tag) => void>(
+  const removeTag = useCallback<(tagToRemove: T) => void>(
     (tagToRemove) => {
       if (value.length > minItems) {
         onChange(value.filter((tag) => tag.id !== tagToRemove.id));
@@ -295,17 +297,18 @@ const AsyncTagsInput = ({
         .map((tag) => tag.trim())
         .filter(Boolean);
 
-      const newTags: Tag[] = [...value];
+      const newTags: T[] = [...value];
       potentialTags.forEach((pastedTagLabel) => {
-        // For pasted tags, generate a simple ID.
-        // In a real application, you might want more sophisticated ID generation or a confirmation step.
-        const newTag: Tag = { id: pastedTagLabel.toLowerCase().replace(/\s+/g, '-'), label: pastedTagLabel };
+        const newTag: T = {
+          id: pastedTagLabel.toLowerCase().replace(/\s+/g, "-"),
+          name: pastedTagLabel,
+        } as T;
         if (!tagExists(newTag) && newTags.length < maxItems) {
           newTags.push(newTag);
         }
       });
 
-      onChange(newTags);
+      onChange(newTags as T[]);
       setInputValue("");
     },
     [value, onChange, maxItems, tagExists]
@@ -320,14 +323,13 @@ const AsyncTagsInput = ({
     setShowSuggestions(true);
   }, []);
 
-  const handleSuggestionClick = useCallback<(suggestion: Tag) => void>(
+  const handleSuggestionClick = useCallback<(suggestion: T) => void>(
     (suggestion) => {
       addTag(suggestion);
     },
     [addTag]
   );
 
-  // Handle container click (to focus input)
   const handleContainerClick = useCallback(() => {
     inputRef.current?.focus();
     setActiveIndex(-1);
@@ -359,7 +361,7 @@ const AsyncTagsInput = ({
                 !canRemoveTag && "opacity-60"
               )}
             >
-              <span>{tag.label}</span> {/* Display tag.label */}
+              <span>{tag.name}</span>
               <Button
                 type="button"
                 onClick={(e) => {
@@ -368,7 +370,7 @@ const AsyncTagsInput = ({
                 }}
                 disabled={!canRemoveTag || disabled}
                 className="rounded-full p-0.5 hover:bg-muted-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed size-5"
-                aria-label={`Remove ${tag.label}`}
+                aria-label={`Remove ${tag.name}`}
                 variant={"ghost"}
               >
                 <X className="h-3 w-3" />
@@ -384,7 +386,7 @@ const AsyncTagsInput = ({
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onBlur={() => setShowSuggestions(false)}
-            placeholder={value.length === 0 ? placeholder : ""}
+            placeholder={placeholder ?? `Add ${label}`}
             disabled={!canAddTag || disabled}
             className={cn(
               "flex-1 min-w-[120px] border-none outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
@@ -402,17 +404,16 @@ const AsyncTagsInput = ({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {isLoading ? (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            <span className="text-sm text-muted-foreground">
-              Loading suggestions...
-            </span>
-          </div>
+          value.length === 0 &&
+          loadingSkeleton &&
+          (loadingSkeleton || (
+            <DefaultLoadingSkeleton label={label ?? "suggestions"} />
+          ))
         ) : (
           <>
             {filteredSuggestions.map((suggestion, index) => (
               <div
-                key={suggestion.id} // Use suggestion.id for key
+                key={suggestion.id}
                 className={cn(
                   "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
                   "hover:bg-accent hover:text-accent-foreground",
@@ -422,48 +423,59 @@ const AsyncTagsInput = ({
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 <Check className="mr-2 h-4 w-4 opacity-0" />
-                {suggestion.label} {/* Display suggestion.label */}
+                {suggestion.name}
               </div>
             ))}
 
             {/* Create new option */}
-            {inputValue.trim() &&
-              !tagExists(inputValue.trim()) && ( // Check if label exists
-                <div
-                  className={cn(
-                    "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    filteredSuggestions.length > 0 &&
-                      "border-t border-border mt-1 pt-2"
-                  )}
-                  onClick={() => addTag(inputValue)}
-                >
-                  <Check className="mr-2 h-4 w-4 opacity-0" />
-                  <span className="text-sm text-muted-foreground">
-                    Press Enter or Click to create{" "}
-                    <span className="font-semibold dark:text-white text-black">
-                      "{inputValue.trim()}"
-                    </span>
+            {inputValue.trim() && !tagExists(inputValue.trim()) && (
+              <div
+                className={cn(
+                  "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  filteredSuggestions.length > 0 &&
+                    "border-t border-border mt-1 pt-2"
+                )}
+                onClick={() => addTag(inputValue)}
+              >
+                <Check className="mr-2 h-4 w-4 opacity-0" />
+                <span className="text-sm text-muted-foreground">
+                  Press Enter or Click to create
+                  <span className="font-semibold dark:text-white text-black">
+                    "{inputValue.trim()}"
                   </span>
-                </div>
-              )}
+                </span>
+              </div>
+            )}
 
             {/* No results message */}
             {!isLoading &&
               filteredSuggestions.length === 0 &&
               inputValue.trim() &&
-              fecther && (
-                <div className="flex items-center justify-center py-4">
-                  <span className="text-sm text-muted-foreground">
-                    No suggestions found
-                  </span>
-                </div>
-              )}
+              fetcher &&
+              (notFound || <DefaultNotFound label={label ?? "suggestions"} />)}
           </>
         )}
       </PopoverContent>
     </Popover>
   );
 };
+
+function DefaultLoadingSkeleton({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center py-2">
+      <Loader className="mr-2 h-4 w-4 animate-spin" />
+      Loading {label}...
+    </div>
+  );
+}
+
+function DefaultNotFound({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center py-4">
+      <span className="text-sm text-muted-foreground">No {label} found</span>
+    </div>
+  );
+}
 
 export default AsyncTagsInput;

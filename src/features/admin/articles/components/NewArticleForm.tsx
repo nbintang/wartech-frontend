@@ -33,7 +33,9 @@ import {
 } from "@/components/ui/tooltip";
 import { validate as validateUUID } from "uuid";
 import fetchSearchedData from "@/helpers/fetchSearchData";
-
+interface TagInput extends TagApiResponse {
+  label: string;
+}
 const articleInputSchema = z.object({
   title: z
     .string()
@@ -48,12 +50,14 @@ const articleInputSchema = z.object({
   tags: z.array(
     z.object({
       id: z.string(),
-      label: z.string(),
+      name: z.string(),
+      slug: z.string(),
+      createdAt: z.string().datetime(),
+      updatedAt: z.string().datetime(),
     })
   ),
 });
 type ArticleInput = z.infer<typeof articleInputSchema>;
-
 const NewArticleForm = () => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
   const editorRef = useRef<Editor | null>(null);
@@ -92,7 +96,7 @@ const NewArticleForm = () => {
       content,
       tags: [...existedDataTags],
     };
-    console.log(dataToArticles)
+    console.log(dataToArticles);
   };
   return (
     <Form {...form}>
@@ -245,19 +249,13 @@ const NewArticleForm = () => {
                   minus iste expedita doloribus eos.
                 </FormDescription>
                 <FormControl>
-                  <AsyncTagsInput
-                    fecther={(query) =>
+                  <AsyncTagsInput<TagApiResponse>
+                    fetcher={(query) =>
                       fetchSearchedData<TagApiResponse>("/tags", {
                         name: query,
-                      }).then((res) =>
-                        res.map((tag) => ({
-                          id: tag.id,
-                          label: tag.name,
-                        }))
-                      )
+                      })
                     }
-                    debounceDelay={300}
-                    placeholder="Search or create a tag..."
+                    label={"Select Tags"}
                     maxItems={15}
                     {...field}
                   />
