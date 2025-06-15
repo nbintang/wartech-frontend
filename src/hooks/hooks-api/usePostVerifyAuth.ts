@@ -2,7 +2,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import useTimerCountDown from "../useTimerCountDown";
-import useHandleAuthDialog from "../useHandleAuthDialog";
+import useHandleLoadingDialog from "../useHandleLoadingDialog";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
 }: PostAuthParamsProps<TFormSchema>) => {
   const { startTimer, timer, isTimerStarted } = useTimerCountDown();
   const router = useRouter();
-  const setOpenDialog = useHandleAuthDialog((state) => state.setOpenDialog);
+  const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
   const result = useMutation<
     AxiosResponse<any>,
     unknown,
@@ -73,7 +73,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
       }),
     onMutate: () => {
       setOpenDialog(endpoint, {
-        message: "Verifying your data...",
+        description: "Verifying your data...",
         isLoading: true,
         isError: false,
         isSuccess: false,
@@ -89,7 +89,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
           startTimer(isFromResendEmail);
         } else if (startTime && second) startTimer(second);
         setOpenDialog(endpoint, {
-          message,
+          description: message,
           isSuccess: true,
           isLoading: false,
         });
@@ -100,7 +100,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
     onError: (err) => {
       const message = catchAxiosError(err) ?? "An unknown error occurred.";
       setOpenDialog(endpoint, {
-        message,
+        description: message,
         isError: true,
         isLoading: false,
       });

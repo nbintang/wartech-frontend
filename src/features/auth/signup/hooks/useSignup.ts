@@ -5,7 +5,7 @@ import { useController, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
-import useHandleAuthDialog from "@/hooks/useHandleAuthDialog";
+import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
 import { useMutation } from "@tanstack/react-query";
 import postSignin from "../../../../helpers/postSignin";
 import Cookies from "js-cookie";
@@ -15,7 +15,7 @@ import useTimerCountDown from "@/hooks/useTimerCountDown";
 import { useProgress } from "@bprogress/next";
 
 const useSignUp = () => {
-  const setOpenDialog = useHandleAuthDialog((state) => state.setOpenDialog);
+  const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
   const { startTimer } = useTimerCountDown();
   const loader = useProgress();
   const router = useRouter();
@@ -50,13 +50,13 @@ const useSignUp = () => {
     onMutate: async () => {
       loader.start();
       setOpenDialog("signup", {
-        message: "Processing...",
+        description: "Processing...",
         isLoading: true,
       });
     },
     onSuccess: async (data, variables) => {
       setOpenDialog("signup", {
-        message: "Creating your account...",
+        description: "Creating your account...",
         isLoading: true,
         isSuccess: false,
         isError: false,
@@ -64,7 +64,7 @@ const useSignUp = () => {
       if (!data.verified) {
         startTimer(60);
         setOpenDialog("signup", {
-          message: "Redirecting...",
+          description: "Redirecting...",
           isSuccess: true,
           isLoading: false,
         });
@@ -73,12 +73,12 @@ const useSignUp = () => {
         router.push("/auth/verify");
         form.reset();
       }
-      useHandleAuthDialog.getState().closeDialog();
+      useHandleLoadingDialog.getState().closeDialog();
     },
     onError: (error) => {
       const message = catchAxiosError(error) ?? "An unknown error occurred.";
       setOpenDialog("signup", {
-        message,
+        description: message,
         isLoading: false,
         isError: true,
       });

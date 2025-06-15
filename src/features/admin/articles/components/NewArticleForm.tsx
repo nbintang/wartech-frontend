@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { MinimalTiptapEditor } from "@/components/ui/minimal-tiptap";
 import AsyncTagsInput from "@/components/ui/async-tags-input";
-import { cn } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, LoaderCircleIcon, Trash2Icon } from "lucide-react";
@@ -30,20 +30,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { validate as validateUUID } from "uuid";
 import fetchSearchedData from "@/lib/fetchSearchData";
-import usePostProtectedData from "@/hooks/hooks-api/usePostProtectedData";
 import usePostImage from "@/hooks/hooks-api/usePostImage";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import { ArticleApiPostResponse } from "@/types/api/ArticleApiResponse";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { AxiosResponse } from "axios";
-import { Article } from "@/lib/types";
-import { ArticleTagApiResponse } from "@/types/api/ArticleTagApiResponse";
 import { UploadImageApiResponse } from "@/types/api/UploadImageApiResponse";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -84,6 +83,9 @@ type ArticleInput = z.infer<typeof articleInputSchema>;
 const NewArticleForm = () => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
   const editorRef = useRef<Editor | null>(null);
+  const queryCLient = useQueryClient();
+  const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
+  const router = useRouter();
   const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
     TAG: "profile",
     endpoint: "/users/profile",
@@ -102,28 +104,10 @@ const NewArticleForm = () => {
     },
   });
   console.log(form.formState.errors);
-  const articleRequestSchema = articleInputSchema.transform((data) => {
-    const { tags, image, ...rest } = data;
-    return {
-      ...rest,
-      authorId: profile?.id,
-      image: image as string,
-    };
-  });
-  const { mutateAsync: createArticle, ...articleMutations } =
-    usePostProtectedData<ArticleApiPostResponse, typeof articleRequestSchema>({
-      formSchema: articleRequestSchema,
-      TAG: "articles",
-      endpoint: "/articles",
-      redirect: true,
-      redirectUrl: "/admin/dashboard/articles",
-    });
-
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
     "image-url": null,
     folder: "articles",
   });
-
   const dropZoneConfig: DropzoneOptions = {
     maxSize: 1024 * 1024 * 4,
     multiple: false,
@@ -138,62 +122,70 @@ const NewArticleForm = () => {
     },
     [form]
   );
-const onSubmit = async (data: ArticleInput) => {
-  try {
-    const { tags, image, ...rest } = data;
-    console.log(data)
-    const existedTags = tags.filter((tag) => validateUUID(tag.id));
-    const newTags = tags.filter((tag) => !validateUUID(tag.id));
-    const processedTagIds = [];
+  const { mutateAsync: createArticle, ...createMutations } = useMutation({
+    mutationKey: ["articles"],
+    mutationFn: async (data: ArticleInput) => {
+      const { tags, image, ...rest } = data;
+      const [uploadedImage, resNewTags]: [
+        UploadImageApiResponse,
+        AxiosResponse<ApiResponse<TagApiResponse[]>>
+      ] = await Promise.all([
+        uploadImage(image as File),
+        axiosInstance.post("/protected/tags?bulk=true", {
+          names: tags.map((tag) => tag.name),
+        }),
+      ]);
+      const resNewArticle: AxiosResponse<ApiResponse<ArticleApiPostResponse>> =
+        await axiosInstance.post("/protected/articles", {
+          ...rest,
+          image: uploadedImage.secureUrl,
+          authorId: profile?.id,
+        });
+      await axiosInstance.post("/protected/article-tags?bulk=true", {
+        articleSlug: resNewArticle.data?.data?.slug,
+        tagIds: resNewTags.data?.data?.map((tag) => tag.id),
+      });
+      return resNewArticle;
+    },
+    onMutate: () => {
+      setOpenDialog("new-article", {
+        description: "Creating article...",
+        isLoading: true,
+        isError: false,
+        isSuccess: false,
+      });
+    },
+    onSuccess: () => {
+      queryCLient.invalidateQueries({ queryKey: ["articles"] });
+      useHandleLoadingDialog.getState().closeDialog();
+      toast.success("Article created successfully!", {
+        id: "new-article",
+        duration: 2000,
+      });
+      router.push("/admin/dashboard/articles");
+    },
+    onError: (err) => {
+      const message = catchAxiosError(err) ?? "An unknown error occurred.";
+      setOpenDialog("new-article", {
+        description: message,
+        isError: true,
+        isLoading: false,
+      });
+      return message;
+    },
+  });
 
-    for (const tag of newTags) {
-      try {
-        const resNew = await axiosInstance.post("/protected/tags", { names: [tag.name.trim()] }, { params: { bulk: true } });
-        processedTagIds.push(resNew?.data?.data?.[0]?.id);
-      } catch (error: any) {
-        if (error?.response?.data?.message?.includes("Some tags already exist")) {
-          // fallback: search by name
-          const res = await fetchSearchedData<TagApiResponse>("/tags", { name: tag.name.trim() });
-          if (res?.length) processedTagIds.push(res[0].id);
-        }
-      }
-    }
-    const allTagIds = [
-      ...existedTags.map((tag) => tag.id),
-      ...processedTagIds,
-    ];
-
-    const uploadedImage = await uploadImage(image);
-    const resNewArticle = await createArticle({
-      ...rest,
-      image: uploadedImage.secureUrl,
-      authorId: profile?.id,
-    });
-    console.log(resNewArticle);
-    const resNewArticleTags: AxiosResponse<
-      ApiResponse<ArticleTagApiResponse[]>
-    > = await axiosInstance.post(
-      "/protected/article-tags",
-      {
-        articleSlug: resNewArticle.data?.slug,
-        tagIds: allTagIds,
-      },
-      {
-        params: {
-          bulk: true,
-        },
-      }
-    );
-    console.log(resNewArticleTags);
-    form.reset();
-  } catch (error) {
-    const message = catchAxiosError(error);
-    message && toast.error(message );
-  }
-};
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit((v) =>
+          createArticle({
+            ...v,
+            content: editorRef.current?.getHTML() ?? v.content,
+          })
+        )}
+        className="space-y-6"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -397,11 +389,12 @@ const onSubmit = async (data: ArticleInput) => {
         <div className="flex justify-end">
           <Button
             type="submit"
-            className="md:mt-5 min-w-full md:min-w-xs"
+            className="md:mt-5 cursor-pointer min-w-full md:min-w-xs"
             disabled={
               form.formState.isSubmitting ||
+              !form.formState.isValid ||
               uploadMutations.isPending ||
-              articleMutations.isPending
+              createMutations.isPending
             }
           >
             {!form.formState.isSubmitting ? (
@@ -415,11 +408,6 @@ const onSubmit = async (data: ArticleInput) => {
           </Button>
         </div>
       </form>
-      {/* {(uploadMutations.isPending || articleMutations.isPending) && (
-        <div className="absolute inset-0 flex z-[100] items-center justify-center bg-black/50">
-          <LoaderCircleIcon className="animate-spin size-10" />
-        </div>
-      )} */}
     </Form>
   );
 };

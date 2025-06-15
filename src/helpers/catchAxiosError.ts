@@ -15,8 +15,8 @@ const catchAxiosError = (error: unknown): string | undefined => {
     }
     const errorServerMessage = error.response?.data.message;
     console.log(errorServerMessage);
-    return errorServerMessage;
+    return errorServerMessage?? "An unknown error occurred.";
   }
 };
 
-export default catchAxiosError;
+export default catchAxiosError 

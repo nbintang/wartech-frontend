@@ -36,8 +36,18 @@ import fetchSearchedData from "@/lib/fetchSearchData";
 import usePostImage from "@/hooks/hooks-api/usePostImage";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
-import { ArticlebySlugApiResponse } from "@/types/api/ArticleApiResponse";
+import {
+  ArticleApiPostResponse,
+  ArticlebySlugApiResponse,
+} from "@/types/api/ArticleApiResponse";
 import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UploadImageApiResponse } from "@/types/api/UploadImageApiResponse";
+import { AxiosResponse } from "axios";
+import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
+import catchAxiosError from "@/helpers/catchAxiosError";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -80,7 +90,9 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
   const [isContentReady, setIsContentReady] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const editorRef = useRef<Editor | null>(null);
-
+  const queryCLient = useQueryClient();
+  const router = useRouter();
+  const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
   const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
     TAG: "profile",
     endpoint: "/users/profile",
@@ -97,22 +109,6 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
       retry: false,
     });
   console.log(article);
-
-  const { mutateAsync: createArticle, ...articleMutations } =
-    usePatchProtectedData({
-      formSchema: articleInputSchema.transform((data) => {
-        const { tags, image, ...rest } = data;
-        return {
-          ...rest,
-          image: image as string,
-          tagIds: tags.map((tag) => tag.id),
-        };
-      }),
-      TAG: "articles",
-      endpoint: "/articles",
-      redirect: true,
-      redirectUrl: "/admin/dashboard/articles",
-    });
 
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
     "image-url": article?.image,
@@ -154,7 +150,7 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
         image: article.image,
         tags: article.tags,
       });
-    if (editorRef.current && article.content) {
+      if (editorRef.current && article.content) {
         // Only set if the editor's current content is different to avoid unnecessary updates
         if (editorRef.current.getHTML() !== article.content) {
           editorRef.current.commands.setContent(article.content, false);
@@ -170,26 +166,70 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
     }
   }, [article, isInitialized, form]);
 
-  const onSubmit = async (data: ArticleInput) => {
-    const { tags, image, ...rest } = data;
-    const content = editorRef.current?.getHTML() ?? "";
-    // const uploadedImage = await uploadImage(image);
-    const existedDataTags = tags.filter((tag) => validateUUID(tag.id));
-    const newTags = tags.filter((tag) => !validateUUID(tag.id));
-    const dataToArticles = {
-      ...rest,
-      content,
-      tagIds: existedDataTags.map((tag) => tag.id),
-      //   image: uploadedImage.secureUrl,
-      authorId: profile?.id,
-    };
-    console.log(dataToArticles);
-    form.reset();
-  };
+  const { mutateAsync: updateArticle, ...updateMutations } = useMutation({
+    mutationKey: ["articles"],
+    mutationFn: async (data: ArticleInput) => {
+      const { tags, image, ...rest } = data;
+      const [uploadedImage, resNewTags]: [
+        UploadImageApiResponse,
+        AxiosResponse<ApiResponse<TagApiResponse[]>>
+      ] = await Promise.all([
+        uploadImage(image as File),
+        axiosInstance.post("/protected/tags?bulk=true", {
+          names: tags.map((tag) => tag.name),
+        }),
+      ]);
+      const resNewArticle: AxiosResponse<ApiResponse<ArticleApiPostResponse>> =
+        await axiosInstance.patch("/protected/articles", {
+          ...rest,
+          image: uploadedImage.secureUrl,
+          authorId: profile?.id,
+        });
+      await axiosInstance.post("/protected/article-tags?bulk=true", {
+        articleSlug: resNewArticle.data?.data?.slug,
+        tagIds: resNewTags.data?.data?.map((tag) => tag.id),
+      });
+      return resNewArticle;
+    },
+    onMutate: () => {
+      setOpenDialog("new-article", {
+        description: "Updating article...",
+        isLoading: true,
+        isError: false,
+        isSuccess: false,
+      });
+    },
+    onSuccess: () => {
+      queryCLient.invalidateQueries({ queryKey: ["articles"] });
+      useHandleLoadingDialog.getState().closeDialog();
+      toast.success("Article updated successfully!", {
+        id: "new-article",
+        duration: 2000,
+      });
+      router.push("/admin/dashboard/articles");
+    },
+    onError: (err) => {
+      const message = catchAxiosError(err) ?? "An unknown error occurred.";
+      setOpenDialog("new-article", {
+        description: message,
+        isError: true,
+        isLoading: false,
+      });
+      return message;
+    },
+  });
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit((v) =>
+          updateArticle({
+            ...v,
+            content: editorRef.current?.getHTML() ?? v.content,
+          })
+        )}
+        className="space-y-6"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -379,7 +419,7 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
                 </FormDescription>
               </div>
               <MinimalTiptapEditor
-          key={field.value}
+                key={field.value}
                 throttleDelay={0}
                 className={cn("w-full min-h-screen", {
                   "border-destructive focus-within:border-destructive":
@@ -407,7 +447,7 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
               form.formState.isSubmitting ||
               !form.formState.isValid ||
               uploadMutations.isPending ||
-              articleMutations.isPending
+              updateMutations.isPending
             }
           >
             {!form.formState.isSubmitting ? (

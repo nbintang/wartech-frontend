@@ -28,3 +28,16 @@ export const isExpiredToken = (token: string) => {
   const currentTime = Date.now() / 1000;
   return decodedToken.exp && decodedToken.exp < currentTime;
 };
+
+
+export const slugify = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '')
+    .trim();
+
+export const seconds = (sec: number) => sec * 1000;

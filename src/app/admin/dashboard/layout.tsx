@@ -1,4 +1,4 @@
-import ArticleImageDialog from "@/components/ArticleDialog";
+import ArticleImageDialog from "@/components/ArticleImageDialog";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
 import SearchDashboardMenu from "@/components/SearchDashboardMenu";
