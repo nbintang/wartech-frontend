@@ -85,7 +85,7 @@ const articleInputSchema = z.object({
 });
 type ArticleInput = z.infer<typeof articleInputSchema>;
 
-const UpdateArticleForm = ({ slug }: { slug: string }) => {
+const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResponse, profile: UserProfileApiResponse }) => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
   const [isContentReady, setIsContentReady] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
@@ -93,22 +93,6 @@ const UpdateArticleForm = ({ slug }: { slug: string }) => {
   const queryCLient = useQueryClient();
   const router = useRouter();
   const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
-  const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
-    TAG: "profile",
-    endpoint: "/users/profile",
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
-    retry: false,
-  });
-  const { data: article, ...articleQuery } =
-    useFetchProtectedData<ArticlebySlugApiResponse>({
-      TAG: "articles",
-      endpoint: `/articles/${slug}`,
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 10,
-      retry: false,
-    });
-  console.log(article);
 
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
     "image-url": article?.image,

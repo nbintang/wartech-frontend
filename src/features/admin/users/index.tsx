@@ -10,8 +10,8 @@ import useTable from "../hooks/useTable";
 import DataTableFilters from "../components/DataTableFilters";
 export default function UserDashboardPage() {
   const searchParams = useSearchParams();
-  const page = Number(searchParams.get("page") ?? "1");
-  const limit = Number(searchParams.get("limit") ?? "10");
+  const page = Number(searchParams.get("page") ?? 1);
+  const limit = Number(searchParams.get("limit") ?? 10);
   const { data, isLoading, isSuccess } = useFetchProtectedData<
     PaginatedApiResponse<UsersApiResponse>
   >({

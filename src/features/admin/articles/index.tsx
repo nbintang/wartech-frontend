@@ -14,8 +14,8 @@ import ArticleTableFilters from "./components/ArticleTableFilters";
 
 const ArticleDashboardPage = () => {
   const searchParams = useSearchParams();
-  const page = Number(searchParams.get("page") ?? "1");
-  const limit = Number(searchParams.get("limit") ?? "10");
+  const page = Number(searchParams.get("page") ?? 1);
+  const limit = Number(searchParams.get("limit") ?? 10);
   const { data, isSuccess, isLoading } = useFetchProtectedData<
     PaginatedApiResponse<ArticlesApiResponse>
   >({
@@ -37,9 +37,7 @@ const ArticleDashboardPage = () => {
   const visibleRowCountOnPage = table.getPaginationRowModel().rows.length;
   return (
     <>
-      {isLoading && (
-        <SkeletonDashboardCard className="h-[700px]   " />
-      )}
+      {isLoading && <SkeletonDashboardCard className="h-[700px]   " />}
 
       {isSuccess && data && (
         <>
@@ -49,12 +47,15 @@ const ArticleDashboardPage = () => {
             <div className="text-sm text-muted-foreground">
               {selectedRowCount} of {visibleRowCountOnPage} Row(s) selected
             </div>
-            <PaginationWithLinks
-   
-              page={data?.meta.currentPage ?? page}
-              pageSize={data?.meta.itemPerPages ?? limit}
-              totalCount={data?.meta.totalItems ?? 0}
-            />
+            {isSuccess && data?.meta ? (
+              <PaginationWithLinks
+                page={data.meta.currentPage}
+                pageSize={data.meta.itemPerPages}
+                totalCount={data.meta.totalItems}
+              />
+            ) : (
+              <div>Memuat pagination...</div>
+            )}
           </div>
         </>
       )}

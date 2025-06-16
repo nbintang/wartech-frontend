@@ -13,7 +13,6 @@ type FetchParamsProps<TResponse> = {
   TAG: FetchParamsKey;
   params?: any;
   endpoint: string;
-  id?: string;
 } & Omit<
   UseQueryOptions<TResponse>,
   "queryKey" | "queryFn" | "placeholderData"
@@ -22,12 +21,11 @@ type FetchParamsProps<TResponse> = {
 const useFetchProtectedData = <TResponse>({
   TAG,
   endpoint,
-  id,
   params,
   ...queryOptions
 }: FetchParamsProps<TResponse>) => {
   const result = useQuery({
-    queryKey: [TAG,id],
+    queryKey: [TAG, endpoint, params],
     queryFn: async (): Promise<TResponse> => {
       const res = await axiosInstance.get(`/protected${endpoint}`, {
         params,
