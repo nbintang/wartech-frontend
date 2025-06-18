@@ -1,6 +1,6 @@
 import React from "react";
 
-const DashboardFragments = ({
+const DashboardLayoutFragments = ({
   title,
   description,
   children,
@@ -20,4 +20,4 @@ const DashboardFragments = ({
   );
 };
 
-export default DashboardFragments;
+export default DashboardLayoutFragments;

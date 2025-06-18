@@ -36,8 +36,6 @@ import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import { ArticleApiPostResponse } from "@/types/api/ArticleApiResponse";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { AxiosResponse } from "axios";
-import { UploadImageApiResponse } from "@/types/api/UploadImageApiResponse";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -103,7 +101,6 @@ const NewArticleForm = () => {
       tags: [],
     },
   });
-  console.log(form.formState.errors);
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
     "image-url": null,
     folder: "articles",
@@ -126,21 +123,22 @@ const NewArticleForm = () => {
     mutationKey: ["articles"],
     mutationFn: async (data: ArticleInput) => {
       const { tags, image, ...rest } = data;
-      const [uploadedImage, resNewTags]: [
-        UploadImageApiResponse,
-        AxiosResponse<ApiResponse<TagApiResponse[]>>
-      ] = await Promise.all([
+      const [uploadedImage, resNewTags] = await Promise.all([
         uploadImage(image as File),
-        axiosInstance.post("/protected/tags?bulk=true", {
-          names: tags.map((tag) => tag.name),
-        }),
+        axiosInstance.post<ApiResponse<TagApiResponse[]>>(
+          "/protected/tags?bulk=true",
+          {
+            names: tags.map((tag) => tag.name),
+          }
+        ),
       ]);
-      const resNewArticle: AxiosResponse<ApiResponse<ArticleApiPostResponse>> =
-        await axiosInstance.post("/protected/articles", {
-          ...rest,
-          image: uploadedImage.secureUrl,
-          authorId: profile?.id,
-        });
+      const resNewArticle = await axiosInstance.post<
+        ApiResponse<ArticleApiPostResponse>
+      >("/protected/articles", {
+        ...rest,
+        image: uploadedImage.secureUrl,
+        authorId: profile?.id,
+      });
       await axiosInstance.post("/protected/article-tags?bulk=true", {
         articleSlug: resNewArticle.data?.data?.slug,
         tagIds: resNewTags.data?.data?.map((tag) => tag.id),
@@ -376,8 +374,6 @@ const NewArticleForm = () => {
                 output="html"
                 placeholder="Type your content here..."
                 onCreate={handleCreate}
-                autofocus={true}
-                immediatelyRender={true}
                 editable={true}
                 injectCSS={true}
                 editorClassName="focus:outline-none p-5"

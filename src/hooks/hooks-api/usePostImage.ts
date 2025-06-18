@@ -29,12 +29,23 @@ const usePostImage = ({
       file: File | string | null
     ): Promise<UploadImageApiResponse> => {
       const formData = new FormData();
-      const isBase64String = typeof file === "string";
-      if (!file) return { secureUrl: "", publicId: "", createdAt: null };
+      if (!file)
+        return { secureUrl: imageUrl ?? "", publicId: "", createdAt: null };
       let convertedFile: File;
+      const isBase64String =
+        typeof file === "string" && file.startsWith("data:image/");
       if (isBase64String) {
         convertedFile = base64ToFile(file, "image.png");
-      } else convertedFile = file;
+      } else if (file instanceof File) {
+        convertedFile = file;
+      } else {
+        return {
+          secureUrl: file,
+          publicId: "",
+          createdAt: null,
+        };
+      }
+
       formData.append("file", convertedFile);
       const profileResponse = await axiosInstance.post(
         "/protected/upload",

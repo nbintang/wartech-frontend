@@ -29,8 +29,6 @@ export type ArticlesApiResponse = {
 export interface ArticlebySlugApiResponse
   extends Omit<ArticlesApiResponse, "author" | "category"> {
   content: string;
-  authorId: string;
-  categoryId: string;
   // relationships
   category: {
     id: string;

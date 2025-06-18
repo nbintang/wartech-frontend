@@ -1,6 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import ArticleFormSkeleton from "@/features/admin/articles/components/ArticleFormSkeleton";
 import UpdateArticleForm from "@/features/admin/articles/components/UpdateArticleForm";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { ArticlebySlugApiResponse } from "@/types/api/ArticleApiResponse";
@@ -44,49 +45,7 @@ export default function ArticleBySlugPage({
           </CardContent>
         </Card>
       )}
-      {isLoading && (
-        <Card>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-1/7 " />
-                <Skeleton className="h-4 w-1/5 " />
-              </div>
-              <Skeleton className="h-6 w-full " />
-            </div>
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-1/7 " />
-                <Skeleton className="h-4 w-1/5 " />
-              </div>
-              <Skeleton className="min-h-80 w-full " />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-1/7 " />
-                  <Skeleton className="h-4 w-1/3" />
-                </div>
-                <Skeleton className="h-6 w-full " />
-              </div>
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-1/7 " />
-                  <Skeleton className="h-4 w-1/3 " />
-                </div>
-                <Skeleton className="h-6 w-full " />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Skeleton className="h-6 w-1/7 " />
-                <Skeleton className="h-4 w-1/5 " />
-              </div>
-              <Skeleton className="min-h-96 w-full " />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {isLoading && <ArticleFormSkeleton />}
     </>
   );
 }

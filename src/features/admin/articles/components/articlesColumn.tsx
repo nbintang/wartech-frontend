@@ -132,7 +132,7 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
       const article = row.original;
       const { mutate } = useDeleteProtectedData({
         TAG: "articles",
-        endpoint: `/articles/${article.slug}`,
+        endpoint: `/articles/${article.id}`,
       });
       const handleDelete = () =>
         setOpenDialog({

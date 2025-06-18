@@ -1,15 +1,15 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
-import DashboardFragments from "@/features/admin/components/DashboardFragments";
+import DashboardLayoutFragments from "@/features/admin/components/DashboardLayoutFragments";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
-      <DashboardFragments
+      <DashboardLayoutFragments
         title="New Article"
         description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni blanditiis officia tempora."
       >
         {children}
-      </DashboardFragments>
+      </DashboardLayoutFragments>
     </TooltipProvider>
   );
 }

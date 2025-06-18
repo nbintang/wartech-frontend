@@ -5,18 +5,45 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, PenIcon } from "lucide-react";
+import {
+  ChevronDown,
+  LoaderCircleIcon,
+  PenIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@tanstack/react-table";
 import Link from "next/link";
-type ArticleTableFiltersProps<TData> = {
+import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
+type ArticleTableFiltersProps<TData extends { id: string }> = {
   table: Table<TData>;
   filterSearch: string;
 };
-const ArticleTableFilters = <TData,>({
+const ArticleTableFilters = <TData extends { id: string }>({
   table,
   filterSearch,
 }: ArticleTableFiltersProps<TData>) => {
+  const selectedDataIds = table
+    .getFilteredSelectedRowModel()
+    .rows.map((art) => art.original.id);
+  const isRowSelected = table.getFilteredSelectedRowModel().rows.length > 0;
+  const setOpenDialog = useHandleWarningDialog((state) => state.setOpenDialog);
+  const { mutate, isPending } = useDeleteProtectedData({
+    TAG: "articles",
+    endpoint: `/articles`,
+  });
+  const handleOpenDialog = () => {
+    setOpenDialog({
+      isOpen: true,
+      title: "Delete Article",
+      description:
+        "Are you sure you want to delete this article? This action cannot be undone.",
+      onConfirm: () => {
+        mutate({ ids: selectedDataIds });
+      },
+    });
+  };
   return (
     <div className="flex flex-wrap-reverse items-center justify-between gap-4 mb-6">
       <Input
@@ -31,10 +58,36 @@ const ArticleTableFilters = <TData,>({
       />
 
       <div className="flex  items-center gap-2">
-        <Button variant="default" size={"sm"} className="md:mr-4 m-auto" asChild>
-  
+        {isRowSelected && (
+          <Button
+            onClick={handleOpenDialog}
+            variant="destructive"
+            size={"sm"}
+            className="md:mr-4 m-auto"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <LoaderCircleIcon className="size-4 animate-spin" /> Deleting...
+              </span>
+            ) : (
+              <>
+                <Trash2Icon className="size-4" />
+                Delete
+              </>
+            )}
+          </Button>
+        )}
+        <Button
+          variant="default"
+          size={"sm"}
+          className="md:mr-4 m-auto"
+          asChild
+        >
           <Link href="/admin/dashboard/articles/new-articles">
-                  <PenIcon className="size-4" />New Article</Link>
+            <PenIcon className="size-4" />
+            New Article
+          </Link>
         </Button>
 
         <DropdownMenu>

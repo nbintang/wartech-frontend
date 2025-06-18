@@ -25,6 +25,7 @@ interface AsyncTagInputProps<T extends TagApiResponse> {
   value: T[];
   onChange: (value: T[]) => void;
   placeholder?: string;
+  maxInputPlaceholder?: string;
   maxItems?: number;
   minItems?: number;
   suggestions?: T[];
@@ -44,7 +45,8 @@ const AsyncTagsInput = <T extends TagApiResponse>({
   value = [],
   onChange,
   placeholder = "Type to add tags...",
-  maxItems = Infinity,
+  maxInputPlaceholder = "Max Input Reached",
+  maxItems = 5,
   minItems = 0,
   suggestions = [],
   fetcher,
@@ -386,7 +388,11 @@ const AsyncTagsInput = <T extends TagApiResponse>({
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onBlur={() => setShowSuggestions(false)}
-            placeholder={placeholder ?? `Add ${label}`}
+            placeholder={
+              maxItems === value.length
+                ? maxInputPlaceholder
+                : placeholder ?? `Add ${label}`
+            }
             disabled={!canAddTag || disabled}
             className={cn(
               "flex-1 min-w-[120px] border-none outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",

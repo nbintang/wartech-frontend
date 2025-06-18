@@ -57,7 +57,7 @@ useEffect(() => {
         <DialogHeader>
           <div
             className={cn(
-              "flex items-center justify-center size-12 mx-auto rounded-full  h-28 mb-4"
+              "flex items-center justify-center size-12 mx-auto rounded-full  h-28 mb-1"
             )}
           >
             {isLoading ? (
@@ -76,7 +76,7 @@ useEffect(() => {
             {isSuccess
               ? "Success!"
               : isError
-              ? "Failed to verify"
+              ? "Failed to Process"
               : "Processing..."}
           </DialogTitle>
           <DialogDescription className="text-center">

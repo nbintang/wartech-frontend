@@ -31,19 +31,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { validate as validateUUID } from "uuid";
 import fetchSearchedData from "@/lib/fetchSearchData";
 import usePostImage from "@/hooks/hooks-api/usePostImage";
-import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import {
   ArticleApiPostResponse,
   ArticlebySlugApiResponse,
 } from "@/types/api/ArticleApiResponse";
-import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UploadImageApiResponse } from "@/types/api/UploadImageApiResponse";
-import { AxiosResponse } from "axios";
 import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
@@ -77,15 +72,21 @@ const articleInputSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
-      slug: z.string(),
-      createdAt: z.string().datetime(),
-      updatedAt: z.string().datetime(),
+      slug: z.string().optional(),
+      createdAt: z.string().datetime().optional(),
+      updatedAt: z.string().datetime().optional(),
     })
   ),
 });
 type ArticleInput = z.infer<typeof articleInputSchema>;
 
-const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResponse, profile: UserProfileApiResponse }) => {
+const UpdateArticleForm = ({
+  article,
+  profile,
+}: {
+  article: ArticlebySlugApiResponse;
+  profile: UserProfileApiResponse;
+}) => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
   const [isContentReady, setIsContentReady] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
@@ -130,7 +131,7 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
       form.reset({
         title: article.title,
         content: article.content,
-        categoryId: article.categoryId,
+        categoryId: article.category.id,
         image: article.image,
         tags: article.tags,
       });
@@ -154,29 +155,38 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
     mutationKey: ["articles"],
     mutationFn: async (data: ArticleInput) => {
       const { tags, image, ...rest } = data;
-      const [uploadedImage, resNewTags]: [
-        UploadImageApiResponse,
-        AxiosResponse<ApiResponse<TagApiResponse[]>>
-      ] = await Promise.all([
+
+      const [uploadedImage, resNewTags] = await Promise.all([
         uploadImage(image as File),
-        axiosInstance.post("/protected/tags?bulk=true", {
-          names: tags.map((tag) => tag.name),
+        axiosInstance.post<ApiResponse<TagApiResponse[]>>(
+          "/protected/tags?bulk=true",
+          { names: tags.map((tag) => tag.name) }
+        ),
+      ]);
+
+      const resUpdateArticle = await axiosInstance.patch<
+        ApiResponse<ArticleApiPostResponse>
+      >(`/protected/articles/${article.slug}`, {
+        ...rest,
+        image: uploadedImage.secureUrl,
+        authorId: profile?.id,
+      });
+
+      await Promise.all([
+        axiosInstance.delete<ApiResponse>(
+          `/protected/article-tags/${resUpdateArticle.data?.data?.slug}`,
+          { params: { bulk: true } }
+        ),
+        axiosInstance.post("/protected/article-tags?bulk=true", {
+          articleSlug: resUpdateArticle.data?.data?.slug,
+          tagIds: resNewTags.data?.data?.map((tag) => tag.id),
         }),
       ]);
-      const resNewArticle: AxiosResponse<ApiResponse<ArticleApiPostResponse>> =
-        await axiosInstance.patch("/protected/articles", {
-          ...rest,
-          image: uploadedImage.secureUrl,
-          authorId: profile?.id,
-        });
-      await axiosInstance.post("/protected/article-tags?bulk=true", {
-        articleSlug: resNewArticle.data?.data?.slug,
-        tagIds: resNewTags.data?.data?.map((tag) => tag.id),
-      });
-      return resNewArticle;
+      router.push("/admin/dashboard/articles");
+      return resUpdateArticle;
     },
     onMutate: () => {
-      setOpenDialog("new-article", {
+      setOpenDialog("update-article", {
         description: "Updating article...",
         isLoading: true,
         isError: false,
@@ -187,14 +197,13 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
       queryCLient.invalidateQueries({ queryKey: ["articles"] });
       useHandleLoadingDialog.getState().closeDialog();
       toast.success("Article updated successfully!", {
-        id: "new-article",
+        id: "update-article",
         duration: 2000,
       });
-      router.push("/admin/dashboard/articles");
     },
     onError: (err) => {
       const message = catchAxiosError(err) ?? "An unknown error occurred.";
-      setOpenDialog("new-article", {
+      setOpenDialog("update-article", {
         description: message,
         isError: true,
         isLoading: false,
@@ -202,7 +211,8 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
       return message;
     },
   });
-
+  console.log("Form State:", form.formState);
+  console.log("Form Values:", form.getValues());
   return (
     <Form {...form}>
       <form
@@ -337,9 +347,14 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
                 <FormControl>
                   <AsyncSelect<CategorysApiResponse>
                     fetcher={(query) =>
-                      fetchSearchedData<CategorysApiResponse>("/categories", {
-                        name: query,
-                      })
+                      !field.onChange
+                        ? fetchSearchedData<CategorysApiResponse>(
+                            `/categories/${article.category.id}`
+                          )
+                        : fetchSearchedData<CategorysApiResponse>(
+                            `/categories`,
+                            { name: query }
+                          )
                     }
                     renderOption={(item) => <div>{item.name}</div>}
                     getOptionValue={(item) => item.id}
@@ -381,7 +396,8 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
                       })
                     }
                     maxItems={5}
-                    {...field}
+                    value={field.value}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
@@ -403,19 +419,15 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
                 </FormDescription>
               </div>
               <MinimalTiptapEditor
-                key={field.value}
                 throttleDelay={0}
                 className={cn("w-full min-h-screen", {
                   "border-destructive focus-within:border-destructive":
                     form.formState.errors.content,
                 })}
-                editorContentClassName="some-class"
                 output="html"
                 placeholder="Type your content here..."
                 onCreate={handleCreate}
-                autofocus={true}
-                immediatelyRender={true}
-                editable={isContentReady}
+                editable={article.content ? true : false}
                 injectCSS={true}
                 editorClassName="focus:outline-none p-5"
                 onChange={(content) => field.onChange?.(content)}
@@ -427,12 +439,7 @@ const UpdateArticleForm = ({ article, profile }: { article: ArticlebySlugApiResp
           <Button
             type="submit"
             className="md:mt-5 min-w-full md:min-w-xs"
-            disabled={
-              form.formState.isSubmitting ||
-              !form.formState.isValid ||
-              uploadMutations.isPending ||
-              updateMutations.isPending
-            }
+            disabled={form.formState.isSubmitting || !form.formState.isDirty  || updateMutations.isPending}
           >
             {!form.formState.isSubmitting ? (
               "Update Article"

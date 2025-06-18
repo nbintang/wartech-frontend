@@ -5,6 +5,7 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -24,25 +25,31 @@ type MutateParamKeys =
 type DeleteProtectedDataProps = {
   TAG: MutateParamKeys;
   endpoint: string;
+  params?: string;
   redirect?: boolean;
   redirectUrl?: string;
-} & Omit<UseMutationOptions, IgnoreMutationOptions>;
+} & Omit<
+  UseMutationOptions<AxiosResponse, unknown, { ids: string[] } | void, unknown>,
+  IgnoreMutationOptions
+>;
 
 const useDeleteProtectedData = ({
   TAG,
   endpoint,
+  params,
   redirect,
   redirectUrl,
   ...mutateOptions
 }: DeleteProtectedDataProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
-  return useMutation({
+  return useMutation<AxiosResponse, unknown, { ids: string[] } | void>({
     mutationKey: [TAG],
-    mutationFn: async () => {
-      const response = await axiosInstance.delete(`/protected${endpoint}`);
-      return response.data;
-    },
+    mutationFn: async (values: { ids: string[] } | void) =>
+      await axiosInstance.delete(`/protected${endpoint}`, {
+        data: values,
+        params,
+      }),
     onSuccess: () => {
       toast.success(
         `${TAG.slice(0, 1).toUpperCase() + TAG.slice(1)} deleted successfully!`,
