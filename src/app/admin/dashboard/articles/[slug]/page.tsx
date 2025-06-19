@@ -275,7 +275,7 @@ export default function ArticleBySlugPage({
               <CollapsibleContent className="my-3">
                 {dummyComments.comments.length > 0 ? (
                   dummyComments.comments.map((comment) => (
-                    <CommentItem key={comment.id} comment={comment} parentCommentContent="dawda" isChild />
+                    <CommentItem key={comment.id} comment={comment}  isChild />
                   ))
                 ) : (
                   <Card>
