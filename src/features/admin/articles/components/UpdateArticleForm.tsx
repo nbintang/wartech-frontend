@@ -136,7 +136,6 @@ const UpdateArticleForm = ({
         tags: article.tags,
       });
       if (editorRef.current && article.content) {
-        // Only set if the editor's current content is different to avoid unnecessary updates
         if (editorRef.current.getHTML() !== article.content) {
           editorRef.current.commands.setContent(article.content, false);
         }
@@ -172,16 +171,18 @@ const UpdateArticleForm = ({
         authorId: profile?.id,
       });
 
-      await Promise.all([
-        axiosInstance.delete<ApiResponse>(
-          `/protected/article-tags/${resUpdateArticle.data?.data?.slug}`,
-          { params: { bulk: true } }
-        ),
-        axiosInstance.post("/protected/article-tags?bulk=true", {
-          articleSlug: resUpdateArticle.data?.data?.slug,
-          tagIds: resNewTags.data?.data?.map((tag) => tag.id),
-        }),
-      ]);
+      (
+        await Promise.allSettled([
+          axiosInstance.delete<ApiResponse>(
+            `/protected/article-tags/${resUpdateArticle.data?.data?.slug}`,
+            { params: { bulk: true } }
+          ),
+          axiosInstance.post("/protected/article-tags?bulk=true", {
+            articleSlug: resUpdateArticle.data?.data?.slug,
+            tagIds: resNewTags.data?.data?.map((tag) => tag.id),
+          }),
+        ])
+      ).map((res) => res.status === "rejected" && console.error(res.reason));
       router.push("/admin/dashboard/articles");
       return resUpdateArticle;
     },
@@ -211,8 +212,6 @@ const UpdateArticleForm = ({
       return message;
     },
   });
-  console.log("Form State:", form.formState);
-  console.log("Form Values:", form.getValues());
   return (
     <Form {...form}>
       <form
@@ -333,12 +332,12 @@ const UpdateArticleForm = ({
           )}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="categoryId"
             render={({ field }) => (
-              <FormItem>
+              <FormItem >
                 <FormLabel className="text-xl ">Categories</FormLabel>
                 <FormDescription>
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni
@@ -382,7 +381,7 @@ const UpdateArticleForm = ({
             control={form.control}
             name="tags"
             render={({ field }) => (
-              <FormItem>
+              <FormItem >
                 <FormLabel className="text-xl">Tags</FormLabel>
                 <FormDescription>
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni
@@ -404,13 +403,12 @@ const UpdateArticleForm = ({
               </FormItem>
             )}
           />
-        </div>
         <FormField
           control={form.control}
           name="content"
           render={({ field }) => (
             <>
-              <div className="mb-5">
+              <div >
                 <FormLabel className="text-2xl">Content</FormLabel>
                 <FormDescription>
                   Lorem ipsum dolor sit amet consectetur adipisicing elit.
@@ -419,8 +417,8 @@ const UpdateArticleForm = ({
                 </FormDescription>
               </div>
               <MinimalTiptapEditor
-                throttleDelay={0}
-                className={cn("w-full min-h-screen", {
+                throttleDelay={3000}
+                className={cn("h-full md:col-span-2 min-h-56 w-full rounded-xl", {
                   "border-destructive focus-within:border-destructive":
                     form.formState.errors.content,
                 })}
@@ -429,17 +427,23 @@ const UpdateArticleForm = ({
                 onCreate={handleCreate}
                 editable={article.content ? true : false}
                 injectCSS={true}
-                editorClassName="focus:outline-none p-5"
+                editorContentClassName="overflow-auto h-full"
+                editorClassName="focus:outline-none px-5 py-4 h-full"
                 onChange={(content) => field.onChange?.(content)}
               />
             </>
           )}
         />
+        </div>
         <div className="flex justify-end">
           <Button
             type="submit"
             className="md:mt-5 min-w-full md:min-w-xs"
-            disabled={form.formState.isSubmitting || !form.formState.isDirty  || updateMutations.isPending}
+            disabled={
+              form.formState.isSubmitting ||
+              !form.formState.isDirty ||
+              updateMutations.isPending
+            }
           >
             {!form.formState.isSubmitting ? (
               "Update Article"

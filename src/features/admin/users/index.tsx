@@ -3,7 +3,7 @@ import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
 import DataTable from "../components/DataTable";
 import usersPageColumn from "./components/usersColumn";
-import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
+import DataTableSkeleton from "../components/DataTableSkeleton";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
 import { useSearchParams } from "next/navigation";
 import useTable from "../hooks/useTable";
@@ -33,7 +33,7 @@ export default function UserDashboardPage() {
   return (
     <>
       {isLoading && (
-        <SkeletonDashboardCard className="md:h-[500px]   " />
+        <DataTableSkeleton className="md:h-[500px]   " />
       )}
       {isSuccess && data && (
    <>

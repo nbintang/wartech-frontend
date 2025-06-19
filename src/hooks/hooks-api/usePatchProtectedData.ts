@@ -1,5 +1,6 @@
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { capitalizeFirstLetter } from "@/lib/utils";
 import {
   useMutation,
   UseMutationOptions,
@@ -68,7 +69,7 @@ const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
     onSuccess: () => {
       toast.success(
         `${
-          TAG[0].slice(0, 1).toUpperCase() + TAG[0].slice(1)
+          capitalizeFirstLetter(typeof TAG === "string" ? TAG : TAG[0])
         } updated successfully!`,
         { id: TAG[0] as MutateParamKeys }
       );

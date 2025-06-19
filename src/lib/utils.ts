@@ -1,11 +1,10 @@
 import * as jose from "jose";
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
-
 
 type Role = "ADMIN" | "REPORTER" | "READER";
 export type JwtPayload = {
@@ -29,15 +28,17 @@ export const isExpiredToken = (token: string) => {
   return decodedToken.exp && decodedToken.exp < currentTime;
 };
 
-
 export const slugify = (str: string) =>
   str
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '')
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "")
     .trim();
 
 export const seconds = (sec: number) => sec * 1000;
+
+export const capitalizeFirstLetter = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();

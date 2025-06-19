@@ -15,16 +15,23 @@ import { useShallow } from "zustand/shallow";
 import { Button } from "./ui/button";
 
 export default function WarningDialog() {
-  const { isOpen, setOpenDialog, title, description, onConfirm } =
-    useHandleWarningDialog(
-      useShallow((state) => ({
-        isOpen: state.isOpen,
-        setOpenDialog: state.setOpenDialog,
-        title: state.title,
-        description: state.description,
-        onConfirm: state.onConfirm,
-      }))
-    );
+  const {
+    isOpen,
+    setOpenDialog,
+    title,
+    description,
+    onConfirm,
+    buttonVariants,
+  } = useHandleWarningDialog(
+    useShallow((state) => ({
+      isOpen: state.isOpen,
+      setOpenDialog: state.setOpenDialog,
+      title: state.title,
+      description: state.description,
+      onConfirm: state.onConfirm,
+      buttonVariants: state.buttonVariants,
+    }))
+  );
   return (
     <AlertDialog
       open={isOpen}
@@ -34,6 +41,7 @@ export default function WarningDialog() {
           title,
           description,
           onConfirm,
+          buttonVariants,
         });
       }}
     >
@@ -45,7 +53,10 @@ export default function WarningDialog() {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button variant={"destructive"} className="text-white" onClick={onConfirm}>
+            <Button
+              variant={buttonVariants || "destructive"}
+              onClick={onConfirm}
+            >
               Continue
             </Button>
           </AlertDialogAction>

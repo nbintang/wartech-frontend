@@ -1,5 +1,6 @@
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { capitalizeFirstLetter } from "@/lib/utils";
 import {
   useMutation,
   UseMutationOptions,
@@ -52,7 +53,7 @@ const useDeleteProtectedData = ({
       }),
     onSuccess: () => {
       toast.success(
-        `${TAG.slice(0, 1).toUpperCase() + TAG.slice(1)} deleted successfully!`,
+        `${capitalizeFirstLetter(TAG)} deleted successfully!`,
         { id: TAG }
       );
       if (redirect && redirectUrl) router.push(redirectUrl);

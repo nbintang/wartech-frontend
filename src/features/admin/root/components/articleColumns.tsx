@@ -2,9 +2,9 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
+import { capitalizeFirstLetter } from "@/lib/utils";
 export const articleColumns: ColumnDef<ArticlesApiResponse>[] = [
   {
     accessorKey: "title",
@@ -20,7 +20,7 @@ export const articleColumns: ColumnDef<ArticlesApiResponse>[] = [
       const status = row.original.status;
       return (
         <Badge variant={status === "PUBLISHED" ? "default" : "outline"}>
-          {status.slice(0, 1) + status.slice(1).toLowerCase()}
+          {capitalizeFirstLetter(status)}
         </Badge>
       );
     },

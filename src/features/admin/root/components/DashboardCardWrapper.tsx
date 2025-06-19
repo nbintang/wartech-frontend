@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import React from 'react'
 import DashboardRootCardLayout from './DashboardRootCardLayout';
 import { cn } from '@/lib/utils';
-import SkeletonDashboardCard from '../../components/SkeletonDashboardCard';
+import DataTableSkeleton from '../../components/DataTableSkeleton';
 interface DashboardCardWrapperProps extends React.ComponentProps<typeof Card> {
   isLoading: boolean;
   isFetching?: boolean;
@@ -29,7 +29,7 @@ const DashboardCardWrapper = ({
         redirectUrl={redirectUrl}
         className={cn("relative", className)}
       >
-        <SkeletonDashboardCard className='h-full' />
+        <DataTableSkeleton className='h-full' />
       </DashboardRootCardLayout>
     );
   }

@@ -11,17 +11,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
+import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 import useHandleImageDialog from "@/hooks/useHandlerImageDialog";
 import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
+import { useProgress } from "@bprogress/next";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
+type Status = "PUBLISHED" | "DRAFT" | "ARCHIVED";
 const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
   {
     id: "select",
@@ -47,7 +52,15 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
   },
   {
     accessorKey: "title",
-    header: "Title",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Title
+        <ArrowUpDown />
+      </Button>
+    ),
   },
   {
     accessorKey: "image",
@@ -89,16 +102,68 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge
-        variant={
-          row.getValue("status") === "PUBLISHED" ? "default" : "secondary"
-        }
-      >
-        {String(row.getValue("status")).slice(0, 1) +
-          String(row.getValue("status")).slice(1).toLowerCase()}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const articleSlug = row.original.slug;
+      const statusArt = ["PUBLISHED", "DRAFT", "ARCHIVED"] as const;
+      const { start, stop } = useProgress();
+      const setOpenDialog = useHandleWarningDialog(
+        (state) => state.setOpenDialog
+      );
+      const { mutate, isPending } = usePatchProtectedData({
+        endpoint: `/articles/${articleSlug}`,
+        TAG: "articles",
+        formSchema: z.object({
+          status: z.enum(statusArt),
+        }),
+      });
+
+      const handleStatusChange = async (status: Status) =>
+        setOpenDialog({
+          isOpen: true,
+          title: "Change status",
+          description: `Are you sure you want to change the status of this article to ${status}?`,
+          buttonVariants: "default",
+          onConfirm: () => {
+            start();
+            mutate({
+              status,
+            });
+            stop();
+          },
+        });
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Badge
+              variant={
+                row.getValue("status") === "PUBLISHED" ? "default" : "secondary"
+              }
+              className="cursor-pointer hover:opacity-80"
+            >
+              {capitalizeFirstLetter(row.getValue("status"))}
+            </Badge>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {statusArt.map((status) => (
+              <DropdownMenuItem
+                key={status}
+                onClick={() => handleStatusChange(status as Status)}
+                className={cn(
+                  "my-1 cursor-pointer",
+                  row.getValue("status") === status && "bg-muted"
+                )}
+                disabled={row.getValue("status") === status || isPending}
+              >
+                {capitalizeFirstLetter(status)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
   {
     accessorKey: "likesCount",
@@ -111,16 +176,6 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
         {row.getValue("likesCount")}
       </Badge>
     ),
-  },
-  {
-    accessorKey: "publishedAt",
-    header: "Published",
-    cell: ({ row }) =>
-      row.original.publishedAt ? (
-        format(new Date(row.getValue("publishedAt")), "PPP")
-      ) : (
-        <p className="text-muted-foreground">N/A</p>
-      ),
   },
   {
     id: "actions",
@@ -160,9 +215,9 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
                 })
               )}
             >
-            <span className="block max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+              <span className="block max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
                 Copy {article.title} ID
-            </span>
+              </span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

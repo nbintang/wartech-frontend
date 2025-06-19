@@ -1,20 +1,24 @@
 export interface CommentApiResponse {
-  id: string;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
-  isEdited: boolean;
+  id: string
+  content: string
+  createdAt: string
+  updatedAt: string
+  isEdited: boolean
   user: {
-    id: string;
-    name: string;
-    email:string;
-    image: string;
-  };
+    id: string
+    name: string
+    image: string | null
+    email: string
+  }
   article: {
-    id: string;
-    title: string;
-    slug: string;
-    publishedAt: string;
-  };
-  children: any[];
+    id: string
+    title: string
+    slug: string
+    publishedAt: string | null
+  }
+  children: CommentApiResponse[]
+}
+
+export interface CommentData {
+  comments: CommentApiResponse[]
 }

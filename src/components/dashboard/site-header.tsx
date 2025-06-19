@@ -27,8 +27,7 @@ export function SiteHeader() {
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
-    retry: false,
-    id,
+    retry: false
   });
   useEffect(() => {
     if (id && isSuccess && user) {

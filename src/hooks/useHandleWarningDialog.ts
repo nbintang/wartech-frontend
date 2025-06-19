@@ -1,9 +1,11 @@
+import { ButtonVariants } from "@/components/ui/button";
 import { create } from "zustand";
 
 type AlertDialogStore = {
   title: string;
   description?: string;
   isOpen: boolean;
+  buttonVariants?: ButtonVariants["variant"];
   setOpenDialog: ({
     isOpen,
     title,
@@ -13,6 +15,7 @@ type AlertDialogStore = {
     title: string;
     description?: string;
     onConfirm?: () => void;
+    buttonVariants?: ButtonVariants["variant"];
   }) => void;
   onConfirm: () => void;
   closeDialog: () => void;
@@ -23,8 +26,15 @@ const useHandleWarningDialog = create<AlertDialogStore>((set) => ({
   description: "",
   isOpen: false,
   message: "",
-  setOpenDialog: ({ isOpen, title, description, onConfirm }) =>
-    set({ isOpen, title, description, onConfirm }),
+  buttonVariants: "destructive",
+  setOpenDialog: ({ isOpen, title, description, onConfirm, buttonVariants }) =>
+    set({
+      isOpen,
+      title,
+      description,
+      onConfirm,
+      buttonVariants,
+    }),
   closeDialog: () => set({ isOpen: false, title: "", description: "" }),
   onConfirm: () => {},
 }));

@@ -5,7 +5,7 @@ import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import React from "react";
 import useTable from "../hooks/useTable";
 import articlePageColumn from "./components/articlesColumn";
-import SkeletonDashboardCard from "../components/SkeletonDashboardCard";
+import DataTableSkeleton from "../components/DataTableSkeleton";
 import DataTableFilters from "../components/DataTableFilters";
 import DataTable from "../components/DataTable";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
@@ -37,7 +37,7 @@ const ArticleDashboardPage = () => {
   const visibleRowCountOnPage = table.getPaginationRowModel().rows.length;
   return (
     <>
-      {isLoading && <SkeletonDashboardCard className="h-[700px]   " />}
+      {isLoading && <DataTableSkeleton className="h-[700px]   " />}
 
       {isSuccess && data && (
         <>
