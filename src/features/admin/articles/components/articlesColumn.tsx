@@ -165,18 +165,7 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
       );
     },
   },
-  {
-    accessorKey: "likesCount",
-    header: "Likes",
-    cell: ({ row }) => (
-      <Badge
-        className="font-medium h-5 min-w-5 rounded-full px-1 font-mono tabular-nums"
-        variant={"destructive"}
-      >
-        {row.getValue("likesCount")}
-      </Badge>
-    ),
-  },
+
   {
     id: "actions",
     enableHiding: false,

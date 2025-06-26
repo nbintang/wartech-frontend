@@ -21,197 +21,6 @@ import {
 import { ChevronsUpDown, MessageCircle, MessageSquare } from "lucide-react";
 import { CommentItem } from "@/features/admin/root/components/CommentItem";
 
-export const dummyComments: CommentData = {
-  comments: [
-    {
-      id: "1",
-      content: "Komentar utama A",
-      createdAt: "2025-06-19T10:00:00.000Z",
-      updatedAt: "2025-06-19T10:00:00.000Z",
-      isEdited: false,
-      user: {
-        id: "user-1",
-        name: "User A",
-        image: "https://www.gravatar.com/avatar/a?d=mp&f=y",
-        email: "usera@example.com",
-      },
-      article: {
-        id: "article-1",
-        title: "Artikel 1",
-        slug: "artikel-1",
-        publishedAt: "2025-06-19T09:00:00.000Z",
-      },
-      children: [
-        {
-          id: "2",
-          content: "Balasan ke komentar A",
-          createdAt: "2025-06-19T10:05:00.000Z",
-          updatedAt: "2025-06-19T10:05:00.000Z",
-          isEdited: false,
-          user: {
-            id: "user-2",
-            name: "User B",
-            image: "https://www.gravatar.com/avatar/b?d=mp&f=y",
-            email: "userb@example.com",
-          },
-          article: {
-            id: "article-1",
-            title: "Artikel 1",
-            slug: "artikel-1",
-            publishedAt: "2025-06-19T09:00:00.000Z",
-          },
-          children: [
-            {
-              id: "3",
-              content: "Balasan ke balasan A",
-              createdAt: "2025-06-19T10:10:00.000Z",
-              updatedAt: "2025-06-19T10:10:00.000Z",
-              isEdited: true,
-              user: {
-                id: "user-3",
-                name: "User C",
-                image: "https://www.gravatar.com/avatar/c?d=mp&f=y",
-                email: "userc@example.com",
-              },
-              article: {
-                id: "article-1",
-                title: "Artikel 1",
-                slug: "artikel-1",
-                publishedAt: "2025-06-19T09:00:00.000Z",
-              },
-              children: [
-                {
-                  id: "4",
-                  content: "Balasan level 4 - ini sangat dalam!",
-                  createdAt: "2025-06-19T10:15:00.000Z",
-                  updatedAt: "2025-06-19T10:15:00.000Z",
-                  isEdited: false,
-                  user: {
-                    id: "user-4",
-                    name: "User D",
-                    image: "https://www.gravatar.com/avatar/d?d=mp&f=y",
-                    email: "userd@example.com",
-                  },
-                  article: {
-                    id: "article-1",
-                    title: "Artikel 1",
-                    slug: "artikel-1",
-                    publishedAt: "2025-06-19T09:00:00.000Z",
-                  },
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: "5",
-          content: "Balasan lain ke komentar A",
-          createdAt: "2025-06-19T10:20:00.000Z",
-          updatedAt: "2025-06-19T10:20:00.000Z",
-          isEdited: false,
-          user: {
-            id: "user-5",
-            name: "User E",
-            image: null,
-            email: "usere@example.com",
-          },
-          article: {
-            id: "article-1",
-            title: "Artikel 1",
-            slug: "artikel-1",
-            publishedAt: "2025-06-19T09:00:00.000Z",
-          },
-          children: [],
-        },
-      ],
-    },
-    {
-      id: "6",
-      content: "Komentar utama B - ini adalah komentar terpisah",
-      createdAt: "2025-06-19T11:00:00.000Z",
-      updatedAt: "2025-06-19T11:00:00.000Z",
-      isEdited: false,
-      user: {
-        id: "user-6",
-        name: "User F",
-        image: "https://www.gravatar.com/avatar/f?d=mp&f=y",
-        email: "userf@example.com",
-      },
-      article: {
-        id: "article-1",
-        title: "Artikel 1",
-        slug: "artikel-1",
-        publishedAt: "2025-06-19T09:00:00.000Z",
-      },
-      children: [
-        {
-          id: "7",
-          content: "Balasan ke komentar B",
-          createdAt: "2025-06-19T11:05:00.000Z",
-          updatedAt: "2025-06-19T11:05:00.000Z",
-          isEdited: false,
-          user: {
-            id: "user-7",
-            name: "User G",
-            image: "https://www.gravatar.com/avatar/g?d=mp&f=y",
-            email: "userg@example.com",
-          },
-          article: {
-            id: "article-1",
-            title: "Artikel 1",
-            slug: "artikel-1",
-            publishedAt: "2025-06-19T09:00:00.000Z",
-          },
-          children: [
-            {
-              id: "8",
-              content:
-                "Nested reply yang sangat panjang untuk menguji bagaimana tampilan komentar ketika kontennya cukup panjang dan membutuhkan beberapa baris untuk ditampilkan dengan baik.",
-              createdAt: "2025-06-19T11:10:00.000Z",
-              updatedAt: "2025-06-19T11:12:00.000Z",
-              isEdited: true,
-              user: {
-                id: "user-8",
-                name: "User H",
-                image: null,
-                email: "userh@example.com",
-              },
-              article: {
-                id: "article-1",
-                title: "Artikel 1",
-                slug: "artikel-1",
-                publishedAt: "2025-06-19T09:00:00.000Z",
-              },
-              children: [],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "9",
-      content: "Komentar standalone tanpa balasan",
-      createdAt: "2025-06-19T12:00:00.000Z",
-      updatedAt: "2025-06-19T12:00:00.000Z",
-      isEdited: false,
-      user: {
-        id: "user-9",
-        name: "User I",
-        image: "https://www.gravatar.com/avatar/i?d=mp&f=y",
-        email: "useri@example.com",
-      },
-      article: {
-        id: "article-1",
-        title: "Artikel 1",
-        slug: "artikel-1",
-        publishedAt: "2025-06-19T09:00:00.000Z",
-      },
-      children: [],
-    },
-  ],
-};
-
 export default function ArticleBySlugPage({
   params,
 }: {
@@ -240,25 +49,25 @@ export default function ArticleBySlugPage({
     gcTime: 1000 * 60 * 10,
     retry: false,
   });
-  // const { data: comments, ...commentsQuery } = useFetchProtectedData<
-  //   PaginatedApiResponse<CommentApiResponse>
-  // >({
-  //   TAG: "comments",
-  //   endpoint: `/comments`,
-  //   params: { "article-slug": article?.slug },
-  //   staleTime: 1000 * 60 * 5,
-  //   gcTime: 1000 * 60 * 10,
-  //   retry: false,
-  //   enabled: !!article?.slug,
-  // });
-  // useEffect(() => {
-  //   if (commentsQuery.isSuccess && comments?.items) {
-  //     useCommentStore.getState().setComments(comments.items);
-  //   }
-  // }, [commentsQuery.isSuccess, comments]);
+  const { data: comments, ...commentsQuery } = useFetchProtectedData<
+    PaginatedApiResponse<CommentApiResponse>
+  >({
+    TAG: "comments",
+    endpoint: `/comments`,
+    params: { "article-slug": article?.slug },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    retry: false,
+    enabled: !!article?.slug,
+  });
+  useEffect(() => {
+    if (commentsQuery.isSuccess && comments?.items) {
+      useCommentStore.getState().setComments(comments.items);
+    }
+  }, [commentsQuery.isSuccess, comments]);
 
-  // console.log("comments", comments);
-  // console.log(article);
+  console.log("comments", comments);
+  console.log(article);
   return (
     <>
       {isSuccess && article && profile && (
@@ -273,9 +82,11 @@ export default function ArticleBySlugPage({
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="my-3">
-                {dummyComments.comments.length > 0 ? (
-                  dummyComments.comments.map((comment) => (
-                    <CommentItem key={comment.id} comment={comment}  isChild />
+                {commentsQuery.isSuccess &&
+                comments &&
+                comments?.items.length > 0 ? (
+                  comments?.items.map((comment) => (
+                    <CommentItem key={comment.id} comment={comment} isChild />
                   ))
                 ) : (
                   <Card>

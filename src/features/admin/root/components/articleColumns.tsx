@@ -33,18 +33,6 @@ export const articleColumns: ColumnDef<ArticlesApiResponse>[] = [
     ),
   },
   {
-    accessorKey: "likesCount",
-    header: "Likes",
-    cell: ({ row }) => (
-      <Badge
-        className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums"
-        variant="destructive"
-      >
-        {row.original.likesCount}
-      </Badge>
-    ),
-  },
-  {
     accessorKey: "publishedAt",
     header: "Published",
     cell: ({ row }) => {
