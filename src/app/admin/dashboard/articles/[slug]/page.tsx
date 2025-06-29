@@ -21,8 +21,6 @@ import {
 import { ChevronsUpDown, MessageSquare } from "lucide-react";
 import { CommentItem } from "@/features/admin/root/components/CommentItem";
 
-
-
 export default function ArticleBySlugPage({
   params,
 }: {
@@ -83,9 +81,11 @@ export default function ArticleBySlugPage({
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="my-3">
-                {isSuccess && comments && comments?.items?.length > 0 ? (
+                {commentsQuery.isSuccess &&
+                comments &&
+                comments?.items.length > 0 ? (
                   comments?.items.map((comment) => (
-                    <CommentItem key={comment.id} comment={comment}  isChild />
+                    <CommentItem key={comment.id} comment={comment} isChild />
                   ))
                 ) : (
                   <Card>

@@ -16,6 +16,7 @@ export interface CommentApiResponse {
     slug: string
     publishedAt: string | null
   }
+  likes: number;
   children: CommentApiResponse[]
 }
 

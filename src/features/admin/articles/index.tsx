@@ -29,6 +29,7 @@ const ArticleDashboardPage = () => {
       limit,
     },
   });
+  console.log(data)
   const { table } = useTable<ArticlesApiResponse>({
     columns: articlePageColumn,
     data: data?.items ?? [],

@@ -106,7 +106,7 @@ const UpdateArticleForm = ({
       title: "",
       content: "",
       categoryId: "",
-      image: null,
+      image:  null ,
       tags: [],
     },
   });
@@ -284,11 +284,14 @@ const UpdateArticleForm = ({
                     ) : typeof field.value === "string" && field.value ? (
                       <div className="z-30">
                         <Image
-                          src={field.value}
+                          src={field.value }
                           alt={form.getValues("title") || "Article Image"}
                           className="w-full h-full object-contain"
                           width={400}
                           height={400}
+                          onError={() => {
+                            field.onChange("/images/placeholder.png");
+                          }}
                         />
                       </div>
                     ) : (

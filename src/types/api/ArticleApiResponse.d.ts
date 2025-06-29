@@ -18,7 +18,6 @@ export type ArticlesApiResponse = {
   };
   commentsCount: number;
   tagsCount: number;
-  likesCount: number;
   tags: {
     id: string;
     name: string;
