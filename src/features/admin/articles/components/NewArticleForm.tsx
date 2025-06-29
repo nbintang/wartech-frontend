@@ -127,9 +127,7 @@ const NewArticleForm = () => {
         uploadImage(image as File),
         axiosInstance.post<ApiResponse<TagApiResponse[]>>(
           "/protected/tags?bulk=true",
-          {
-            names: tags.map((tag) => tag.name),
-          }
+          { names: tags.map((tag) => tag.name) }
         ),
       ]);
       const resNewArticle = await axiosInstance.post<

@@ -51,9 +51,6 @@ export function CommentItem({
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
-
-  // Check if this is a parent comment with children
-
   const hasChildren = comment.children && comment.children.length > 0;
   const maxDepth = 6; // Increase max depth for deeper nesting
   const children = hasChildren ? (comment as CommentApiResponse).children : [];
