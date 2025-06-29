@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import Link from "next/link";
-import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
 const usersPageColumn: ColumnDef<UsersApiResponse>[] = [
   {

@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandDialog,
 } from "@/components/ui/command";
-import useSearchDashboardMenu from "@/hooks/useSearchDashboardMenu";
+import useSearchDashboardMenu from "@/hooks/store/useSearchDashboardMenu";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { navData } from "./dashboard/app-sidebar";

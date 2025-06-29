@@ -1,6 +1,6 @@
 "use client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import useHandleImageDialog from "@/hooks/useHandlerImageDialog";
+import useHandleImageDialog from "@/hooks/store/useHandlerImageDialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import Image from "next/image";
 import React from "react";

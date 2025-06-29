@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { MinimalTiptapEditor } from "@/components/ui/minimal-tiptap";
+import { MinimalTiptapArticle } from "@/components/ui/minimal-tiptap";
 import AsyncTagsInput from "@/components/ui/async-tags-input";
 import { cn, slugify } from "@/lib/utils";
 import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
@@ -40,7 +40,7 @@ import catchAxiosError from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
+import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -362,7 +362,7 @@ const NewArticleForm = () => {
                   veniam ut pariatur cupiditate. Temporibus.
                 </FormDescription>
               </div>
-              <MinimalTiptapEditor
+              <MinimalTiptapArticle
                 throttleDelay={0}
                 className={cn("w-full min-h-screen", {
                   "border-destructive focus-within:border-destructive":

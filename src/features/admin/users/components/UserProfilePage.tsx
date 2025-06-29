@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2Icon } from "lucide-react";
 import UserProfileSkeletonCard from "./UserProfileSkeletonCard";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
-import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 
 export default function UserProfilePage({ id }: { id: string }) {
   const setOpenDialog = useHandleWarningDialog((state) => state.setOpenDialog);

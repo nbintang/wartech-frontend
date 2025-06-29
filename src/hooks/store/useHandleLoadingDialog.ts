@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { seconds } from "../lib/utils";
+import { seconds } from "../../lib/utils";
 type AuthDialogOptions = {
   isLoading: boolean;
   description: string;

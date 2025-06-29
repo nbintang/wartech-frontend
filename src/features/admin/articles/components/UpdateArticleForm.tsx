@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { MinimalTiptapEditor } from "@/components/ui/minimal-tiptap";
+import { MinimalTiptapArticle } from "@/components/ui/minimal-tiptap";
 import AsyncTagsInput from "@/components/ui/async-tags-input";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
@@ -39,13 +39,12 @@ import {
   ArticlebySlugApiResponse,
 } from "@/types/api/ArticleApiResponse";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
+import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { defineImageSchema, imageSchemOptions } from "@/schemas/imageSchema";
 
-const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 const articleInputSchema = z.object({
   title: z
     .string()
@@ -55,18 +54,7 @@ const articleInputSchema = z.object({
     })
     .trim(),
   content: z.string().min(1, { message: "Content is required." }),
-  image: z
-    .instanceof(File, {
-      message: "Please upload an image.",
-    })
-    .refine((file) => file.size <= MAX_FILE_SIZE, {
-      message: `The image is too large. Please choose an image smaller than  1MB.`,
-    })
-    .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
-      message: "Please upload a valid image file (JPEG, PNG, or WebP).",
-    })
-    .or(z.string().url())
-    .nullable(),
+  image: defineImageSchema(),
   categoryId: z.string().uuid(),
   tags: z.array(
     z.object({
@@ -88,7 +76,6 @@ const UpdateArticleForm = ({
   profile: UserProfileApiResponse;
 }) => {
   const [files, setFiles] = useState<File[] | null | undefined>(null);
-  const [isContentReady, setIsContentReady] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const editorRef = useRef<Editor | null>(null);
   const queryCLient = useQueryClient();
@@ -106,7 +93,7 @@ const UpdateArticleForm = ({
       title: "",
       content: "",
       categoryId: "",
-      image:  null ,
+      image: null,
       tags: [],
     },
   });
@@ -144,8 +131,6 @@ const UpdateArticleForm = ({
       if (typeof article.image === "string") {
         setFiles(null);
       }
-
-      setIsContentReady(true);
       setIsInitialized(true);
     }
   }, [article, isInitialized, form]);
@@ -183,7 +168,7 @@ const UpdateArticleForm = ({
           }),
         ])
       ).map((res) => res.status === "rejected" && console.error(res.reason));
-      router.push("/admin/dashboard/articles");
+
       return resUpdateArticle;
     },
     onMutate: () => {
@@ -201,6 +186,7 @@ const UpdateArticleForm = ({
         id: "update-article",
         duration: 2000,
       });
+      router.push("/admin/dashboard/articles");
     },
     onError: (err) => {
       const message = catchAxiosError(err) ?? "An unknown error occurred.";
@@ -250,7 +236,7 @@ const UpdateArticleForm = ({
                 Lorem ipsum dolor sit amet consectetur adipisicing elit.
                 Incidunt mollitia inventore totam?
               </FormDescription>
-              <FormControl>
+              <FormControl className="relative rounded-lg">
                 <FileUploader
                   value={files}
                   onValueChange={(newFiles) => {
@@ -258,44 +244,39 @@ const UpdateArticleForm = ({
                     field.onChange(newFiles?.[0]);
                   }}
                   dropzoneOptions={dropZoneConfig}
-                  className="relative  rounded-lg p-2"
+                  className="relative rounded-lg"
                 >
                   <FileInput
                     className={cn(
-                      "h-80  overflow-hidden bg-accent/50 outline-white flex items-center justify-center",
+                      "h-80 w-full bg-accent/50 outline-white flex items-center justify-center p-6",
+                      "rounded-lg overflow-hidden",
                       files && files.length > 0
                         ? ""
-                        : "outline-1 outline-dashed"
+                        : "outline-1 outline-dashed outline-offset-2"
                     )}
                   >
-                    {files && files.length > 0 ? (
-                      // Render newly selected file
-                      files.map((file, i) => (
-                        <div key={i} className="z-30">
-                          <Image
-                            src={URL.createObjectURL(file)}
-                            alt={file.name}
-                            className="w-full h-full object-contain"
-                            width={400}
-                            height={400}
-                          />
-                        </div>
-                      ))
-                    ) : typeof field.value === "string" && field.value ? (
-                      <div className="z-30">
+                    {(files && files.length > 0) ||
+                    (typeof field.value === "string" && field.value) ? (
+                      <div className="relative  rounded-xl overflow-hidden sm:scale-[40%] scale-75">
                         <Image
-                          src={field.value }
-                          alt={form.getValues("title") || "Article Image"}
-                          className="w-full h-full object-contain"
-                          width={400}
-                          height={400}
-                          onError={() => {
-                            field.onChange("/images/placeholder.png");
-                          }}
+                          src={
+                            files && files.length > 0
+                              ? URL.createObjectURL(files[0])
+                              : typeof field.value === "string"
+                              ? field.value
+                              : ""
+                          }
+                          alt={
+                            files && files.length > 0
+                              ? files[0].name
+                              : form.getValues("title") || "Article Image"
+                          }
+                          width={imageSchemOptions.MAX_DIMENSIONS.width}
+                          height={imageSchemOptions.MAX_DIMENSIONS.height}
+                          className="object-fit " // Keep object-contain to fit without cropping
                         />
                       </div>
                     ) : (
-                      // Render upload prompt if no file or URL
                       <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
                         <CloudUpload className="text-muted-foreground" />
                         <p className="mb-1 text-sm text-muted-foreground">
@@ -314,6 +295,7 @@ const UpdateArticleForm = ({
                         <Button
                           variant={"ghost"}
                           size={"icon"}
+                          type="button"
                           className="absolute top-2 right-2 z-50"
                           onClick={() => {
                             setFiles(null);
@@ -340,7 +322,7 @@ const UpdateArticleForm = ({
             control={form.control}
             name="categoryId"
             render={({ field }) => (
-              <FormItem >
+              <FormItem>
                 <FormLabel className="text-xl ">Categories</FormLabel>
                 <FormDescription>
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni
@@ -384,7 +366,7 @@ const UpdateArticleForm = ({
             control={form.control}
             name="tags"
             render={({ field }) => (
-              <FormItem >
+              <FormItem>
                 <FormLabel className="text-xl">Tags</FormLabel>
                 <FormDescription>
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni
@@ -406,37 +388,40 @@ const UpdateArticleForm = ({
               </FormItem>
             )}
           />
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <>
-              <div >
-                <FormLabel className="text-2xl">Content</FormLabel>
-                <FormDescription>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Itaque consequatur deleniti repellendus eum error nam numquam
-                  veniam ut pariatur cupiditate. Temporibus.
-                </FormDescription>
-              </div>
-              <MinimalTiptapEditor
-                throttleDelay={3000}
-                className={cn("h-full md:col-span-2 min-h-56 w-full rounded-xl", {
-                  "border-destructive focus-within:border-destructive":
-                    form.formState.errors.content,
-                })}
-                output="html"
-                placeholder="Type your content here..."
-                onCreate={handleCreate}
-                editable={article.content ? true : false}
-                injectCSS={true}
-                editorContentClassName="overflow-auto h-full"
-                editorClassName="focus:outline-none px-5 py-4 h-full"
-                onChange={(content) => field.onChange?.(content)}
-              />
-            </>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <>
+                <div>
+                  <FormLabel className="text-2xl">Content</FormLabel>
+                  <FormDescription>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                    Itaque consequatur deleniti repellendus eum error nam
+                    numquam veniam ut pariatur cupiditate. Temporibus.
+                  </FormDescription>
+                </div>
+                <MinimalTiptapArticle
+                  throttleDelay={3000}
+                  className={cn(
+                    "h-full md:col-span-2 min-h-56 w-full rounded-xl",
+                    {
+                      "border-destructive focus-within:border-destructive":
+                        form.formState.errors.content,
+                    }
+                  )}
+                  output="html"
+                  placeholder="Type your content here..."
+                  onCreate={handleCreate}
+                  editable={article.content ? true : false}
+                  injectCSS={true}
+                  editorContentClassName="overflow-auto h-full"
+                  editorClassName="focus:outline-none px-5 py-4 h-full"
+                  onChange={(content) => field.onChange?.(content)}
+                />
+              </>
+            )}
+          />
         </div>
         <div className="flex justify-end">
           <Button

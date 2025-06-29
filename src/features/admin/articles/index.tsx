@@ -11,6 +11,7 @@ import DataTable from "../components/DataTable";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
 import { useSearchParams } from "next/navigation";
 import ArticleTableFilters from "./components/ArticleTableFilters";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ArticleDashboardPage = () => {
   const searchParams = useSearchParams();
@@ -29,7 +30,7 @@ const ArticleDashboardPage = () => {
       limit,
     },
   });
-  console.log(data)
+  console.log(data);
   const { table } = useTable<ArticlesApiResponse>({
     columns: articlePageColumn,
     data: data?.items ?? [],
@@ -48,15 +49,14 @@ const ArticleDashboardPage = () => {
             <div className="text-sm text-muted-foreground">
               {selectedRowCount} of {visibleRowCountOnPage} Row(s) selected
             </div>
-            {isSuccess && data?.meta ? (
+            {isSuccess && data?.meta && data.meta.totalPages > 1 && (
               <PaginationWithLinks
                 page={data.meta.currentPage}
                 pageSize={data.meta.itemPerPages}
                 totalCount={data.meta.totalItems}
               />
-            ) : (
-              <div>Memuat pagination...</div>
             )}
+            {isLoading && <Skeleton className="h-6 w-1/2 md:w-1/12 " />}
           </div>
         </>
       )}

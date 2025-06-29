@@ -12,8 +12,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
 import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
-import useHandleImageDialog from "@/hooks/useHandlerImageDialog";
-import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useHandleImageDialog from "@/hooks/store/useHandlerImageDialog";
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import { useProgress } from "@bprogress/next";
@@ -71,16 +71,15 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
       );
       const [imageLoading, setImageLoading] = useState(true);
       return (
-        <div className="relative w-[60px] h-[60px] overflow-hidden rounded-md">
+        <div className="relative aspect-video overflow-hidden rounded-md">
           {imageLoading && (
             <Skeleton className="absolute top-0 left-0 w-full h-full" />
           )}
           <Image
             src={row.getValue("image")}
             alt={row.getValue("title")}
-            width={60}
-            height={60}
-            className={`rounded-md object-cover transition-opacity duration-300 ${
+            fill
+            className={`rounded-md  object-cover transition-opacity duration-300 ${
               imageLoading ? "opacity-0" : "opacity-100"
             }`}
             onClick={() =>

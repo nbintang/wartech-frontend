@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import useSearchDashboardMenu from "@/hooks/useSearchDashboardMenu";
+import useSearchDashboardMenu from "@/hooks/store/useSearchDashboardMenu";
 import { IconSearch } from "@tabler/icons-react";
 export function NavSecondary({
   items,

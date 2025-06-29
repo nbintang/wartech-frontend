@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import type { MinimalTiptapProps } from "./minimal-tiptap"
+import type { MinimalTiptapProps } from "./minimal-tiptap-article"
 
 type ShortcutKeyResult = {
   symbol: string

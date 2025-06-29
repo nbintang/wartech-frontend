@@ -2,7 +2,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import useTimerCountDown from "../useTimerCountDown";
-import useHandleLoadingDialog from "../useHandleLoadingDialog";
+import useHandleLoadingDialog from "../store/useHandleLoadingDialog";
 import catchAxiosError from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";

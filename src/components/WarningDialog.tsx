@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 import { useShallow } from "zustand/shallow";
 import { Button } from "./ui/button";
 

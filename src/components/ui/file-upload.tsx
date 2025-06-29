@@ -314,13 +314,13 @@ export const FileInput = ({
   return (
     <div
       {...props}
-      className={`relative w-full ${
+      className={cn(`relative w-full ${
         isLOF ? "opacity-50 cursor-not-allowed " : "cursor-pointer "
-      }`}
+      }`, "rounded-lg overflow-hidden", )}
     >
       <div
         className={cn(
-          `w-full rounded-lg duration-300 ease-in-out
+          `w-full rounded-lg overflow-hidden duration-300 ease-in-out
          ${
            dropzoneState.isDragAccept
              ? "border-green-500"

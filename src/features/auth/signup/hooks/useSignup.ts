@@ -5,7 +5,7 @@ import { useController, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { type SignUpForm, signUpSchema } from "../schema/signUpSchema";
-import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
+import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 import { useMutation } from "@tanstack/react-query";
 import postSignin from "../../../../helpers/postSignin";
 import Cookies from "js-cookie";

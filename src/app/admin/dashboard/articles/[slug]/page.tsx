@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ArticleFormSkeleton from "@/features/admin/articles/components/ArticleFormSkeleton";
 import UpdateArticleForm from "@/features/admin/articles/components/UpdateArticleForm";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
-import { useCommentStore } from "@/hooks/useCommentStore";
 import { ArticlebySlugApiResponse } from "@/types/api/ArticleApiResponse";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import { use, useEffect, useState } from "react";
@@ -14,12 +13,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  CommentApiResponse,
-  CommentData,
-} from "@/types/api/CommentApiResponse";
 import { ChevronsUpDown, MessageSquare } from "lucide-react";
+import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import { CommentItem } from "@/features/admin/root/components/CommentItem";
+import Comments from "@/features/comments/components/Comments";
 
 export default function ArticleBySlugPage({
   params,
@@ -27,7 +24,6 @@ export default function ArticleBySlugPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const commentList = useCommentStore((state) => state.comments);
   const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
     TAG: "profile",
     endpoint: "/users/profile",
@@ -35,7 +31,7 @@ export default function ArticleBySlugPage({
     gcTime: 1000 * 60 * 10,
     retry: false,
   });
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const {
     data: article,
     isLoading,
@@ -48,32 +44,18 @@ export default function ArticleBySlugPage({
     gcTime: 1000 * 60 * 10,
     retry: false,
   });
-  const { data: comments, ...commentsQuery } = useFetchProtectedData<
-    PaginatedApiResponse<CommentApiResponse>
-  >({
-    TAG: "comments",
-    endpoint: `/comments`,
-    params: { "article-slug": article?.slug },
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
-    retry: false,
-    enabled: !!article?.slug,
-  });
-  useEffect(() => {
-    if (commentsQuery.isSuccess && comments?.items) {
-      useCommentStore.getState().setComments(comments.items);
-    }
-  }, [commentsQuery.isSuccess, comments]);
 
-  console.log("comments", comments);
-  console.log(article);
   return (
     <>
       {isSuccess && article && profile && (
         <Card>
           <CardContent>
             <UpdateArticleForm article={article} profile={profile} />
-            <Collapsible open={collapsed} onOpenChange={setCollapsed}>
+            <Collapsible
+              className=" mt-3"
+              open={collapsed}
+              onOpenChange={setCollapsed}
+            >
               <CollapsibleTrigger asChild>
                 <Button variant={"outline"} className="mb-4">
                   {collapsed ? "Hide comments" : "Show comments"}
@@ -81,22 +63,11 @@ export default function ArticleBySlugPage({
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="my-3">
-                {commentsQuery.isSuccess &&
-                comments &&
-                comments?.items.length > 0 ? (
-                  comments?.items.map((comment) => (
-                    <CommentItem key={comment.id} comment={comment} isChild />
-                  ))
-                ) : (
-                  <Card>
-                    <CardContent className="p-8 text-center">
-                      <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">
-                        No comments yet. Be the first to share your thoughts!
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+                <Comments
+                  collapse={collapsed}
+                  article={{ id: article.id, slug: article.slug }}
+                  articleTitle={article.title}
+                />
               </CollapsibleContent>
             </Collapsible>
           </CardContent>

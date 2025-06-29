@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table } from "@tanstack/react-table";
 import Link from "next/link";
-import useHandleWarningDialog from "@/hooks/useHandleWarningDialog";
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
 type ArticleTableFiltersProps<TData extends { id: string }> = {
   table: Table<TData>;

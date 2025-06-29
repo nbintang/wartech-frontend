@@ -30,7 +30,7 @@ import type { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import Link from "next/link";
 
 interface CommentItemProps {
-  comment: CommentApiResponse | CommentApiResponse["children"][0];
+  comment: CommentApiResponse;
   depth?: number;
   onReply?: (parentId: string, content: string) => void;
   onEdit?: (commentId: string, content: string) => void;
@@ -84,7 +84,7 @@ export function CommentItem({
           <div className="flex gap-3">
             <Avatar className="w-10 h-10">
               <AvatarImage
-                src={getImageUrl(comment.user.image) || "/placeholder.svg"}
+                src={ "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"}
                 alt={comment.user.name}
               />
               <AvatarFallback>{getInitials(comment.user.name)}</AvatarFallback>
@@ -175,8 +175,6 @@ export function CommentItem({
                         ) : (
                           <ChevronRight className="mr-1 h-3 w-3" />
                         )}
-                        {comment.children.length}{" "}
-                        {comment.children.length === 1 ? "reply" : "replies"}
                       </Button>
                     </CollapsibleTrigger>
                   </Collapsible>
@@ -193,23 +191,6 @@ export function CommentItem({
         </div>
       )}
 
-      {hasChildren && (
-        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <CollapsibleContent className="space-y-0">
-            {comment.children.map((child) => (
-              <CommentItem
-                key={child.id}
-                comment={child}
-                depth={depth < maxDepth ? depth + 1 : maxDepth}
-                onReply={onReply}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onReport={onReport}
-              />
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
     </div>
   );
 }

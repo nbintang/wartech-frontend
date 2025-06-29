@@ -68,7 +68,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => (
   </ScrollArea>
 )
 
-export const MinimalTiptapEditor = React.forwardRef<
+export const MinimalTiptapArticle = React.forwardRef<
   HTMLDivElement,
   MinimalTiptapProps
 >(({ value, onChange, className, editorContentClassName, ...props }, ref) => {
@@ -102,6 +102,6 @@ export const MinimalTiptapEditor = React.forwardRef<
   )
 })
 
-MinimalTiptapEditor.displayName = "MinimalTiptapEditor"
+MinimalTiptapArticle.displayName = "MinimalTiptapArticle"
 
-export default MinimalTiptapEditor
+export default MinimalTiptapArticle

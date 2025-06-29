@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useShallow } from "zustand/shallow";
-import useHandleLoadingDialog from "@/hooks/useHandleLoadingDialog";
+import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 import { CheckCircle, Loader2, BadgeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
