@@ -3,14 +3,14 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 type FetchParamsKey =
   | "users"
-  | "profile"
+  | "me"
   | "articles"
   | "comments"
   | "tags"
   | "categories";
 
 type FetchParamsProps<TResponse> = {
-  TAG: FetchParamsKey;
+  TAG: FetchParamsKey | string[];
   params?: any;
   endpoint: string;
 } & Omit<
@@ -25,7 +25,7 @@ const useFetchProtectedData = <TResponse>({
   ...queryOptions
 }: FetchParamsProps<TResponse>) => {
   const result = useQuery({
-    queryKey: [TAG, endpoint, params],
+    queryKey: [Array.isArray(TAG) ? TAG : [TAG], endpoint, params],
     queryFn: async (): Promise<TResponse> => {
       const res = await axiosInstance.get(`/protected${endpoint}`, {
         params,

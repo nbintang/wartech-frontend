@@ -18,7 +18,7 @@ type IgnoreMutationOptions =
   | "onError";
 type MutateParamKeys =
   | "users"
-  | "profile"
+  | "me"
   | "articles"
   | "comments"
   | "tags"

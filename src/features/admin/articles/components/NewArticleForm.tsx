@@ -85,8 +85,8 @@ const NewArticleForm = () => {
   const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
   const router = useRouter();
   const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
-    TAG: "profile",
-    endpoint: "/users/profile",
+    TAG: "me",
+    endpoint: "/users/me",
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     retry: false,
@@ -228,19 +228,15 @@ const NewArticleForm = () => {
                     )}
                   >
                     {files && files.length > 0 ? (
-                      files.map((file, i) => {
-                        return (
-                          <div key={i} className=" z-30">
-                            <Image
-                              src={URL.createObjectURL(file)}
-                              alt=""
-                              className="w-full h-full object-contain "
-                              width={100}
-                              height={100}
-                            />
-                          </div>
-                        );
-                      })
+                      <div className="relative  rounded-xl overflow-hidden sm:scale-[40%] scale-75">
+                        <Image
+                          src={URL.createObjectURL(files[0])}
+                          alt={form.getValues("title") ?? files[0].name}
+                          className="w-full h-full object-contain "
+                          width={100}
+                          height={100}
+                        />
+                      </div>
                     ) : (
                       <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
                         <CloudUpload className="text-muted-foreground" />

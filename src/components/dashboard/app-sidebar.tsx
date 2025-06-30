@@ -68,8 +68,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     isError,
     error,
   } = useFetchProtectedData<UserProfileApiResponse>({
-    TAG: "profile",
-    endpoint: "/users/profile",
+    TAG: "me",
+    endpoint: "/users/me",
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     retry: false,

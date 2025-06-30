@@ -5,7 +5,7 @@ import CommentItem from "./CommentItem"
 
 
 interface CommentListProps {
-  comments: CommentApiResponse[]
+comments: CommentApiResponse[]; 
   article:{
     id: string;
     slug: string;

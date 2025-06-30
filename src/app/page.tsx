@@ -40,8 +40,8 @@ export default function NewsLandingPage() {
   });
   const { data, isSuccess, isLoading, isError, error, isUnauthorized } =
     useFetchProtectedData<UserProfileApiResponse>({
-      TAG: "profile",
-      endpoint: "/users/profile",
+      TAG: "me",
+      endpoint: "/users/me",
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 10,
       retry: false,

@@ -8,14 +8,8 @@ import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { ArticlebySlugApiResponse } from "@/types/api/ArticleApiResponse";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import { use, useEffect, useState } from "react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronsUpDown, MessageSquare } from "lucide-react";
-import { CommentApiResponse } from "@/types/api/CommentApiResponse";
-import { CommentItem } from "@/features/admin/root/components/CommentItem";
+
+
 import Comments from "@/features/comments/components/Comments";
 
 export default function ArticleBySlugPage({
@@ -25,13 +19,13 @@ export default function ArticleBySlugPage({
 }) {
   const { slug } = use(params);
   const { data: profile } = useFetchProtectedData<UserProfileApiResponse>({
-    TAG: "profile",
-    endpoint: "/users/profile",
+    TAG: "me",
+    endpoint: "/users/me",
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     retry: false,
   });
-  const [collapsed, setCollapsed] = useState(false);
+
   const {
     data: article,
     isLoading,
@@ -51,29 +45,17 @@ export default function ArticleBySlugPage({
         <Card>
           <CardContent>
             <UpdateArticleForm article={article} profile={profile} />
-            <Collapsible
-              className=" mt-3"
-              open={collapsed}
-              onOpenChange={setCollapsed}
-            >
-              <CollapsibleTrigger asChild>
-                <Button variant={"outline"} className="mb-4">
-                  {collapsed ? "Hide comments" : "Show comments"}
-                  <ChevronsUpDown className="ml-2" />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="my-3">
-                <Comments
-                  collapse={collapsed}
-                  article={{ id: article.id, slug: article.slug }}
-                  articleTitle={article.title}
-                />
-              </CollapsibleContent>
-            </Collapsible>
+           
           </CardContent>
+
+          <CardFooter className="relative">
+             <Comments
+              article={{ id: article.id, slug: article.slug }}
+              articleTitle={article.title}
+            />
+          </CardFooter>
         </Card>
       )}
-      {}
       {isLoading && <ArticleFormSkeleton />}
     </>
   );

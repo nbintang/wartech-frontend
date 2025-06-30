@@ -18,7 +18,7 @@ const ArticleDashboardPage = () => {
   const page = Number(searchParams.get("page") ?? 1);
   const limit = Number(searchParams.get("limit") ?? 10);
   const { data, isSuccess, isLoading } = useFetchProtectedData<
-    PaginatedApiResponse<ArticlesApiResponse>
+    PaginatedDataResultResponse<ArticlesApiResponse>
   >({
     TAG: "articles",
     endpoint: "/articles",

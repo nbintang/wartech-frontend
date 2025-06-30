@@ -60,8 +60,8 @@ export default function UpdateProfile() {
     isLoading,
     isError,
   } = useFetchProtectedData<UserProfileApiResponse>({
-    endpoint: "/users/profile",
-    TAG: "profile",
+    endpoint: "/users/me",
+    TAG: "me",
     gcTime: 1000 * 60 * 10,
     staleTime: 1000 * 60 * 10,
     retry: false,
@@ -94,9 +94,9 @@ export default function UpdateProfile() {
 
   const { mutateAsync: updateProfile, ...updateProfileMutations } =
     usePatchProtectedData({
-      endpoint: `/users/profile`,
+      endpoint: `/users/me`,
       formSchema: updateProfileSchema,
-      TAG: "profile",
+      TAG: "me",
       redirect: true,
       redirectUrl: "/",
     });

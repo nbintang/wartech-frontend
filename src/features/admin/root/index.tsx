@@ -4,7 +4,7 @@ import { UsersApiResponse } from "@/types/api/UserApiResponse";
 import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { articleColumns } from "@/features/admin/root/components/articleColumns";
-import CommentsItems from "@/features/admin/root/components/CommentItems";
+import CommentsItems from "@/features/admin/root/components/CommentRootItems";
 import UserChart from "@/features/admin/root/components/UsersChart";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
@@ -18,7 +18,7 @@ import DataTableFilters from "../components/DataTableFilters";
 
 const RootListDashboardPage = () => {
   const { data: articles, ...articlesQuery } = useFetchProtectedData<
-    PaginatedApiResponse<ArticlesApiResponse>
+    PaginatedDataResultResponse<ArticlesApiResponse>
   >({
     endpoint: "/articles",
     TAG: "articles",
@@ -31,7 +31,7 @@ const RootListDashboardPage = () => {
   });
 
   const { data: users, ...usersQuery } = useFetchProtectedData<
-    PaginatedApiResponse<UsersApiResponse>
+    PaginatedDataResultResponse<UsersApiResponse>
   >({
     endpoint: "/users",
     TAG: "users",
@@ -40,7 +40,7 @@ const RootListDashboardPage = () => {
   });
 
   const { data: comments, ...commentsQuery } = useFetchProtectedData<
-    PaginatedApiResponse<CommentApiResponse>
+    PaginatedDataResultResponse<CommentApiResponse>
   >({
     endpoint: "/comments",
     TAG: "comments",

@@ -5,7 +5,7 @@
   data?: T | null;
 };
 
- type PaginatedApiResponse<T = any> = {
+ type PaginatedDataResultResponse<T = any> = {
   items: T[];
   meta: {
     totalItems: number;

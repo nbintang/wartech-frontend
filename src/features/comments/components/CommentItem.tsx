@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
   MoreHorizontal,
   Edit,
   Flag,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +28,7 @@ import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";
+import { useShallow } from "zustand/shallow";
 
 interface CommentItemProps {
   comment: CommentApiResponse;
@@ -41,46 +44,59 @@ export default function CommentItem({
   article,
   depth = 0,
 }: CommentItemProps) {
-  const { isExpanded, toggleExpanded, replyingTo, setReplyingTo } =
-    useCommentStore();
+  const { toggleExpanded, replyingTo, setReplyingTo, expandedComments } =
+    useCommentStore(
+      useShallow((state) => ({
+        expandedComments: state.expandedComments,
+        toggleExpanded: state.toggleExpanded,
+        replyingTo: state.replyingTo,
+        setReplyingTo: state.setReplyingTo,
+      }))
+    );
+   const expanded = expandedComments.has(comment.id);
   const [isLiked, setIsLiked] = useState(false);
-
-  const expanded = isExpanded(comment.id);
   const showingReplyForm = replyingTo === comment.id;
+  const repliesQueryKey = useMemo(
+    () => `comments-${comment.id}-replies-${expanded ? "expanded" : "collapsed"}`,
+    [comment.id, expanded]
+  );
 
   const { data: replies, isLoading: repliesLoading } = useFetchProtectedData<
-    PaginatedApiResponse<CommentApiResponse>
+    PaginatedDataResultResponse<CommentApiResponse>
   >({
-    TAG: "comments",
+    TAG: [repliesQueryKey],
     endpoint: `/comments/${comment.id}/replies`,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
+  staleTime: 0, // <--- Setel ke 0 untuk memaksa refetch setiap kali di-invalidasi
+  gcTime: 0,    // <--- Setel ke 0 agar data segera dihapus dari cache jika tidak ada observer aktif
     retry: false,
-    enabled: expanded,
+    enabled: expanded && comment.childrenCount > 0,
   });
-  const totalComments = replies?.items.length || 0;
-  const handleToggleExpand = () => {
+
+  const handleToggleExpand = useCallback(() => {
     if (comment.childrenCount > 0) {
       toggleExpanded(comment.id);
     }
-  };
+  }, [comment.id, comment.childrenCount, expanded, toggleExpanded]);
 
-  const handleReply = () => {
+  const handleReply = useCallback(() => {
     setReplyingTo(showingReplyForm ? null : comment.id);
-  };
+    if (!expanded && comment.childrenCount > 0) {
+      console.log(`[REPLY] Auto-expanding comment ${comment.id}`);
+      toggleExpanded(comment.id);
+    }
+  }, [comment.id, comment.childrenCount, expanded, showingReplyForm, setReplyingTo, toggleExpanded]);
 
-  const handleLike = () => {
+  const handleLike = useCallback(() => {
     setIsLiked(!isLiked);
-    // Here you would typically call an API to like/unlike the comment
-  };
+  }, [isLiked]);
 
-  const getInitials = (name: string) => {
+  const getInitials = useCallback((name: string) => {
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase();
-  };
+  }, []);
 
   const maxDepth = 6;
   const shouldNest = depth < maxDepth;
@@ -113,10 +129,11 @@ export default function CommentItem({
                 </span>
               </div>
 
-              {/* Comment Content */}
-              <div dangerouslySetInnerHTML={{ __html: comment.content }} className="prose dark:prose-invert"/>
+              <div
+                dangerouslySetInnerHTML={{ __html: comment.content }}
+                className="prose dark:prose-invert my-2 prose-sm md:prose-base"
+              />
 
-              {/* Comment Actions */}
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -156,26 +173,26 @@ export default function CommentItem({
                     {comment.childrenCount === 1 ? "reply" : "replies"}
                   </Button>
                 )}
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Flag className="h-4 w-4 mr-2" />
-                      Report
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <Edit className="size-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Trash2 className="size-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Reply Form */}
@@ -196,7 +213,7 @@ export default function CommentItem({
         <div className={shouldNest ? "" : "ml-0"}>
           {repliesLoading ? (
             <div className="flex items-center justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+             <Loader2 className="animate-spin" />
             </div>
           ) : replies && replies.items.length > 0 ? (
             <CommentList

@@ -6,25 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  ChevronRight,
-  MessageCircle,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Flag,
-} from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Flag } from "lucide-react";
 
 import type { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import Link from "next/link";
@@ -32,39 +19,16 @@ import Link from "next/link";
 interface CommentItemProps {
   comment: CommentApiResponse;
   depth?: number;
-  onReply?: (parentId: string, content: string) => void;
-  onEdit?: (commentId: string, content: string) => void;
   onDelete?: (commentId: string) => void;
   onReport?: (commentId: string) => void;
-  isChild?: boolean;
 }
 
 export function CommentItem({
   comment,
   depth = 0,
-  onReply,
-  onEdit,
   onDelete,
   onReport,
-  isChild = false,
 }: CommentItemProps) {
-  const [isReplying, setIsReplying] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
-  const hasChildren = comment.children && comment.children.length > 0;
-  const maxDepth = 6; // Increase max depth for deeper nesting
-  const children = hasChildren ? (comment as CommentApiResponse).children : [];
-
-  const handleReply = (content: string) => {
-    onReply?.(comment.id, content);
-    setIsReplying(false);
-  };
-
-  const handleEdit = (content: string) => {
-    onEdit?.(comment.id, content);
-    setIsEditing(false);
-  };
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -73,18 +37,16 @@ export function CommentItem({
       .toUpperCase();
   };
 
-  const getImageUrl = (image: string | null) => {
-    return image || "/placeholder.svg?height=40&width=40";
-  };
-
   return (
     <div className={`${depth > 0 ? "ml-6 border-l-2 border-muted pl-4" : ""}`}>
       <Card className="mb-4">
         <CardContent className="p-4">
-          <div className="flex gap-3">
+          <div className="flex gap-3 ">
             <Avatar className="w-10 h-10">
               <AvatarImage
-                src={ "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"}
+                src={
+                  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                }
                 alt={comment.user.name}
               />
               <AvatarFallback>{getInitials(comment.user.name)}</AvatarFallback>
@@ -117,10 +79,6 @@ export function CommentItem({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onDelete?.(comment.id)}
                         className="text-destructive"
@@ -145,52 +103,11 @@ export function CommentItem({
                   </Link>
                 </p>
               </div>
-              {isEditing ? (
-                <></>
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: comment.content }} />
-              )}
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsReplying(!isReplying)}
-                  className="h-8 px-2 text-xs"
-                >
-                  <MessageCircle className="mr-1 h-3 w-3" />
-                  Reply
-                </Button>
-
-                {hasChildren && (
-                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-xs"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="mr-1 h-3 w-3" />
-                        ) : (
-                          <ChevronRight className="mr-1 h-3 w-3" />
-                        )}
-                      </Button>
-                    </CollapsibleTrigger>
-                  </Collapsible>
-                )}
-              </div>
+              <div dangerouslySetInnerHTML={{ __html: comment.content }} />
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {isReplying && (
-        <div className="mb-4 ml-13">
-          <></>
-        </div>
-      )}
-
     </div>
   );
 }
