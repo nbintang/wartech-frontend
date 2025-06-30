@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCommentStore } from "@/hooks/store/useCommentStore";
+import { useCommentStore } from "@/features/comments/hooks/useCommentStore";
 import {
   ChevronDown,
   ChevronRight,
@@ -27,80 +27,131 @@ import {
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import CommentForm from "./CommentForm";
-import CommentList from "./CommentList";
+import { CommentList } from "./CommentList";
+
 import { useShallow } from "zustand/shallow";
+import { useReplies } from "../hooks/useReplies";
 
 interface CommentItemProps {
   comment: CommentApiResponse;
-  article: {
-    id: string;
-    slug: string;
-  };
+  articleSlug: string;
+  articleId: string;
   depth?: number;
 }
 
 export default function CommentItem({
   comment,
-  article,
+  articleSlug,
+  articleId,
   depth = 0,
 }: CommentItemProps) {
-  const { toggleExpanded, replyingTo, setReplyingTo, expandedComments } =
-    useCommentStore(
-      useShallow((state) => ({
-        expandedComments: state.expandedComments,
-        toggleExpanded: state.toggleExpanded,
-        replyingTo: state.replyingTo,
-        setReplyingTo: state.setReplyingTo,
-      }))
-    );
-   const expanded = expandedComments.has(comment.id);
-  const [isLiked, setIsLiked] = useState(false);
-  const showingReplyForm = replyingTo === comment.id;
-  const repliesQueryKey = useMemo(
-    () => `comments-${comment.id}-replies-${expanded ? "expanded" : "collapsed"}`,
-    [comment.id, expanded]
+  const {
+    isExpanded,
+    toggleExpanded,
+    replyingTo,
+    setReplyingTo,
+    isSubmittingReply,
+    setLoadingReplies,
+    isLoadingReplies,
+  } = useCommentStore(
+    useShallow((state) => ({
+      isExpanded: state.isExpanded,
+      toggleExpanded: state.toggleExpanded,
+      replyingTo: state.replyingTo,
+      setReplyingTo: state.setReplyingTo,
+      isSubmittingReply: state.isSubmittingReply,
+      setLoadingReplies: state.setLoadingReplies,
+      isLoadingReplies: state.isLoadingReplies,
+    }))
   );
+  const [isLiked, setIsLiked] = useState(false);
 
-  const { data: replies, isLoading: repliesLoading } = useFetchProtectedData<
-    PaginatedDataResultResponse<CommentApiResponse>
-  >({
-    TAG: [repliesQueryKey],
-    endpoint: `/comments/${comment.id}/replies`,
-  staleTime: 0, // <--- Setel ke 0 untuk memaksa refetch setiap kali di-invalidasi
-  gcTime: 0,    // <--- Setel ke 0 agar data segera dihapus dari cache jika tidak ada observer aktif
-    retry: false,
-    enabled: expanded && comment.childrenCount > 0,
-  });
+  const expanded = isExpanded(comment.id);
+  const showingReplyForm = replyingTo === comment.id;
+  const submittingReply = isSubmittingReply(comment.id);
+  const loadingReplies = isLoadingReplies(comment.id);
+  const {
+    data: replies,
+    isLoading: repliesLoading,
+    error: repliesError,
+    refetch: refetchReplies,
+  } = useReplies(comment.id, expanded);
 
-  const handleToggleExpand = useCallback(() => {
-    if (comment.childrenCount > 0) {
-      toggleExpanded(comment.id);
+  useEffect(() => {
+    setLoadingReplies(comment.id, repliesLoading);
+  }, [repliesLoading, comment.id, setLoadingReplies]);
+
+  // Debug logging
+  useEffect(() => {
+    if (expanded) {
+      // Changed condition to just expanded
+      console.log(`Comment ${comment.id} expanded:`, {
+        expanded,
+        childrenCount: comment.childrenCount,
+        repliesLoading,
+        repliesData: replies,
+        repliesError,
+      });
     }
-  }, [comment.id, comment.childrenCount, expanded, toggleExpanded]);
+  }, [
+    expanded,
+    comment.childrenCount, // Keep for context
+    repliesLoading,
+    replies,
+    repliesError,
+    comment.id,
+  ]);
 
-  const handleReply = useCallback(() => {
+  const handleToggleExpand = async () => {
+    toggleExpanded(comment.id); 
+    if (!expanded && (!replies || replies.items.length === 0)) {
+      refetchReplies();
+    }
+  };
+
+  const handleReply = () => {
     setReplyingTo(showingReplyForm ? null : comment.id);
-    if (!expanded && comment.childrenCount > 0) {
-      console.log(`[REPLY] Auto-expanding comment ${comment.id}`);
+    if (!expanded) {
       toggleExpanded(comment.id);
     }
-  }, [comment.id, comment.childrenCount, expanded, showingReplyForm, setReplyingTo, toggleExpanded]);
+  };
 
-  const handleLike = useCallback(() => {
+  const handleLike = () => {
     setIsLiked(!isLiked);
-  }, [isLiked]);
+    // Here you would typically call an API to like/unlike the comment
+  };
 
-  const getInitials = useCallback((name: string) => {
+  const handleReplySuccess = () => {
+    // Auto-expand to show the new reply if not already expanded
+    // This part should still work as before, but the optimistic update in useCreateComment
+    // will now correctly place the comment into the cache for useReplies.
+    if (!expanded) {
+      toggleExpanded(comment.id);
+    }
+    // Refetch replies to ensure we have the latest data (after optimistic is replaced)
+    setTimeout(() => {
+      refetchReplies();
+    }, 100);
+  };
+
+  const getInitials = (name: string) => {
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase();
-  }, []);
+  };
 
   const maxDepth = 6;
   const shouldNest = depth < maxDepth;
 
+  // MODIFIED: The rendering condition for nested replies.
+  // Now, we display replies if expanded AND (there are server-side children OR there are optimistic items).
+  const shouldShowRepliesList =
+    expanded &&
+    (comment.childrenCount > 0 || (replies?.items && replies.items.length > 0));
+ const safeLikes = typeof comment.likes === 'number' && !isNaN(comment.likes) ? comment.likes : 0;
+  const safeChildrenCount = typeof comment.childrenCount === 'number' && !isNaN(comment.childrenCount) ? comment.childrenCount : 0;
   return (
     <div className={`${depth > 0 ? "ml-6 border-l-2 border-muted pl-4" : ""}`}>
       <Card className="mb-3">
@@ -134,7 +185,7 @@ export default function CommentItem({
                 className="prose dark:prose-invert my-2 prose-sm md:prose-base"
               />
 
-              <div className="flex items-center gap-1">
+             <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -144,9 +195,8 @@ export default function CommentItem({
                   <Heart
                     className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
                   />
-                  {comment.likes + (isLiked ? 1 : 0)}
+                  {safeLikes + (isLiked ? 1 : 0)}{" "} {/* Gunakan safeLikes di sini */}
                 </Button>
-
                 <Button
                   variant="ghost"
                   size="sm"
@@ -156,8 +206,7 @@ export default function CommentItem({
                   <MessageCircle className="h-4 w-4 mr-1" />
                   Reply
                 </Button>
-
-                {comment.childrenCount > 0 && (
+                {safeChildrenCount > 0 || repliesLoading ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -169,13 +218,13 @@ export default function CommentItem({
                     ) : (
                       <ChevronRight className="h-4 w-4 mr-1" />
                     )}
-                    {comment.childrenCount}{" "}
-                    {comment.childrenCount === 1 ? "reply" : "replies"}
+                    {safeChildrenCount}{" "} {/* Gunakan safeChildrenCount di sini */}
+                    {safeChildrenCount === 1 ? "reply" : "replies"}
                   </Button>
-                )}
+                ) : null}{" "}
               </div>
             </div>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -196,12 +245,14 @@ export default function CommentItem({
           </div>
 
           {/* Reply Form */}
-          {showingReplyForm && (
+          {(showingReplyForm || submittingReply) && (
             <div className="mt-3 pl-11">
               <CommentForm
-                article={article}
+                articleId={articleId}
+                articleSlug={articleSlug}
                 parentId={comment.id}
                 placeholder={`Reply to ${comment.user.name}...`}
+                // onReplySuccess={handleReplySuccess} // You might want to pass this down if CommentForm needs to know about successful reply
               />
             </div>
           )}
@@ -209,16 +260,17 @@ export default function CommentItem({
       </Card>
 
       {/* Nested Replies */}
-      {expanded && comment.childrenCount > 0 && (
+      {shouldShowRepliesList && ( // <-- Use the new consolidated condition
         <div className={shouldNest ? "" : "ml-0"}>
           {repliesLoading ? (
             <div className="flex items-center justify-center py-4">
-             <Loader2 className="animate-spin" />
+              <Loader2 className="animate-spin" />
             </div>
-          ) : replies && replies.items.length > 0 ? (
+          ) : replies?.items && replies.items.length > 0 ? (
             <CommentList
               comments={replies.items}
-              article={article}
+              articleSlug={articleSlug}
+              articleId={articleId}
               depth={shouldNest ? depth + 1 : depth}
             />
           ) : null}

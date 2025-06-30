@@ -12,7 +12,7 @@ import DataTableSkeleton from "../components/DataTableSkeleton";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import DashboardRootCardLayout from "./components/DashboardRootCardLayout";
 import DataTable from "../components/DataTable";
-import useTable from "../hooks/useTable";
+import useTable from "../../../hooks/useTable";
 import DashboardCardWrapper from "./components/DashboardCardWrapper";
 import DataTableFilters from "../components/DataTableFilters";
 

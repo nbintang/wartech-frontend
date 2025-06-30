@@ -45,7 +45,8 @@ export function CommentItem({
             <Avatar className="w-10 h-10">
               <AvatarImage
                 src={
-                  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                  comment.user.image ||
+                  "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=76&q=80"
                 }
                 alt={comment.user.name}
               />

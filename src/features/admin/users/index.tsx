@@ -6,7 +6,7 @@ import usersPageColumn from "./components/usersColumn";
 import DataTableSkeleton from "../components/DataTableSkeleton";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
 import { useSearchParams } from "next/navigation";
-import useTable from "../hooks/useTable";
+import useTable from "../../../hooks/useTable";
 import DataTableFilters from "../components/DataTableFilters";
 export default function UserDashboardPage() {
   const searchParams = useSearchParams();

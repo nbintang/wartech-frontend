@@ -39,7 +39,7 @@ export const articleColumns: ColumnDef<ArticlesApiResponse>[] = [
       const publishedAt = row.original.publishedAt;
       return publishedAt
         ? format(new Date(publishedAt), "hh:mm dd MMM yyyy")
-        : "-";
+        : "(not published)";
     },
   },
 ];

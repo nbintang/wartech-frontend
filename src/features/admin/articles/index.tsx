@@ -3,7 +3,7 @@
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
 import React from "react";
-import useTable from "../hooks/useTable";
+import useTable from "../../../hooks/useTable";
 import articlePageColumn from "./components/articlesColumn";
 import DataTableSkeleton from "../components/DataTableSkeleton";
 import DataTableFilters from "../components/DataTableFilters";

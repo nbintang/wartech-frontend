@@ -9,7 +9,6 @@ import { ArticlebySlugApiResponse } from "@/types/api/ArticleApiResponse";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import { use, useEffect, useState } from "react";
 
-
 import Comments from "@/features/comments/components/Comments";
 
 export default function ArticleBySlugPage({
@@ -32,7 +31,7 @@ export default function ArticleBySlugPage({
     isError,
     isSuccess,
   } = useFetchProtectedData<ArticlebySlugApiResponse>({
-    TAG: "articles",
+    TAG: ["article", slug],
     endpoint: `/articles/${slug}`,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
@@ -45,12 +44,12 @@ export default function ArticleBySlugPage({
         <Card>
           <CardContent>
             <UpdateArticleForm article={article} profile={profile} />
-           
           </CardContent>
 
           <CardFooter className="relative">
-             <Comments
-              article={{ id: article.id, slug: article.slug }}
+            <Comments
+              articleId={article.id}
+              articleSlug={article.slug}
               articleTitle={article.title}
             />
           </CardFooter>

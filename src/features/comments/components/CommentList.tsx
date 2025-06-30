@@ -1,19 +1,16 @@
 "use client"
 
-import type { CommentApiResponse } from "@/types/api/CommentApiResponse"
 import CommentItem from "./CommentItem"
-
+import type { CommentApiResponse } from "@/types/api/CommentApiResponse"
 
 interface CommentListProps {
-comments: CommentApiResponse[]; 
-  article:{
-    id: string;
-    slug: string;
-  }
+  comments: CommentApiResponse[]
+  articleSlug: string
+  articleId: string
   depth?: number
 }
 
-export default function CommentList({ comments, article, depth = 0 }: CommentListProps) {
+export function CommentList({ comments, articleSlug, articleId, depth = 0 }: CommentListProps) {
   if (!comments || comments.length === 0) {
     return null
   }
@@ -21,7 +18,7 @@ export default function CommentList({ comments, article, depth = 0 }: CommentLis
   return (
     <div className="space-y-0">
       {comments.map((comment) => (
-        <CommentItem key={comment.id} comment={comment} article={article} depth={depth} />
+        <CommentItem key={comment.id} comment={comment} articleSlug={articleSlug} articleId={articleId} depth={depth} />
       ))}
     </div>
   )

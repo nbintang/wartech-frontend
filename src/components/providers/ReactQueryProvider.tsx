@@ -1,18 +1,65 @@
 "use client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryCache,
+  MutationCache,
+} from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 
 type RQProviderProps = {
   children: React.ReactNode;
 };
-
-const queryClient = new QueryClient();
 export default function ReactQueryProvider({ children }: RQProviderProps) {
   const pathname = usePathname();
   const isDashboardRoutes = pathname.includes("/dashboard");
+
+  const queryClientRef = useRef<QueryClient | null>(null);
+  if (!queryClientRef.current) {
+    queryClientRef.current = new QueryClient({
+      queryCache: new QueryCache({
+        onError: (error, query) => {
+          console.error("[RQ] Query Error", {
+            queryKey: query.queryKey,
+            error,
+          });
+        },
+        onSuccess: (data, query) => {
+          console.log("[RQ] Query Success", {
+            queryKey: query.queryKey,
+            data,
+          });
+        },
+      }),
+      mutationCache: new MutationCache({
+        onError: (error, _v, _c, mutation) => {
+          console.error("[RQ] Mutation Error", {
+            mutationKey: mutation.options?.mutationKey,
+            error,
+          });
+        },
+        onSuccess: (data, _v, _c, mutation) => {
+          console.log("[RQ] Mutation Success", {
+            mutationKey: mutation.options?.mutationKey,
+            data,
+          });
+        },
+      }),
+      defaultOptions: {
+        queries: {
+          staleTime: 1000 * 60,
+          refetchOnWindowFocus: false,
+          retry: 1,
+        },
+      },
+    });
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClientRef.current}>
       {children}
       <ReactQueryDevtools
         initialIsOpen={false}
