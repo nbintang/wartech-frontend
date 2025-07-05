@@ -35,7 +35,7 @@ const commentSchema = z.object({
 type CommentFormData = z.infer<typeof commentSchema>;
 
 interface CommentFormProps {
-articleSlug: string;
+  articleSlug: string;
   articleId: string;
   parentId?: string;
   onSuccess?: () => void;
@@ -50,12 +50,12 @@ export default function CommentForm({
   placeholder = "Write a comment...",
 }: CommentFormProps) {
   const editorRef = useRef<Editor | null>(null);
-  const { setReplyingTo, isSubmittingReply } = useCommentStore(useShallow(state => ({
-    setReplyingTo: state.setReplyingTo,
-    isSubmittingReply: state.isSubmittingReply
-  })));
+  const { setReplyingTo } = useCommentStore(
+    useShallow((state) => ({
+      setReplyingTo: state.setReplyingTo,
+    }))
+  );
   const createCommentMutation = useCreateComment();
-
   const form = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
@@ -63,20 +63,15 @@ export default function CommentForm({
     },
   });
 
-  const isSubmitting =
-    createCommentMutation.isPending ||
-    (parentId ? isSubmittingReply(parentId) : false);
-
+  const isSubmitting = createCommentMutation.isPending;
   const onSubmit = async (data: CommentFormData) => {
     try {
       await createCommentMutation.mutateAsync({
         content: data.content,
         parentId,
         articleId,
-        articleSlug
+        articleSlug,
       });
-
-      // Reset form and close reply form immediately
       form.reset();
       onSuccess?.();
       if (parentId) {
@@ -84,7 +79,6 @@ export default function CommentForm({
       }
     } catch (error) {
       console.error("Failed to create comment:", error);
-      // Form stays open on error so user can retry
     }
   };
 
@@ -119,7 +113,7 @@ export default function CommentForm({
                   editorContentClassName="overflow-auto h-full"
                   output="html"
                   placeholder={placeholder}
-                  editable={true}
+                  editable={isSubmitting ? false : true}
                   editorClassName={cn(
                     "focus:outline-none focus:ring-0 focus-within:border-none focus:ring-offset-0 px-5 py-4"
                   )}
@@ -132,14 +126,8 @@ export default function CommentForm({
           />
         </div>
         <div className="flex gap-2">
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            size="sm"
-          >
-            {isSubmitting && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+          <Button type="submit" disabled={isSubmitting} size="sm">
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {parentId ? "Reply" : "Comment"}
           </Button>
 
@@ -149,6 +137,7 @@ export default function CommentForm({
               variant="outline"
               size="sm"
               onClick={handleCancel}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>

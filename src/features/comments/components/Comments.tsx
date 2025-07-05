@@ -47,7 +47,7 @@ export default function Comments({
     isFetchingNextPage,
     refetch,
   } = useComments(articleSlug, isCollapsed);
-  const { ref, inView } = useInView({ threshold: 1, rootMargin: "100px" });
+  const { ref, inView } = useInView({ threshold: 0.1, rootMargin: "100px" });
 
   const allComments = useMemo(() => {
     const uniqueCommentIds = new Set<string>();
@@ -66,11 +66,13 @@ export default function Comments({
 
   const totalComments = allComments.length;
 
+  // Fixed: Only fetch next page when in view AND expanded (isCollapsed = true means expanded)
   useEffect(() => {
-    if (inView && hasNextPage && isCollapsed) {
+    if (inView && hasNextPage && isCollapsed && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, isCollapsed, fetchNextPage]);
+  }, [inView, hasNextPage, isCollapsed, fetchNextPage, isFetchingNextPage]);
+
   const handleCommentSuccess = () => {
     // Scroll to top to show the new comment
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -83,8 +85,19 @@ export default function Comments({
     refetch();
   };
 
+  // Fixed: Handle show/hide comments properly
+  const handleToggleComments = async () => {
+    await toggleCollapsedComments();
+    // If we're expanding (isCollapsed is false, meaning we're about to expand),
+    // we might want to fetch more data
+    if (!isCollapsed) {
+      // This will trigger a refetch due to the query key dependency on isCollapsed
+      // The query will automatically refetch when isCollapsed changes
+    }
+  };
+
   return (
-    <Card className="w-full  mx-auto relative">
+    <Card className="w-full mx-auto relative">
       {!isCollapsed && (
         <div className="bg-gradient-to-b from-transparent to-background rounded-xl pointer-events-none absolute inset-0 z-10" />
       )}
@@ -93,7 +106,7 @@ export default function Comments({
           <div className="space-y-3">
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              Comments
+              Comments ({totalComments})
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Discussion for "{articleTitle}"
@@ -116,7 +129,11 @@ export default function Comments({
       <CardContent className="space-y-6">
         {isCollapsed && (
           <>
-            <CommentForm articleSlug={articleSlug} articleId={articleId} />
+            <CommentForm 
+              articleSlug={articleSlug} 
+              articleId={articleId}
+              onSuccess={handleCommentSuccess}
+            />
             <Separator />
           </>
         )}
@@ -124,9 +141,9 @@ export default function Comments({
         {/* Comments List */}
         <div>
           {isLoading ? (
-            <div className="flex items-center z-20 justify-center  text-muted-foreground  py-8">
+            <div className="flex items-center z-20 justify-center text-muted-foreground py-8">
               <Loader2 className="size-6 animate-spin mr-2" />
-              <p className=" z-20"> Loading comments...</p>
+              <p className="z-20">Loading comments...</p>
             </div>
           ) : error ? (
             <div className="text-center py-8">
@@ -142,33 +159,36 @@ export default function Comments({
               {!isCollapsed && (
                 <div className="absolute inset-x-0 bottom-10 z-20 flex justify-center">
                   <Button
-                    onClick={() =>
-                      Promise.all([toggleCollapsedComments(), fetchNextPage()])
-                    }
+                    onClick={handleToggleComments}
                     variant="ghost"
                     className="mb-4"
                   >
-                    {isCollapsed ? "Hide comments" : "Show comments"}
+                    Show comments
                     <ChevronsUpDown className="ml-2" />
                   </Button>
                 </div>
               )}
+              
               <CommentList
                 comments={allComments}
                 articleSlug={articleSlug}
                 articleId={articleId}
               />
 
-              {/* Infinite Scroll Trigger */}
+              {/* Infinite Scroll Trigger - Only show when expanded */}
               {hasNextPage && isCollapsed && (
-                <div ref={ref} className="flex justify-center mt-4">
+                <div ref={ref} className="flex justify-center mt-6">
                   {isFetchingNextPage ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading more comments...</span>
+                    </div>
                   ) : (
                     <Button
                       onClick={() => fetchNextPage()}
                       disabled={isFetchingNextPage}
-                      variant="ghost"
+                      variant="outline"
+                      size="sm"
                     >
                       Load more comments
                     </Button>
@@ -178,7 +198,8 @@ export default function Comments({
             </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              No comments yet. Be the first to comment!
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No comments yet. Be the first to comment!</p>
             </div>
           )}
         </div>
