@@ -1,5 +1,4 @@
-"use client";
-
+// components/CommentForm.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,14 +13,12 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { useCommentStore } from "@/features/comments/hooks/useCommentStore";
-import usePostProtectedData from "@/hooks/hooks-api/usePostProtectedData";
 import MinimalTiptapComment from "@/components/ui/minimal-tiptap/minimal-tiptap-comment";
 import { cn } from "@/lib/utils";
-import { useCallback, useMemo, useRef } from "react";
-import { useQueryClient, InfiniteData } from "@tanstack/react-query";
-import { CommentApiResponse } from "@/types/api/CommentApiResponse";
+import { useCallback, useRef } from "react";
+// Tidak perlu import InfiniteData atau CommentApiResponse di sini
 import { useCreateComment } from "../hooks/useCreateComment";
-import { shallow, useShallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 
 const commentSchema = z.object({
   content: z
@@ -29,7 +26,7 @@ const commentSchema = z.object({
     .min(1, "Comment cannot be empty")
     .max(100, "Comment too long"),
   parentId: z.string().optional(),
-  articleId: z.string().optional(),
+  // articleId dan articleSlug akan datang dari props, bukan form
 });
 
 type CommentFormData = z.infer<typeof commentSchema>;
@@ -37,6 +34,7 @@ type CommentFormData = z.infer<typeof commentSchema>;
 interface CommentFormProps {
   articleSlug: string;
   articleId: string;
+  articleTitle: string; // Ditambahkan
   parentId?: string;
   onSuccess?: () => void;
   placeholder?: string;
@@ -45,6 +43,7 @@ interface CommentFormProps {
 export default function CommentForm({
   articleId,
   articleSlug,
+  articleTitle, // Ambil articleTitle dari props
   parentId,
   onSuccess,
   placeholder = "Write a comment...",
@@ -69,8 +68,9 @@ export default function CommentForm({
       await createCommentMutation.mutateAsync({
         content: data.content,
         parentId,
-        articleId,
-        articleSlug,
+        articleId, // Dari props
+        articleSlug, // Dari props
+        articleTitle, // Dari props
       });
       form.reset();
       onSuccess?.();
@@ -101,7 +101,7 @@ export default function CommentForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-        <div className="grid grid-cols-1  items-center gap-3">
+        <div className="grid grid-cols-1   items-center gap-3">
           <FormField
             control={form.control}
             name="content"
@@ -109,11 +109,12 @@ export default function CommentForm({
               <>
                 <MinimalTiptapComment
                   throttleDelay={1000}
-                  className={cn("h-full min-h-56 w-full  rounded-xl")}
+                  className={cn("h-full min-h-56 w-full   rounded-xl")}
                   editorContentClassName="overflow-auto h-full"
                   output="html"
                   placeholder={placeholder}
                   editable={isSubmitting ? false : true}
+                  immediatelyRender={false}
                   editorClassName={cn(
                     "focus:outline-none focus:ring-0 focus-within:border-none focus:ring-offset-0 px-5 py-4"
                   )}

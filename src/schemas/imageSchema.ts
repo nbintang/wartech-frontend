@@ -28,7 +28,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 };
 
-export const defineImageSchema = (
+export const imageSchema = (
   options: ImageSchemOptions = imageSchemOptions
 ) =>
   z.union([

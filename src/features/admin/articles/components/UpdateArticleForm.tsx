@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 import { type Editor } from "@tiptap/react";
 import { DropzoneOptions } from "react-dropzone";
@@ -43,7 +43,7 @@ import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { defineImageSchema, imageSchemOptions } from "@/schemas/imageSchema";
+import { imageSchema, imageSchemOptions } from "@/schemas/imageSchema";
 
 const articleInputSchema = z.object({
   title: z
@@ -54,7 +54,7 @@ const articleInputSchema = z.object({
     })
     .trim(),
   content: z.string().min(1, { message: "Content is required." }),
-  image: defineImageSchema(),
+  image: imageSchema(),
   categoryId: z.string().uuid(),
   tags: z.array(
     z.object({
@@ -112,7 +112,36 @@ const UpdateArticleForm = ({
     },
     [article?.content]
   );
-
+  const handleInputImage = async (
+    newFiles: File[] | null | undefined,
+    field: ControllerRenderProps<ArticleInput, "image">
+  ) => {
+    const fileToValidate = newFiles?.[0];
+    if (!fileToValidate) {
+      setFiles(null);
+      field.onChange(null);
+      return;
+    }
+    try {
+      await imageSchema().parseAsync(fileToValidate);
+      setFiles(newFiles);
+      field.onChange(newFiles?.[0]);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(`${error.issues[0].message}`, { richColors: true });
+      } else {
+        toast.error("An unknown error occurred during file validation.", {
+          richColors: true,
+        });
+      }
+      const previousValidImage = field.value;
+      if (previousValidImage instanceof File) {
+        setFiles([previousValidImage]);
+      } else {
+        setFiles(null);
+      }
+    }
+  };
   useEffect(() => {
     if (article && !isInitialized) {
       form.reset({
@@ -189,7 +218,8 @@ const UpdateArticleForm = ({
       router.push("/admin/dashboard/articles");
     },
     onError: (err) => {
-      const message = catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
+      const message =
+        catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
       setOpenDialog("update-article", {
         description: message,
         isError: true,
@@ -239,10 +269,9 @@ const UpdateArticleForm = ({
               <FormControl className="relative rounded-lg">
                 <FileUploader
                   value={files}
-                  onValueChange={(newFiles) => {
-                    setFiles(newFiles);
-                    field.onChange(newFiles?.[0]);
-                  }}
+                  onValueChange={(newFiles) =>
+                    handleInputImage(newFiles, field)
+                  }
                   dropzoneOptions={dropZoneConfig}
                   className="relative rounded-lg"
                 >
@@ -257,7 +286,16 @@ const UpdateArticleForm = ({
                   >
                     {(files && files.length > 0) ||
                     (typeof field.value === "string" && field.value) ? (
-                      <div className="relative  rounded-xl overflow-hidden sm:scale-[40%] scale-75">
+                      <div className="relative group rounded-xl  overflow-hidden sm:scale-[40%] scale-75">
+                        <div className="absolute group-hover:bg-black/50 transition-all grid place-items-center duration-200 top-0 left-0 w-full h-full">
+                          <div className="group-hover:opacity-100 flex items-center flex-col justify-center opacity-0">
+                            <CloudUpload className="text-white size-24" />
+                            <h1 className="text-white text-5xl">
+                              Change Picture?
+                            </h1>
+                          </div>
+                        </div>
+
                         <Image
                           src={
                             files && files.length > 0

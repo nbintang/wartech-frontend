@@ -1,5 +1,3 @@
-import { axiosInstance } from "@/lib/axiosInstance";
-import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import { useQuery } from "@tanstack/react-query";
 import commentsService from "../services";
 

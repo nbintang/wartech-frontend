@@ -21,6 +21,7 @@ export function CommentList({
     <div className="space-y-0">
       {comments.map((comment) => (
         <CommentItem
+          articleTitle={comment.article.title}
           key={comment.id}
           comment={comment}
           articleSlug={articleSlug}

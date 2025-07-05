@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,50 +13,130 @@ import {
   Heart,
   MessageCircle,
   Loader2,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import CommentForm from "./CommentForm";
 import { CommentList } from "./CommentList";
-import { CommentApiResponse } from "@/types/api/CommentApiResponse";
+import { ClientCommentApiResponse, CommentApiResponse } from "@/types/api/CommentApiResponse";
+import { useShallow } from "zustand/shallow";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface CommentItemProps {
   comment: CommentApiResponse;
   articleSlug: string;
   articleId: string;
   depth?: number;
+  articleTitle: string; // Pastikan ini ada di sini jika digunakan di CommentForm
 }
 
 export default function CommentItem({
   comment,
   articleSlug,
+  articleTitle, // Gunakan ini
   articleId,
   depth = 0,
 }: CommentItemProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const { isExpanded, toggleExpanded, replyingTo, setReplyingTo } =
-    useCommentStore();
+  const {
+    toggleExpanded,
+    replyingTo,
+    setReplyingTo,
+    submittingParentId,
+    isSubmitting,
+    optimisticComment,
+  } = useCommentStore(
+    useShallow((state) => ({
+      toggleExpanded: state.toggleExpanded,
+      replyingTo: state.replyingTo,
+      setReplyingTo: state.setReplyingTo,
+      submittingParentId: state.submittingParentId,
+      isSubmitting: state.isSubmitting,
+      optimisticComment: state.optimisticComment, // Perbaikan typo di sini
+    }))
+  );
+  const expanded = useCommentStore((state) => state.isExpanded(comment.id));
 
-  const expanded = isExpanded(comment.id);
   const showingReplyForm = replyingTo === comment.id;
+  const isSubmittingReplyToThisComment =
+    isSubmitting && submittingParentId === comment.id;
   const maxDepth = 6;
 
+  // useReplies hanya di-enable ketika comment expanded ATAU sedang ada optimistic comment untuk parent ini
+  // Ini mencegah fetch yang tidak perlu jika tidak ada optimistic comment dan tidak expanded
+const shouldFetchReplies = expanded || (optimisticComment?.parentId === comment.id);
   const {
     data: replies,
     isLoading: repliesLoading,
     isSuccess: repliesSuccess,
     refetch: refetchReplies,
-  } = useReplies(comment.id, expanded);
+  } = useReplies(comment.id, shouldFetchReplies); // Menggunakan shouldFetchReplies
+
+
+  const allReplies = useMemo(() => {
+    const combinedReplies: ClientCommentApiResponse[] = [];
+
+    // Tambahkan optimistic comment jika sesuai dan belum ada di replies API
+    if (optimisticComment && optimisticComment.parentId === comment.id && optimisticComment.articleSlug === articleSlug) {
+      const isOptimisticAlreadyInReplies = replies?.items?.some(
+        (reply) => reply.id === optimisticComment.id
+      );
+      if (!isOptimisticAlreadyInReplies) {
+        combinedReplies.push(optimisticComment);
+      }
+    }
+
+    // Tambahkan replies dari API
+ replies?.items?.forEach((replyFromApi) => {
+  const clientComment: ClientCommentApiResponse = {
+    ...replyFromApi,
+    articleId: articleId,
+    articleSlug: articleSlug,
+  };
+  combinedReplies.push(clientComment);
+});
+
+    return combinedReplies;
+  }, [replies, optimisticComment, comment.id, articleId, articleSlug]);
+
+  // Hitung childrenCount yang ditampilkan secara optimistik
+  const displayedChildrenCount = useMemo(() => {
+    let count = comment.childrenCount;
+    // Tambahkan 1 jika ada optimistic comment yang belum difetch oleh useReplies
+    if (optimisticComment && optimisticComment.parentId === comment.id && optimisticComment.articleSlug === articleSlug) {
+      const isOptimisticAlreadyFetched = replies?.items?.some(
+        (reply) => reply.id === optimisticComment.id
+      );
+      if (!isOptimisticAlreadyFetched) {
+        count += 1;
+      }
+    }
+    return count;
+  }, [comment.childrenCount, optimisticComment, comment.id, articleSlug, replies?.items]);
+
 
   const handleToggleExpand = () => {
     toggleExpanded(comment.id);
-    if (!expanded) {
+    // Hanya refetch jika kita akan menampilkan dan replies belum berhasil difetch,
+    // atau jika ada optimistic comment yang perlu direplace dengan data asli
+    if (!expanded && (!repliesSuccess || allReplies.length === 0)) { // Jika belum expanded dan belum ada replies
       refetchReplies();
     }
   };
 
   const handleReply = () => {
     setReplyingTo(showingReplyForm ? null : comment.id);
+    // Jika user mengklik reply dan komentar belum expanded, expand otomatis
     if (!expanded && !showingReplyForm) {
       toggleExpanded(comment.id);
+      // refetchReplies(); // Tidak perlu refetch di sini, optimistic update sudah cukup
     }
   };
 
@@ -93,6 +173,11 @@ export default function CommentItem({
                     addSuffix: true,
                   })}
                 </span>
+                {(comment as ClientCommentApiResponse).isOptimistic && (
+                  <Badge variant="outline" className="text-xs">
+                    Sending...
+                  </Badge>
+                )}
               </div>
 
               <div
@@ -123,7 +208,7 @@ export default function CommentItem({
                   Reply
                 </Button>
 
-                {comment.childrenCount > 0 && (
+                {(displayedChildrenCount > 0 || isSubmittingReplyToThisComment || (repliesSuccess && allReplies.length > 0)) && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -135,18 +220,31 @@ export default function CommentItem({
                     ) : (
                       <ChevronRight className="h-4 w-4 mr-1" />
                     )}
-                    {comment.childrenCount}{" "}
-                    {comment.childrenCount === 1 ? "reply" : "replies"}
+                    {displayedChildrenCount}{" "}
+                    {displayedChildrenCount === 1 ? "reply" : "replies"}
                   </Button>
                 )}
               </div>
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem variant="destructive" >
+                  <Trash2 className="size-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Reply Form */}
           {showingReplyForm && (
             <div className="mt-3 pl-11">
               <CommentForm
+                articleTitle={articleTitle}
                 articleId={articleId}
                 articleSlug={articleSlug}
                 parentId={comment.id}
@@ -157,16 +255,16 @@ export default function CommentItem({
         </CardContent>
       </Card>
 
-      {/* Nested Replies */}
-      {expanded && comment.childrenCount > 0 && (
+      {(expanded || showingReplyForm || isSubmittingReplyToThisComment) && ( // Render bagian ini jika expanded, form aktif, atau sedang submit balasan
         <div className={depth < maxDepth ? "" : "ml-0"}>
-          {repliesLoading ? (
+          {repliesLoading && allReplies.length === 0 ? ( // Tampilkan loader hanya jika belum ada balasan (termasuk optimistik)
             <div className="flex items-center justify-center py-4">
               <Loader2 className="h-4 w-4 animate-spin" />
+              <p>Loading replies...</p>
             </div>
-          ) : repliesSuccess && replies?.items?.length > 0 ? (
+          ) : allReplies.length > 0 ? (
             <CommentList
-              comments={replies.items}
+              comments={allReplies}
               articleSlug={articleSlug}
               articleId={articleId}
               depth={depth < maxDepth ? depth + 1 : depth}

@@ -14,7 +14,7 @@ type CurrentUserLikeResponse = {
 
 export const useHasLiked = (commentId: string, userId: string | undefined, enabled = true) => {
   return useQuery<CurrentUserLikeResponse, Error>({
-    queryKey: ["commentLikes", commentId, "me"], // Kunci query yang unik untuk like pengguna pada komentar ini
+    queryKey: ["commentLikes", commentId, "me"],
     queryFn: async (): Promise<CurrentUserLikeResponse> => {
       if (!userId) {
         return null;

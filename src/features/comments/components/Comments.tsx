@@ -11,11 +11,10 @@ import {
   MessageCircle,
   Loader2,
   RefreshCw,
-  CheckCircle,
   ChevronsUpDown,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CommentApiResponse } from "@/types/api/CommentApiResponse";
+import { ClientCommentApiResponse, CommentApiResponse } from "@/types/api/CommentApiResponse";
 import { useInView } from "react-intersection-observer";
 import { useCommentStore } from "../hooks/useCommentStore";
 import { useShallow } from "zustand/shallow";
@@ -32,12 +31,17 @@ export default function Comments({
   articleTitle,
 }: CommentsProps) {
   const queryClient = useQueryClient();
-  const { isCollapsed, toggleCollapsedComments } = useCommentStore(
-    useShallow((state) => ({
-      isCollapsed: state.isCollapsed,
-      toggleCollapsedComments: state.toggleCollapsedComments,
-    }))
-  );
+
+
+  const { isCollapsed, toggleCollapsedComments, isSubmittingMainComment, optimisticComment } =
+    useCommentStore(
+      useShallow((state) => ({
+        isCollapsed: state.isCollapsed,
+        toggleCollapsedComments: state.toggleCollapsedComments,
+        isSubmittingMainComment: state.isSubmittingMainComment,
+        optimisticComment: state.optimisticComment,
+      }))
+    );
   const {
     data,
     isLoading,
@@ -51,22 +55,32 @@ export default function Comments({
 
   const allComments = useMemo(() => {
     const uniqueCommentIds = new Set<string>();
-    const filteredComments: CommentApiResponse[] = [];
+    const filteredComments: ClientCommentApiResponse[] = [];
+
+    if (optimisticComment && !optimisticComment.parentId && optimisticComment.articleSlug === articleSlug) {
+      filteredComments.push(optimisticComment);
+      uniqueCommentIds.add(optimisticComment.id);
+    }
 
     data?.pages.forEach((page) => {
-      page.items?.forEach((data) => {
-        if (!uniqueCommentIds.has(data.id)) {
-          uniqueCommentIds.add(data.id);
-          filteredComments.push(data);
+      page.items?.forEach((commentFromApi) => {
+        if (!uniqueCommentIds.has(commentFromApi.id)) {
+          const clientComment: ClientCommentApiResponse = {
+            ...commentFromApi,
+            articleId: articleId,
+            articleSlug: articleSlug,
+            parentId: null,
+          };
+          filteredComments.push(clientComment);
+          uniqueCommentIds.add(commentFromApi.id);
         }
       });
     });
     return filteredComments;
-  }, [data]);
+  }, [data, optimisticComment, articleSlug, articleId]);
 
   const totalComments = allComments.length;
 
-  // Fixed: Only fetch next page when in view AND expanded (isCollapsed = true means expanded)
   useEffect(() => {
     if (inView && hasNextPage && isCollapsed && !isFetchingNextPage) {
       fetchNextPage();
@@ -74,25 +88,19 @@ export default function Comments({
   }, [inView, hasNextPage, isCollapsed, fetchNextPage, isFetchingNextPage]);
 
   const handleCommentSuccess = () => {
-    // Scroll to top to show the new comment
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    queryClient.invalidateQueries({ queryKey: ["comments", articleSlug] });
   };
 
   const handleRefresh = () => {
-    // Invalidate all related queries for a fresh start
     queryClient.invalidateQueries({ queryKey: ["comments", articleSlug] });
     queryClient.invalidateQueries({ queryKey: ["replies"] });
     refetch();
   };
 
-  // Fixed: Handle show/hide comments properly
   const handleToggleComments = async () => {
     await toggleCollapsedComments();
-    // If we're expanding (isCollapsed is false, meaning we're about to expand),
-    // we might want to fetch more data
     if (!isCollapsed) {
-      // This will trigger a refetch due to the query key dependency on isCollapsed
-      // The query will automatically refetch when isCollapsed changes
+      refetch();
     }
   };
 
@@ -129,18 +137,18 @@ export default function Comments({
       <CardContent className="space-y-6">
         {isCollapsed && (
           <>
-            <CommentForm 
-              articleSlug={articleSlug} 
+            <CommentForm
+              articleSlug={articleSlug}
               articleId={articleId}
+              articleTitle={articleTitle}
               onSuccess={handleCommentSuccess}
             />
             <Separator />
           </>
         )}
 
-        {/* Comments List */}
         <div>
-          {isLoading ? (
+          {isLoading && !optimisticComment ? (
             <div className="flex items-center z-20 justify-center text-muted-foreground py-8">
               <Loader2 className="size-6 animate-spin mr-2" />
               <p className="z-20">Loading comments...</p>
@@ -154,53 +162,56 @@ export default function Comments({
                 Try Again
               </Button>
             </div>
-          ) : allComments.length > 0 ? (
+          ) : (
             <>
-              {!isCollapsed && (
-                <div className="absolute inset-x-0 bottom-10 z-20 flex justify-center">
-                  <Button
-                    onClick={handleToggleComments}
-                    variant="ghost"
-                    className="mb-4"
-                  >
-                    Show comments
-                    <ChevronsUpDown className="ml-2" />
-                  </Button>
-                </div>
-              )}
-              
-              <CommentList
-                comments={allComments}
-                articleSlug={articleSlug}
-                articleId={articleId}
-              />
-
-              {/* Infinite Scroll Trigger - Only show when expanded */}
-              {hasNextPage && isCollapsed && (
-                <div ref={ref} className="flex justify-center mt-6">
-                  {isFetchingNextPage ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading more comments...</span>
+              {allComments.length > 0 ? (
+                <>
+                  {!isCollapsed && (
+                    <div className="absolute inset-x-0 bottom-10 z-20 flex justify-center">
+                      <Button
+                        onClick={handleToggleComments}
+                        variant="ghost"
+                        className="mb-4"
+                      >
+                        Show comments
+                        <ChevronsUpDown className="ml-2" />
+                      </Button>
                     </div>
-                  ) : (
-                    <Button
-                      onClick={() => fetchNextPage()}
-                      disabled={isFetchingNextPage}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Load more comments
-                    </Button>
                   )}
+
+                  <CommentList
+                    comments={allComments}
+                    articleSlug={articleSlug}
+                    articleId={articleId}
+                  />
+
+                  {hasNextPage && isCollapsed && (
+                    <div ref={ref} className="flex justify-center mt-6">
+                      {isFetchingNextPage ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Loading more comments...</span>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={() => fetchNextPage()}
+                          disabled={isFetchingNextPage}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Load more comments
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No comments yet. Be the first to comment!</p>
                 </div>
               )}
             </>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No comments yet. Be the first to comment!</p>
-            </div>
           )}
         </div>
       </CardContent>

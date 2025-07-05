@@ -10,7 +10,12 @@ export type CommentApiResponse = {
   article: CommentArticle
   children?: CommentApiResponse[] // only used client-side
 }
-
+export interface ClientCommentApiResponse extends CommentApiResponse {
+  parentId?: string | null;
+  articleId: string;
+  articleSlug: string; 
+  isOptimistic?: boolean;
+}
 export type CommentArticle = {
   id: string
   title: string
@@ -29,4 +34,6 @@ export type CreateCommentRequest = {
   content: string
   parentId?: string
   articleSlug: string
+  articleTitle: string
+  articleId: string
 }
