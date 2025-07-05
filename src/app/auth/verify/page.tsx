@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import ResendEmailForm from "@/features/auth/resend-email/components/ResendEmailForm";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import AuthCard from "@/features/auth/components/AuthCardLayout";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export default function VerifyUserPage() {
       router.push("/auth/update-profile");
     },
     onError: (err) => {
-      const message = catchAxiosError(err);
+      const message = catchAxiosErrorMessage(err);
       message && toast.error(message, { id: "verify" });
     },
     retry: false,

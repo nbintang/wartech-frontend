@@ -1,7 +1,6 @@
 import { isAxiosError } from "axios";
-import { toast } from "sonner";
 
-const catchAxiosError = (error: unknown): string | undefined => {
+const catchAxiosErrorMessage = (error: unknown): string | undefined => {
   console.error("error in catchAxiosError", error);
   const statusCode = [401, 429];
   if (isAxiosError(error)) {
@@ -19,4 +18,4 @@ const catchAxiosError = (error: unknown): string | undefined => {
   }
 };
 
-export default catchAxiosError 
+export default catchAxiosErrorMessage 

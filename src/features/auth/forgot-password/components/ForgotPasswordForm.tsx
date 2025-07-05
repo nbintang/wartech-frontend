@@ -9,7 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import usePostVerifyAuth from "@/hooks/hooks-api/usePostVerifyAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangleIcon, Loader2, Mail } from "lucide-react";
@@ -84,7 +84,7 @@ export default function ForgotPasswordForm() {
           <div className="flex items-center gap-x-2 bg-red-50 p-3 rounded-md">
             <AlertTriangleIcon className="text-red-600" />
             <div className="text-sm text-red-600  ">
-              {catchAxiosError(error) || "Something went wrong"}
+              {catchAxiosErrorMessage(error) || "Something went wrong"}
             </div>
           </div>
         )}

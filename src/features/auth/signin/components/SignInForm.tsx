@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { type SignInForm, signInSchema } from "../schema/signInSchema";
 import {jwtDecode} from "@/lib/utils";
 import postSignin from "../../../../helpers/postSignin";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { useEffect, useState } from "react";
 import { useProgress } from "@bprogress/next";
 export default function SignInForm() {
@@ -48,7 +48,7 @@ export default function SignInForm() {
           return "Signed in successfully";
         },
         error: (err) => {
-          return catchAxiosError(err) ?? "An unknown error occurred.";
+          return catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
         },
         finally: () => {
           loader.stop();

@@ -10,7 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import postSignin from "../../../../helpers/postSignin";
 import Cookies from "js-cookie";
 import  {jwtDecode,type  JwtUserPayload } from "@/lib/utils";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import useTimerCountDown from "@/hooks/useTimerCountDown";
 import { useProgress } from "@bprogress/next";
 
@@ -76,7 +76,7 @@ const useSignUp = () => {
       useHandleLoadingDialog.getState().closeDialog();
     },
     onError: (error) => {
-      const message = catchAxiosError(error) ?? "An unknown error occurred.";
+      const message = catchAxiosErrorMessage(error) ?? "An unknown error occurred.";
       setOpenDialog("signup", {
         description: message,
         isLoading: false,

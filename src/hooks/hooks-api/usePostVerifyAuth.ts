@@ -3,7 +3,7 @@ import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import useTimerCountDown from "../useTimerCountDown";
 import useHandleLoadingDialog from "../store/useHandleLoadingDialog";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 
@@ -98,7 +98,7 @@ const usePostVerifyAuth = <TFormSchema extends z.ZodSchema>({
       return message;
     },
     onError: (err) => {
-      const message = catchAxiosError(err) ?? "An unknown error occurred.";
+      const message = catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
       setOpenDialog(endpoint, {
         description: message,
         isError: true,

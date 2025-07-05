@@ -1,4 +1,4 @@
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
 import {
   useMutation,
@@ -79,7 +79,7 @@ const usePostProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
       queryClient.invalidateQueries({ queryKey: [TAG, params] });
     },
     onError: (err) => {
-      const message = catchAxiosError(err);
+      const message = catchAxiosErrorMessage(err);
       message && toast.error(message, { id: TAG as MutateParamKeys });
     },
     ...mutateOptions,

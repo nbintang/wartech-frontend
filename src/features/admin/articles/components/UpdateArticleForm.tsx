@@ -40,7 +40,7 @@ import {
 } from "@/types/api/ArticleApiResponse";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { defineImageSchema, imageSchemOptions } from "@/schemas/imageSchema";
@@ -189,7 +189,7 @@ const UpdateArticleForm = ({
       router.push("/admin/dashboard/articles");
     },
     onError: (err) => {
-      const message = catchAxiosError(err) ?? "An unknown error occurred.";
+      const message = catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
       setOpenDialog("update-article", {
         description: message,
         isError: true,

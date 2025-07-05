@@ -1,4 +1,4 @@
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import {
@@ -60,7 +60,7 @@ const useDeleteProtectedData = ({
       queryClient.invalidateQueries({ queryKey: [TAG] });
     },
     onError: (err) => {
-      const message = catchAxiosError(err);
+      const message = catchAxiosErrorMessage(err);
       message && toast.error(message, { id: TAG });
     },
     onMutate: () => {

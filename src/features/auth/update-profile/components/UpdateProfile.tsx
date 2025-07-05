@@ -28,7 +28,7 @@ import { type UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import Link from "next/link";
 import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 import { toast } from "sonner";
-import catchAxiosError from "@/helpers/catchAxiosError";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { useRouter } from "next/navigation";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
