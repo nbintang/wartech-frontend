@@ -27,7 +27,7 @@ import {
 import UserProfile from "../UserProfile";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
-import useSignOut from "@/hooks/hooks-api/useSignOut";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 import Link from "next/link";
 
 export function NavUser(dataProps: {

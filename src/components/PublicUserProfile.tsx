@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LockIcon, LogOutIcon, UserIcon } from "lucide-react";
-import useSignOut from "@/hooks/hooks-api/useSignOut";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 export default function PublicUserProfile(dataProps: {
   isLoading?: boolean;

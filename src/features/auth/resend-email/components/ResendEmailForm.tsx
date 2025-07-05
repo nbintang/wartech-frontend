@@ -13,7 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { AlertTriangleIcon, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import usePostVerifyAuth from "@/hooks/hooks-api/usePostVerifyAuth";
+import usePostVerifyAuth from "@/features/auth/hooks/usePostVerifyAuth";
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { useEffect, useState } from "react";
 

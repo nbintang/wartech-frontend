@@ -17,7 +17,7 @@ import Link from "next/link";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import UserProfile from "@/components/UserProfile";
-import useSignOut from "@/hooks/hooks-api/useSignOut";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Sheet,

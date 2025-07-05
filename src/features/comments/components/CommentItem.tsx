@@ -46,7 +46,7 @@ export default function CommentItem({
   depth = 0,
 }: CommentItemProps) {
   const {
-    isExpanded,
+    expanded,
     toggleExpanded,
     replyingTo,
     setReplyingTo,
@@ -55,7 +55,7 @@ export default function CommentItem({
     isLoadingReplies,
   } = useCommentStore(
     useShallow((state) => ({
-      isExpanded: state.isExpanded,
+      expanded: state.isExpanded(comment.id),
       toggleExpanded: state.toggleExpanded,
       replyingTo: state.replyingTo,
       setReplyingTo: state.setReplyingTo,
@@ -64,9 +64,8 @@ export default function CommentItem({
       isLoadingReplies: state.isLoadingReplies,
     }))
   );
+  
   const [isLiked, setIsLiked] = useState(false);
-
-  const expanded = isExpanded(comment.id);
   const showingReplyForm = replyingTo === comment.id;
   const submittingReply = isSubmittingReply(comment.id);
   const loadingReplies = isLoadingReplies(comment.id);
@@ -95,7 +94,7 @@ export default function CommentItem({
     }
   }, [
     expanded,
-    comment.childrenCount, // Keep for context
+    comment.childrenCount,
     repliesLoading,
     replies,
     repliesError,
@@ -103,10 +102,8 @@ export default function CommentItem({
   ]);
 
   const handleToggleExpand = async () => {
-    toggleExpanded(comment.id); 
-    if (!expanded && (!replies || replies.items.length === 0)) {
-      refetchReplies();
-    }
+    toggleExpanded(comment.id);
+    if (!expanded) await refetchReplies();
   };
 
   const handleReply = () => {
@@ -118,20 +115,6 @@ export default function CommentItem({
 
   const handleLike = () => {
     setIsLiked(!isLiked);
-    // Here you would typically call an API to like/unlike the comment
-  };
-
-  const handleReplySuccess = () => {
-    // Auto-expand to show the new reply if not already expanded
-    // This part should still work as before, but the optimistic update in useCreateComment
-    // will now correctly place the comment into the cache for useReplies.
-    if (!expanded) {
-      toggleExpanded(comment.id);
-    }
-    // Refetch replies to ensure we have the latest data (after optimistic is replaced)
-    setTimeout(() => {
-      refetchReplies();
-    }, 100);
   };
 
   const getInitials = (name: string) => {
@@ -141,17 +124,19 @@ export default function CommentItem({
       .join("")
       .toUpperCase();
   };
-
   const maxDepth = 6;
   const shouldNest = depth < maxDepth;
-
-  // MODIFIED: The rendering condition for nested replies.
-  // Now, we display replies if expanded AND (there are server-side children OR there are optimistic items).
   const shouldShowRepliesList =
     expanded &&
     (comment.childrenCount > 0 || (replies?.items && replies.items.length > 0));
- const safeLikes = typeof comment.likes === 'number' && !isNaN(comment.likes) ? comment.likes : 0;
-  const safeChildrenCount = typeof comment.childrenCount === 'number' && !isNaN(comment.childrenCount) ? comment.childrenCount : 0;
+  const safeLikes =
+    typeof comment.likes === "number" && !isNaN(comment.likes)
+      ? comment.likes
+      : 0;
+  const safeChildrenCount =
+    typeof comment.childrenCount === "number" && !isNaN(comment.childrenCount)
+      ? comment.childrenCount
+      : 0;
   return (
     <div className={`${depth > 0 ? "ml-6 border-l-2 border-muted pl-4" : ""}`}>
       <Card className="mb-3">
@@ -185,7 +170,7 @@ export default function CommentItem({
                 className="prose dark:prose-invert my-2 prose-sm md:prose-base"
               />
 
-             <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -195,7 +180,8 @@ export default function CommentItem({
                   <Heart
                     className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
                   />
-                  {safeLikes + (isLiked ? 1 : 0)}{" "} {/* Gunakan safeLikes di sini */}
+                  {safeLikes + (isLiked ? 1 : 0)}{" "}
+                  {/* Gunakan safeLikes di sini */}
                 </Button>
                 <Button
                   variant="ghost"
@@ -218,7 +204,8 @@ export default function CommentItem({
                     ) : (
                       <ChevronRight className="h-4 w-4 mr-1" />
                     )}
-                    {safeChildrenCount}{" "} {/* Gunakan safeChildrenCount di sini */}
+                    {safeChildrenCount}{" "}
+                    {/* Gunakan safeChildrenCount di sini */}
                     {safeChildrenCount === 1 ? "reply" : "replies"}
                   </Button>
                 ) : null}{" "}

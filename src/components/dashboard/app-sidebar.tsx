@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
-import useSignOut from "@/hooks/hooks-api/useSignOut";
+import useSignOut from "@/features/auth/hooks/useSignOut";
 import { BotIcon } from "lucide-react";
 import Link from "next/link";
 

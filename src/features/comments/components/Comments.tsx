@@ -124,7 +124,7 @@ export default function Comments({
         {/* Comments List */}
         <div>
           {isLoading ? (
-            <div className="flex items-center z-20 justify-center py-8">
+            <div className="flex items-center z-20 justify-center  text-muted-foreground  py-8">
               <Loader2 className="size-6 animate-spin mr-2" />
               <p className=" z-20"> Loading comments...</p>
             </div>

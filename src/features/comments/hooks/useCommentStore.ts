@@ -30,9 +30,7 @@ export const useCommentStore = create<CommentState>()(
         const newExpanded = new Set(state.expandedComments);
         if (newExpanded.has(commentId)) {
           newExpanded.delete(commentId);
-        } else {
-          newExpanded.add(commentId);
-        }
+        } else newExpanded.add(commentId);
         return { expandedComments: newExpanded };
       });
     },
