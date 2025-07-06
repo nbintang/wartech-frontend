@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,40 +11,45 @@ import {
   ChevronDown,
   ChevronRight,
   Heart,
-  MessageCircle,
   Loader2,
+  MessageCircle,
   MoreHorizontal,
   Trash2,
 } from "lucide-react";
 import CommentForm from "./CommentForm";
 import { CommentList } from "./CommentList";
-import { ClientCommentApiResponse, CommentApiResponse } from "@/types/api/CommentApiResponse";
+import {
+  ClientCommentApiResponse,
+  CommentApiResponse,
+} from "@/types/api/CommentApiResponse";
 import { useShallow } from "zustand/shallow";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-
+import { useCurrentUserLikeComment } from "../hooks/likes/useCurrentUserLikeComment";
+import { useLikeMutation } from "../hooks/likes/useLikeComment";
+import { useDeleteComment } from "../hooks/useDeleteComment";
+import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 interface CommentItemProps {
-  comment: CommentApiResponse;
+  comment: ClientCommentApiResponse;
   articleSlug: string;
   articleId: string;
   depth?: number;
-  articleTitle: string; // Pastikan ini ada di sini jika digunakan di CommentForm
+  articleTitle: string;
 }
 
 export default function CommentItem({
   comment,
   articleSlug,
-  articleTitle, // Gunakan ini
+  articleTitle,
   articleId,
   depth = 0,
 }: CommentItemProps) {
-  const [isLiked, setIsLiked] = useState(false);
   const {
     toggleExpanded,
     replyingTo,
@@ -59,85 +64,67 @@ export default function CommentItem({
       setReplyingTo: state.setReplyingTo,
       submittingParentId: state.submittingParentId,
       isSubmitting: state.isSubmitting,
-      optimisticComment: state.optimisticComment, // Perbaikan typo di sini
+      optimisticComment: state.optimisticComment,
     }))
   );
   const expanded = useCommentStore((state) => state.isExpanded(comment.id));
-
   const showingReplyForm = replyingTo === comment.id;
   const isSubmittingReplyToThisComment =
     isSubmitting && submittingParentId === comment.id;
   const maxDepth = 6;
-
-  // useReplies hanya di-enable ketika comment expanded ATAU sedang ada optimistic comment untuk parent ini
-  // Ini mencegah fetch yang tidak perlu jika tidak ada optimistic comment dan tidak expanded
-const shouldFetchReplies = expanded || (optimisticComment?.parentId === comment.id);
   const {
     data: replies,
     isLoading: repliesLoading,
-    isSuccess: repliesSuccess,
     refetch: refetchReplies,
-  } = useReplies(comment.id, shouldFetchReplies); // Menggunakan shouldFetchReplies
+  } = useReplies(comment.id, expanded);
+  const setOpenDialog = useHandleWarningDialog((state) => state.setOpenDialog);
+  const { mutate: toggleLike, isPending: isLikePending } = useLikeMutation();
+  const { mutate: deleteComment, isPending: isDeleting } = useDeleteComment();
+  const { data: currentUser } = useFetchProtectedData<UserProfileApiResponse>({
+    TAG: "me",
+    endpoint: "/users/me",
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    retry: false,
+  });
+  const canDelete = currentUser?.id === comment.user.id;
 
+  const { data: currentUserLike } = useCurrentUserLikeComment(comment.id);
+  const isLiked = !!currentUserLike;
 
-  const allReplies = useMemo(() => {
-    const combinedReplies: ClientCommentApiResponse[] = [];
-
-    // Tambahkan optimistic comment jika sesuai dan belum ada di replies API
-    if (optimisticComment && optimisticComment.parentId === comment.id && optimisticComment.articleSlug === articleSlug) {
-      const isOptimisticAlreadyInReplies = replies?.items?.some(
-        (reply) => reply.id === optimisticComment.id
-      );
-      if (!isOptimisticAlreadyInReplies) {
-        combinedReplies.push(optimisticComment);
-      }
-    }
-
-    // Tambahkan replies dari API
- replies?.items?.forEach((replyFromApi) => {
-  const clientComment: ClientCommentApiResponse = {
-    ...replyFromApi,
-    articleId: articleId,
-    articleSlug: articleSlug,
-  };
-  combinedReplies.push(clientComment);
-});
-
-    return combinedReplies;
-  }, [replies, optimisticComment, comment.id, articleId, articleSlug]);
-
-  // Hitung childrenCount yang ditampilkan secara optimistik
-  const displayedChildrenCount = useMemo(() => {
-    let count = comment.childrenCount;
-    // Tambahkan 1 jika ada optimistic comment yang belum difetch oleh useReplies
-    if (optimisticComment && optimisticComment.parentId === comment.id && optimisticComment.articleSlug === articleSlug) {
-      const isOptimisticAlreadyFetched = replies?.items?.some(
-        (reply) => reply.id === optimisticComment.id
-      );
-      if (!isOptimisticAlreadyFetched) {
-        count += 1;
-      }
-    }
-    return count;
-  }, [comment.childrenCount, optimisticComment, comment.id, articleSlug, replies?.items]);
-
-
+  const allReplies = useMemo(() => replies?.items || [], [replies]);
+  const displayedChildrenCount =
+    replies?.meta?.totalItems ?? comment.childrenCount;
   const handleToggleExpand = () => {
     toggleExpanded(comment.id);
-    // Hanya refetch jika kita akan menampilkan dan replies belum berhasil difetch,
-    // atau jika ada optimistic comment yang perlu direplace dengan data asli
-    if (!expanded && (!repliesSuccess || allReplies.length === 0)) { // Jika belum expanded dan belum ada replies
-      refetchReplies();
-    }
   };
-
   const handleReply = () => {
     setReplyingTo(showingReplyForm ? null : comment.id);
-    // Jika user mengklik reply dan komentar belum expanded, expand otomatis
     if (!expanded && !showingReplyForm) {
       toggleExpanded(comment.id);
-      // refetchReplies(); // Tidak perlu refetch di sini, optimistic update sudah cukup
     }
+  };
+  const handleDelete = () => {
+    if (isDeleting) return;
+    setOpenDialog({
+      title: `Delete Comment`,
+      description: "Are you sure you want to delete this comment? ",
+      isOpen: true,
+      onConfirm: () =>
+        deleteComment({
+          commentId: comment.id,
+          parentId: comment.parentId ?? null, // Pastikan `comment` punya properti `parentId`
+          articleSlug: articleSlug,
+        }),
+    });
+  };
+  const handleLikeClick = () => {
+    if (isLikePending) return;
+    toggleLike({
+      commentId: comment.id,
+      articleSlug: articleSlug,
+      isLiked: isLiked,
+    });
   };
 
   const getInitials = (name: string) => {
@@ -190,25 +177,28 @@ const shouldFetchReplies = expanded || (optimisticComment?.parentId === comment.
                   variant="ghost"
                   size="sm"
                   className={`h-8 px-2 ${isLiked ? "text-red-500" : ""}`}
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={handleLikeClick}
+                  disabled={isLikePending}
                 >
                   <Heart
                     className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`}
                   />
-                  {comment.likes + (isLiked ? 1 : 0)}
+                  {comment.likes}
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2"
-                  onClick={handleReply}
-                >
-                  <MessageCircle className="h-4 w-4 mr-1" />
-                  Reply
-                </Button>
+                {!(comment as ClientCommentApiResponse).isOptimistic && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={handleReply}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    Reply
+                  </Button>
+                )}
 
-                {(displayedChildrenCount > 0 || isSubmittingReplyToThisComment || (repliesSuccess && allReplies.length > 0)) && (
+                {displayedChildrenCount > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -226,19 +216,30 @@ const shouldFetchReplies = expanded || (optimisticComment?.parentId === comment.
                 )}
               </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem variant="destructive" >
-                  <Trash2 className="size-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {canDelete && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    disabled={isDeleting}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={handleDelete} // <-- Panggil handler
+                    disabled={isDeleting} // <-- Disable saat proses
+                  >
+                    <Trash2 className="size-4 mr-2" />
+                    {isDeleting ? "Menghapus..." : "Delete"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {showingReplyForm && (
@@ -255,16 +256,16 @@ const shouldFetchReplies = expanded || (optimisticComment?.parentId === comment.
         </CardContent>
       </Card>
 
-      {(expanded || showingReplyForm || isSubmittingReplyToThisComment) && ( // Render bagian ini jika expanded, form aktif, atau sedang submit balasan
+      {expanded && (
         <div className={depth < maxDepth ? "" : "ml-0"}>
-          {repliesLoading && allReplies.length === 0 ? ( // Tampilkan loader hanya jika belum ada balasan (termasuk optimistik)
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <p>Loading replies...</p>
+          {repliesLoading && allReplies.length === 0 ? (
+            <div className="flex items-center justify-center text-muted-foreground py-8">
+              <Loader2 className="size-6 animate-spin mr-2" />
+              <p>Loading Replies...</p>
             </div>
           ) : allReplies.length > 0 ? (
             <CommentList
-              comments={allReplies}
+              comments={allReplies as ClientCommentApiResponse[]}
               articleSlug={articleSlug}
               articleId={articleId}
               depth={depth < maxDepth ? depth + 1 : depth}

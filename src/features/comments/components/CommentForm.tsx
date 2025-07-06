@@ -49,9 +49,10 @@ export default function CommentForm({
   placeholder = "Write a comment...",
 }: CommentFormProps) {
   const editorRef = useRef<Editor | null>(null);
-  const { setReplyingTo } = useCommentStore(
+  const { setReplyingTo, setIsSubmitting } = useCommentStore(
     useShallow((state) => ({
       setReplyingTo: state.setReplyingTo,
+      setIsSubmitting: state.setIsSubmitting,
     }))
   );
   const createCommentMutation = useCreateComment();
@@ -72,13 +73,16 @@ export default function CommentForm({
         articleSlug, // Dari props
         articleTitle, // Dari props
       });
-      form.reset();
       onSuccess?.();
+      if (editorRef.current && createCommentMutation.isSuccess) {
+        form.reset();
+        editorRef.current.commands.clearContent();
+      }
       if (parentId) {
         setReplyingTo(null);
       }
     } catch (error) {
-      console.error("Failed to create comment:", error);
+      console.log("Failed to create comment:", error);
     }
   };
 

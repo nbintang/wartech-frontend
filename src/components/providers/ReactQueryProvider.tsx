@@ -22,7 +22,7 @@ export default function ReactQueryProvider({ children }: RQProviderProps) {
     queryClientRef.current = new QueryClient({
       queryCache: new QueryCache({
         onError: (error, query) => {
-          console.error("[RQ] Query Error", {
+          console.log("[RQ] Query Error", {
             queryKey: query.queryKey,
             error,
           });
@@ -36,7 +36,7 @@ export default function ReactQueryProvider({ children }: RQProviderProps) {
       }),
       mutationCache: new MutationCache({
         onError: (error, _v, _c, mutation) => {
-          console.error("[RQ] Mutation Error", {
+          console.log("[RQ] Mutation Error", {
             mutationKey: mutation.options?.mutationKey,
             error,
           });

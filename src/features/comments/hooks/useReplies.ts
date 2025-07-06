@@ -10,7 +10,7 @@ export const useReplies = (parentId: string, enabled = false) => {
       return res.data;
     },
     enabled: enabled && !!parentId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });

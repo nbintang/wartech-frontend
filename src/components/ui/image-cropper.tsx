@@ -117,7 +117,7 @@ export function ImageCropper({
       setCroppedImage(croppedImageUrl);
       setOpenDialog(false);
     } catch (error) {
-      console.error("Error during cropping:", error);
+      console.log("Error during cropping:", error);
       alert("Something went wrong!");
     }
   }

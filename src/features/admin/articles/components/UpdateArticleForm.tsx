@@ -196,7 +196,7 @@ const UpdateArticleForm = ({
             tagIds: resNewTags.data?.data?.map((tag) => tag.id),
           }),
         ])
-      ).map((res) => res.status === "rejected" && console.error(res.reason));
+      ).map((res) => res.status === "rejected" && console.log(res.reason));
 
       return resUpdateArticle;
     },
@@ -453,6 +453,7 @@ const UpdateArticleForm = ({
                   onCreate={handleCreate}
                   editable={article.content ? true : false}
                   injectCSS={true}
+                  immediatelyRender={false}
                   editorContentClassName="overflow-auto h-full"
                   editorClassName="focus:outline-none px-5 py-4 h-full"
                   onChange={(content) => field.onChange?.(content)}

@@ -1,5 +1,8 @@
 import { axiosInstance } from "@/lib/axiosInstance";
-import { CommentApiResponse } from "@/types/api/CommentApiResponse";
+import {
+  CommentApiResponse,
+  CommentLikeApiResponse,
+} from "@/types/api/CommentApiResponse";
 export interface GetComments {
   pageParam?: number;
   slug: string;
@@ -36,7 +39,9 @@ class CommentsService {
 
   async getReplies(
     parentId: string
-  ): Promise<ApiResponse<PaginatedDataResultResponse<CommentApiResponse>>> {
+  ): Promise<
+    ApiResponse<PaginatedDataResultResponse<CommentApiResponse | null>>
+  > {
     {
       const res = await axiosInstance.get<
         ApiResponse<PaginatedDataResultResponse<CommentApiResponse>>
@@ -48,7 +53,7 @@ class CommentsService {
 
   async createComment(
     data: CreateCommentRequest
-  ): Promise<ApiResponse<CommentApiResponse>> {
+  ): Promise<ApiResponse<CommentApiResponse | null>> {
     const payload = {
       content: data.content,
       articleId: data.articleId,
@@ -63,6 +68,36 @@ class CommentsService {
     );
     if (!response.data) throw new Error("Failed to create comment");
     return response.data;
+  }
+
+  async deleteComment(commentId: string) {
+    const response = await axiosInstance.delete(
+      `/protected/comments/${commentId}`
+    );
+    return response.data;
+  }
+
+  async getCurrentUserLike(
+    commentId: string
+  ): Promise<CommentLikeApiResponse | null> {
+    const res = await axiosInstance.get<ApiResponse<CommentLikeApiResponse>>(
+      `/protected/comments/${commentId}/like/me`
+    );
+    return res.data.data as CommentLikeApiResponse;
+  }
+
+  async likeComment(commentId: string) {
+    const res = await axiosInstance.post<ApiResponse<CommentLikeApiResponse>>(
+      `/protected/comments/${commentId}/like`
+    );
+    return res.data.data as CommentLikeApiResponse;
+  }
+
+  async unlikeComment(commentId: string) {
+    const res = await axiosInstance.delete<ApiResponse<CommentLikeApiResponse>>(
+      `/protected/comments/${commentId}/like`
+    );
+    return res.data.data as CommentLikeApiResponse;
   }
 }
 

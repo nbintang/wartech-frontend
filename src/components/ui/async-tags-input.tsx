@@ -120,7 +120,7 @@ const AsyncTagsInput = <T extends TagApiResponse>({
           }
           setSelectedSuggestionIndex(-1);
         } catch (error) {
-          console.error("Error fetching suggestions:", error);
+          console.log("Error fetching suggestions:", error);
           setFilteredSuggestions([]);
           setShowSuggestions(false);
         } finally {

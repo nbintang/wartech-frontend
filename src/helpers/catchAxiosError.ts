@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 
 const catchAxiosErrorMessage = (error: unknown): string | undefined => {
-  console.error("error in catchAxiosError", error);
+  console.log("error in catchAxiosError", error);
   const statusCode = [401, 429];
   if (isAxiosError(error)) {
     if (error.response?.status === 401) {

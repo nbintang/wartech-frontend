@@ -12,7 +12,6 @@ export const useComments = (articleSlug: string, isCollapsed: boolean) => {
         pageParam: pageParam as number,
         slug: articleSlug,
         isCollapsed,
-        
       });
       if (!res.data) throw new Error("Failed to fetch comments on useComments");
       return res.data;

@@ -1,10 +1,13 @@
 "use client";
 
 import CommentItem from "./CommentItem";
-import type { CommentApiResponse } from "@/types/api/CommentApiResponse";
+import type {
+  ClientCommentApiResponse,
+  CommentApiResponse,
+} from "@/types/api/CommentApiResponse";
 
 interface CommentListProps {
-  comments: CommentApiResponse[];
+  comments: ClientCommentApiResponse[];
   articleSlug: string;
   articleId: string;
   depth?: number;
