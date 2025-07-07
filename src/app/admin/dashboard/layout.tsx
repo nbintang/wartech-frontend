@@ -1,7 +1,7 @@
-import ArticleImageDialog from "@/components/ArticleImageDialog";
+import ImageDialog from "@/components/ImageDialog";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
-import SearchDashboardMenu from "@/components/SearchDashboardMenu";
+import SearchDashboardMenuDialog from "@/components/SearchDashboardMenu";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import WarningDialog from "@/components/WarningDialog";
 export default function Layout({
@@ -23,9 +23,9 @@ export default function Layout({
           <div className="flex flex-1 flex-col relative">{children}</div>
         </SidebarInset>
       </SidebarProvider>
-      <SearchDashboardMenu />
+      <SearchDashboardMenuDialog />
       <WarningDialog />
-      <ArticleImageDialog />
+      <ImageDialog />
     </>
   );
 }

@@ -76,7 +76,7 @@ const usePostProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
         }
       );
       if (redirect && redirectUrl) router.push(redirectUrl);
-      queryClient.invalidateQueries({ queryKey: [TAG, params] });
+      queryClient.invalidateQueries({ queryKey: [[TAG]] }); // Bungkus TAG dengan array tambahan
     },
     onError: (err) => {
       const message = catchAxiosErrorMessage(err);

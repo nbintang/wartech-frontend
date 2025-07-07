@@ -20,11 +20,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
-import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
-import useSignOut from "@/features/auth/hooks/useSignOut";
 import { BotIcon } from "lucide-react";
 import Link from "next/link";
+import useProfile from "@/hooks/hooks-api/useProfile";
 
 export const navData = {
   Main: [
@@ -56,7 +54,6 @@ export const navData = {
       icon: IconHelp,
     },
   ],
-
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -64,16 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     data: userData,
     isLoading,
     isSuccess,
-    isUnauthorized,
-    isError,
-    error,
-  } = useFetchProtectedData<UserProfileApiResponse>({
-    TAG: "me",
-    endpoint: "/users/me",
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
-    retry: false,
-  });
+  } = useProfile();
   return (
     <Sidebar className="z-[50]" collapsible="icon" {...props}>
       <SidebarHeader>

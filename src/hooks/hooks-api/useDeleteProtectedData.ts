@@ -1,3 +1,4 @@
+"use client";
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { capitalizeFirstLetter } from "@/lib/utils";
@@ -52,12 +53,11 @@ const useDeleteProtectedData = ({
         params,
       }),
     onSuccess: () => {
-      toast.success(
-        `${capitalizeFirstLetter(TAG)} deleted successfully!`,
-        { id: TAG }
-      );
+      toast.success(`${capitalizeFirstLetter(TAG)} deleted successfully!`, {
+        id: TAG,
+      });
       if (redirect && redirectUrl) router.push(redirectUrl);
-      queryClient.invalidateQueries({ queryKey: [TAG] });
+      queryClient.invalidateQueries({ queryKey: [[TAG]] }); // Bungkus TAG dengan array tambahan
     },
     onError: (err) => {
       const message = catchAxiosErrorMessage(err);

@@ -15,7 +15,7 @@ import { navData } from "./dashboard/app-sidebar";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@bprogress/next";
 
-export default function SearchDashboardMenu() {
+export default function SearchDashboardMenuDialog() {
   const { open, setOpen, toggleOpen } = useSearchDashboardMenu();
   const router = useRouter();
   const loader = useProgress();

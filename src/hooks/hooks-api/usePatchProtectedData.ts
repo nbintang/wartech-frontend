@@ -14,7 +14,8 @@ type IgnoreMutationOptions =
   | "mutationKey"
   | "onMutate"
   | "onSuccess"
-  | "onError";
+  | "onError"
+  | "onSettled";
 
 type MutateParamKeys =
   | "users"
@@ -45,6 +46,9 @@ const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
 }: PatchProtectedDataProps<ApiResponse<TResponse>, TFormSchema>) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+
+    const toastId = typeof TAG === "string" ? TAG : TAG[0];
+  const toastMessage = capitalizeFirstLetter(toastId);
   return useMutation<
     ApiResponse<TResponse>,
     unknown,
@@ -62,26 +66,28 @@ const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
       return response.data;
     },
     onMutate: () => {
-      toast.loading(`Updating ${TAG[0]}...`, {
-        id: typeof TAG === "string" ? TAG : (TAG[0] as MutateParamKeys),
-      });
+      // 2. Gunakan ID yang sudah didefinisikan
+      toast.loading(`Updating ${toastMessage}...`, { id: toastId });
     },
     onSuccess: () => {
-      toast.success(
-        `${
-          capitalizeFirstLetter(typeof TAG === "string" ? TAG : TAG[0])
-        } updated successfully!`,
-        { id: TAG[0] as MutateParamKeys }
-      );
       if (redirect && redirectUrl) router.push(redirectUrl);
-      queryClient.invalidateQueries({ queryKey: [TAG] });
+      // Menjadi seperti ini
+      queryClient.invalidateQueries({ queryKey: [[TAG]] }); 
     },
-    onError: (err) => {
-      const message = catchAxiosErrorMessage(err);
-      message &&
-        toast.error(message, {
-          id: TAG[0] as MutateParamKeys,
-        });
+    onError: (err) => {console.log(catchAxiosErrorMessage(err))},
+    onSettled: (data, error) => {
+      if (error) {
+        toast.error(`${toastMessage} update failed!`, { id: toastId });
+      }
+
+      if (data) {
+        toast.success(`${toastMessage} updated successfully!`, { id: toastId });
+      }
+
+      // Lakukan redirect setelah toast ditampilkan
+      if (redirect && redirectUrl && !error) {
+        router.push(redirectUrl);
+      }
     },
     ...mutateOptions,
   });

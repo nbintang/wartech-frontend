@@ -14,10 +14,14 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ClientCommentApiResponse, CommentApiResponse } from "@/types/api/CommentApiResponse";
+import {
+  ClientCommentApiResponse,
+  CommentApiResponse,
+} from "@/types/api/CommentApiResponse";
 import { useInView } from "react-intersection-observer";
 import { useCommentStore } from "../hooks/useCommentStore";
 import { useShallow } from "zustand/shallow";
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 
 interface CommentsProps {
   articleSlug: string;
@@ -32,19 +36,24 @@ export default function Comments({
 }: CommentsProps) {
   const queryClient = useQueryClient();
 
-
-  const { isCollapsed, toggleCollapsedComments, isSubmittingMainComment, optimisticComment } =
-    useCommentStore(
-      useShallow((state) => ({
-        isCollapsed: state.isCollapsed,
-        toggleCollapsedComments: state.toggleCollapsedComments,
-        isSubmittingMainComment: state.isSubmittingMainComment,
-        optimisticComment: state.optimisticComment,
-      }))
-    );
+  const {
+    isCollapsed,
+    toggleCollapsedComments,
+    isSubmittingMainComment,
+    optimisticComment,
+  } = useCommentStore(
+    useShallow((state) => ({
+      isCollapsed: state.isCollapsed,
+      toggleCollapsedComments: state.toggleCollapsedComments,
+      isSubmittingMainComment: state.isSubmittingMainComment,
+      optimisticComment: state.optimisticComment,
+    }))
+  );
   const {
     data,
     isLoading,
+    isError,
+    isSuccess,
     error,
     fetchNextPage,
     hasNextPage,
@@ -57,7 +66,11 @@ export default function Comments({
     const uniqueCommentIds = new Set<string>();
     const filteredComments: ClientCommentApiResponse[] = [];
 
-    if (optimisticComment && !optimisticComment.parentId && optimisticComment.articleSlug === articleSlug) {
+    if (
+      optimisticComment &&
+      !optimisticComment.parentId &&
+      optimisticComment.articleSlug === articleSlug
+    ) {
       filteredComments.push(optimisticComment);
       uniqueCommentIds.add(optimisticComment.id);
     }
@@ -106,7 +119,7 @@ export default function Comments({
 
   return (
     <Card className="w-full mx-auto relative">
-      {!isCollapsed && (
+      {!isCollapsed && !isError && (
         <div className="bg-gradient-to-b from-transparent to-background rounded-xl pointer-events-none absolute inset-0 z-10" />
       )}
       <CardHeader>
@@ -120,7 +133,7 @@ export default function Comments({
               Discussion for "{articleTitle}"
             </p>
           </div>
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             onClick={handleRefresh}
@@ -130,12 +143,12 @@ export default function Comments({
               className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
             />
             Refresh
-          </Button>
+          </Button> */}
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {isCollapsed && (
+        {isCollapsed && isSuccess && (
           <>
             <CommentForm
               articleSlug={articleSlug}
@@ -156,11 +169,13 @@ export default function Comments({
           ) : error ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-4">
-                Failed to load comments. Please try again.
+                {catchAxiosErrorMessage(error) ?? "An unknown error occurred."}
               </p>
-              <Button onClick={handleRefresh} variant="outline">
-                Try Again
-              </Button>
+              {!catchAxiosErrorMessage(error) && (
+                <Button onClick={handleRefresh} variant="outline">
+                  Try Again
+                </Button>
+              )}
             </div>
           ) : (
             <>

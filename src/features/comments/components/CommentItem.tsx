@@ -113,7 +113,7 @@ export default function CommentItem({
       onConfirm: () =>
         deleteComment({
           commentId: comment.id,
-          parentId: comment.parentId ?? null, // Pastikan `comment` punya properti `parentId`
+          parentId: comment.parentId ?? null, 
           articleSlug: articleSlug,
         }),
     });
