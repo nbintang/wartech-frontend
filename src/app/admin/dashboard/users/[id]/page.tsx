@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { use, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,18 +14,16 @@ import {
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { Button } from "@/components/ui/button";
 import { Check, Trash2Icon } from "lucide-react";
-
-import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
-import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 import useHandleImageDialog from "@/hooks/store/useHandlerImageDialog";
-import { useParams } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import UserProfileDasboard from "@/features/dashboard/profile/components/UserProfileDashboard";
 import UserByIdProfileDashboard from "@/features/admin/users/components/UserProfilePage";
 
-export default function UserByIdPage() {
-  const params = useParams();
-  const { id } = params;
+export default function UserByIdPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
 
   const setOpenImageDialog = useHandleImageDialog(
     (state) => state.setOpenDialog
@@ -147,7 +145,7 @@ export default function UserByIdPage() {
           </div>
         </div>
       </section>
-      <div className="flex flex-col mx-3 gap-4 mt-4">
+      <div className="flex flex-col mx-5 gap-4 mt-4">
         <div>
           <h1 className="font-semibold  text-base sm:text-lg">About</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">

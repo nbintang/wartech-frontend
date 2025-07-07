@@ -163,9 +163,8 @@ const UpdateArticleForm = ({
       setIsInitialized(true);
     }
   }, [article, isInitialized, form]);
-
   const { mutateAsync: updateArticle, ...updateMutations } = useMutation({
-    mutationKey: ["articles"],
+    mutationKey: ["update-article"],
     mutationFn: async (data: ArticleInput) => {
       const { tags, image, ...rest } = data;
 
@@ -210,6 +209,8 @@ const UpdateArticleForm = ({
     },
     onSuccess: () => {
       queryCLient.invalidateQueries({ queryKey: ["articles"] });
+      queryCLient.invalidateQueries({ queryKey: ["article", article.slug] });
+
       useHandleLoadingDialog.getState().closeDialog();
       toast.success("Article updated successfully!", {
         id: "update-article",
@@ -286,11 +287,11 @@ const UpdateArticleForm = ({
                   >
                     {(files && files.length > 0) ||
                     (typeof field.value === "string" && field.value) ? (
-                      <div className="relative group rounded-xl  overflow-hidden sm:scale-[40%] scale-75">
+                      <div className="relative group rounded-xl  overflow-hidden sm:scale-[40%] scale-75 m-6">
                         <div className="absolute group-hover:bg-black/50 transition-all grid place-items-center duration-200 top-0 left-0 w-full h-full">
                           <div className="group-hover:opacity-100 flex items-center flex-col justify-center opacity-0">
-                            <CloudUpload className="text-white size-24" />
-                            <h1 className="text-white text-5xl">
+                            <CloudUpload className="text-muted-foreground size-24" />
+                            <h1 className="text-muted-foreground text-5xl">
                               Change Picture?
                             </h1>
                           </div>

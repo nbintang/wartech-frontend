@@ -45,7 +45,6 @@ const usePostImage = ({
           createdAt: null,
         };
       }
-
       formData.append("file", convertedFile);
       const profileResponse = await axiosInstance.post(
         "/protected/upload",

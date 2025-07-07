@@ -2,6 +2,7 @@
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { useProgress } from "@bprogress/next";
 import {
   useMutation,
   UseMutationOptions,
@@ -16,7 +17,8 @@ type IgnoreMutationOptions =
   | "mutationKey"
   | "onMutate"
   | "onSuccess"
-  | "onError";
+  | "onError"
+  | "onSettled";
 type MutateParamKeys =
   | "users"
   | "me"
@@ -45,26 +47,37 @@ const useDeleteProtectedData = ({
 }: DeleteProtectedDataProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const loader = useProgress();
+  const toastId = typeof TAG === "string" ? TAG : TAG[0];
+  const toastMessage = capitalizeFirstLetter(toastId);
   return useMutation<AxiosResponse, unknown, { ids: string[] } | void>({
-    mutationKey: [TAG],
-    mutationFn: async (values: { ids: string[] } | void) =>
-      await axiosInstance.delete(`/protected${endpoint}`, {
+    mutationKey: Array.isArray(TAG) ? TAG : [TAG, endpoint, params],
+    mutationFn: async (values: { ids: string[] } | void) => {
+      loader.start();
+      return await axiosInstance.delete(`/protected${endpoint}`, {
         data: values,
         params,
-      }),
-    onSuccess: () => {
-      toast.success(`${capitalizeFirstLetter(TAG)} deleted successfully!`, {
-        id: TAG,
       });
-      if (redirect && redirectUrl) router.push(redirectUrl);
-      queryClient.invalidateQueries({ queryKey: [[TAG]] }); // Bungkus TAG dengan array tambahan
     },
-    onError: (err) => {
-      const message = catchAxiosErrorMessage(err);
-      message && toast.error(message, { id: TAG });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [TAG] });
     },
     onMutate: () => {
-      toast.loading(`Deleting ${TAG}...`, { id: TAG });
+      toast.loading(`Deleting ${toastMessage}...`, { id: toastId });
+    },
+    onError: (err) => {
+      console.log(catchAxiosErrorMessage(err));
+    },
+    onSettled: (data, error, variables) => {
+      if (error) {
+        toast.error(`${toastMessage} update failed!`, { id: toastId });
+        loader.stop();
+      }
+      if (data) {
+        toast.success(`${toastMessage} updated successfully!`, { id: toastId });
+        loader.stop();
+      }
+      if (redirect && redirectUrl && !error) router.push(redirectUrl);
     },
     ...mutateOptions,
   });

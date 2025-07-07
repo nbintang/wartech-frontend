@@ -14,6 +14,10 @@ export interface CreateCommentRequest {
   articleSlug: string;
   articleId: string;
 }
+
+type CommentsResponse = ApiResponse<
+  PaginatedDataResultResponse<CommentApiResponse | null>
+>;
 class CommentsService {
   private PREVIEW_COUNT = 2;
   private LOAD_MORE_COUNT = 4;
@@ -21,36 +25,27 @@ class CommentsService {
     pageParam,
     slug,
     isCollapsed,
-  }: GetComments): Promise<
-    ApiResponse<PaginatedDataResultResponse<CommentApiResponse>>
-  > {
-    const res = await axiosInstance.get<
-      ApiResponse<PaginatedDataResultResponse<CommentApiResponse>>
-    >("/protected/comments", {
-      params: {
-        "article-slug": slug,
-        page: pageParam,
-        limit: isCollapsed ? this.LOAD_MORE_COUNT : this.PREVIEW_COUNT,
-      },
-    });
+  }: GetComments): Promise<CommentsResponse> {
+    const res = await axiosInstance.get<CommentsResponse>(
+      "/protected/comments",
+      {
+        params: {
+          "article-slug": slug,
+          page: pageParam,
+          limit: isCollapsed ? this.LOAD_MORE_COUNT : this.PREVIEW_COUNT,
+        },
+      }
+    );
     if (!res.data) throw new Error("Failed to fetch comments");
     return res.data;
   }
 
-  async getReplies(
-    parentId: string
-  ): Promise<
-    ApiResponse<PaginatedDataResultResponse<CommentApiResponse | null>>
-  > {
-    {
-      const res = await axiosInstance.get<
-        ApiResponse<PaginatedDataResultResponse<CommentApiResponse>>
-      >(`/protected/comments/${parentId}/replies`);
-      if (!res.data) throw new Error("Failed to fetch replies");
-      return res.data;
-    }
+  async getReplies(parentId: string): Promise<CommentsResponse> {
+    const res = await axiosInstance.get<CommentsResponse>(
+      `/protected/comments/${parentId}/replies`
+    );
+    return res.data;
   }
-
   async createComment(
     data: CreateCommentRequest
   ): Promise<ApiResponse<CommentApiResponse | null>> {

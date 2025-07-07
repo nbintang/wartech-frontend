@@ -39,11 +39,13 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
+import { imageSchema } from "@/schemas/imageSchema";
 
-const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 const articleInputSchema = z.object({
   title: z
     .string()
@@ -53,18 +55,7 @@ const articleInputSchema = z.object({
     })
     .trim(),
   content: z.string().min(1, { message: "Content is required." }),
-  image: z
-    .instanceof(File, {
-      message: "Please upload an image.",
-    })
-    .refine((file) => file.size <= MAX_FILE_SIZE, {
-      message: `The image is too large. Please choose an image smaller than  1MB.`,
-    })
-    .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
-      message: "Please upload a valid image file (JPEG, PNG, or WebP).",
-    })
-    .or(z.string().url())
-    .nullable(),
+  image: imageSchema(),
   categoryId: z.string().uuid(),
   tags: z.array(
     z.object({
@@ -120,7 +111,7 @@ const NewArticleForm = () => {
     [form]
   );
   const { mutateAsync: createArticle, ...createMutations } = useMutation({
-    mutationKey: ["articles"],
+    mutationKey: ["create-article"],
     mutationFn: async (data: ArticleInput) => {
       const { tags, image, ...rest } = data;
       const [uploadedImage, resNewTags] = await Promise.all([
@@ -161,7 +152,8 @@ const NewArticleForm = () => {
       router.push("/admin/dashboard/articles");
     },
     onError: (err) => {
-      const message = catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
+      const message =
+        catchAxiosErrorMessage(err) ?? "An unknown error occurred.";
       setOpenDialog("new-article", {
         description: message,
         isError: true,
@@ -171,17 +163,16 @@ const NewArticleForm = () => {
     },
   });
 
+  const onSubmit = (v: ArticleInput) => {
+    createArticle({
+      ...v,
+      content: editorRef.current?.getHTML() ?? v.content,
+    });
+  };
+
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit((v) =>
-          createArticle({
-            ...v,
-            content: editorRef.current?.getHTML() ?? v.content,
-          })
-        )}
-        className="space-y-6"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"

@@ -12,7 +12,6 @@ export const useCurrentUserLikeComment = (commentId: string) => {
         return null;
       }
     },
-    // Query hanya bergantung pada commentId
     enabled: !!commentId,
     staleTime: 1000 * 60 * 5,
     retry: false,

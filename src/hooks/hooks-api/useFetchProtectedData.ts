@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axiosInstance";
+import { useProgress } from "@bprogress/next";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 type FetchParamsKey =
@@ -24,9 +25,12 @@ const useFetchProtectedData = <TResponse>({
   params,
   ...queryOptions
 }: FetchParamsProps<TResponse>) => {
+
+    const loader = useProgress();
   const result = useQuery({
-    queryKey: [Array.isArray(TAG) ? TAG : [TAG], endpoint, params],
+    queryKey: Array.isArray(TAG) ? TAG : [TAG, endpoint, params],
     queryFn: async (): Promise<TResponse> => {
+      loader.start();
       const res = await axiosInstance.get(`/protected${endpoint}`, {
         params,
       });

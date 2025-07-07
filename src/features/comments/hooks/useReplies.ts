@@ -6,7 +6,6 @@ export const useReplies = (parentId: string, enabled = false) => {
     queryKey: ["replies", parentId],
     queryFn: async () => {
       const res = await commentsService.getReplies(parentId);
-      if (!res.data) throw new Error("Failed to fetch replies");
       return res.data;
     },
     enabled: enabled && !!parentId,

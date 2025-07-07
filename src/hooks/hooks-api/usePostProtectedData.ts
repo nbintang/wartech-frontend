@@ -1,5 +1,7 @@
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
+import { capitalizeFirstLetter } from "@/lib/utils";
+import { useProgress } from "@bprogress/next";
 import {
   useMutation,
   UseMutationOptions,
@@ -14,8 +16,8 @@ type IgnoreMutationOptions =
   | "mutationKey"
   | "onMutate"
   | "onSuccess"
-  | "onError";
-
+  | "onError"
+  | "onSettled";
 type MutateParamKeys =
   | "users"
   | "me"
@@ -47,15 +49,19 @@ const usePostProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
 }: PostProtectedDataProps<ApiResponse<TResponse>, TFormSchema>) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const loader = useProgress();
+  const toastId = typeof TAG === "string" ? TAG : TAG[0];
+  const toastMessage = capitalizeFirstLetter(toastId);
   return useMutation<
     ApiResponse<TResponse>,
     unknown,
     z.infer<typeof formSchema>
   >({
-    mutationKey: typeof TAG === "string" ? [...TAG, params] : TAG,
+    mutationKey: Array.isArray(TAG) ? TAG : [TAG, endpoint, params],
     mutationFn: async (
       values: z.infer<typeof formSchema>
     ): Promise<ApiResponse<TResponse>> => {
+      loader.start();
       const response = await axiosInstance.post(
         `/protected${endpoint}`,
         values,
@@ -64,23 +70,28 @@ const usePostProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
       return response.data as ApiResponse<TResponse>;
     },
     onMutate: () => {
-      toast.loading(`Creating ${typeof TAG === "string" ? TAG : TAG[0]}...`, {
-        id: TAG[0] as MutateParamKeys,
+      toast.loading(`Creating ${toastMessage}...`, {
+        id: toastId,
       });
     },
     onSuccess: () => {
-      toast.success(
-        `${typeof TAG === "string" ? TAG : TAG[0]} created successfully!`,
-        {
-          id: TAG[0],
-        }
-      );
-      if (redirect && redirectUrl) router.push(redirectUrl);
-      queryClient.invalidateQueries({ queryKey: [[TAG]] }); // Bungkus TAG dengan array tambahan
+      queryClient.invalidateQueries({ queryKey: [TAG] });
     },
     onError: (err) => {
-      const message = catchAxiosErrorMessage(err);
-      message && toast.error(message, { id: TAG as MutateParamKeys });
+      console.log(catchAxiosErrorMessage(err));
+    },
+    onSettled: (data, error, variables) => {
+      if (error) {
+        toast.error(`${toastMessage} update failed!`, { id: toastId });
+        loader.stop();
+      }
+      if (data) {
+        toast.success(`${toastMessage} updated successfully!`, { id: toastId });
+        loader.stop();
+      }
+      if (redirect && redirectUrl && !error) {
+        router.push(redirectUrl);
+      }
     },
     ...mutateOptions,
   });

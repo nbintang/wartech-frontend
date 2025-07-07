@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import {
   CommentApiResponse,
 } from "@/types/api/CommentApiResponse";
-import { InfiniteData } from "@tanstack/react-query";
 import commentsService from "../services";
 
 interface DeleteCommentVariables {

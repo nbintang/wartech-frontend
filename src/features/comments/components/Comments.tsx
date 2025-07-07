@@ -77,18 +77,25 @@ export default function Comments({
 
     data?.pages.forEach((page) => {
       page.items?.forEach((commentFromApi) => {
-        if (!uniqueCommentIds.has(commentFromApi.id)) {
+        if (
+          commentFromApi &&
+          commentFromApi.id &&
+          !uniqueCommentIds.has(commentFromApi.id)
+        ) {
+          uniqueCommentIds.add(commentFromApi.id);
+
           const clientComment: ClientCommentApiResponse = {
             ...commentFromApi,
+            id: commentFromApi.id,
             articleId: articleId,
             articleSlug: articleSlug,
             parentId: null,
           };
           filteredComments.push(clientComment);
-          uniqueCommentIds.add(commentFromApi.id);
         }
       });
     });
+
     return filteredComments;
   }, [data, optimisticComment, articleSlug, articleId]);
 

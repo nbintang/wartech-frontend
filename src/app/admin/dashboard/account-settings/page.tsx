@@ -160,7 +160,7 @@ export default function AccountSettings() {
             </div>
           </div>
         </section>
-        <div className="flex flex-col mx-3 gap-4 mt-4">
+        <div className="flex flex-col mx-5 gap-4 mt-4">
           <div>
             <h1 className="font-semibold  text-base sm:text-lg">Profile</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">

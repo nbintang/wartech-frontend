@@ -9,13 +9,13 @@ type MutationStatus = {
 
 type MutationStore = {
   mutationMap: MutationStatus;
-  setMutating: (tag: string, action: MutationAction, isLoading: boolean) => void;
+  setIsMutating: (tag: string, action: MutationAction, isLoading: boolean) => void;
   isMutating: (tag: string, action: MutationAction) => boolean;
 };
 
-const useMutationLoadingStore = create<MutationStore>((set, get) => ({
+const useIsMutatingStore = create<MutationStore>((set, get) => ({
   mutationMap: {},
-  setMutating: (tag, action, isLoading) =>
+  setIsMutating: (tag, action, isLoading) =>
     set((state) => ({
       mutationMap: {
         ...state.mutationMap,
@@ -28,4 +28,4 @@ const useMutationLoadingStore = create<MutationStore>((set, get) => ({
   isMutating: (tag, action) => !!get().mutationMap[tag]?.[action],
 }));
 
-export default useMutationLoadingStore;
+export default useIsMutatingStore;

@@ -30,7 +30,6 @@ const ArticleDashboardPage = () => {
       limit,
     },
   });
-  console.log(data);
   const { table } = useTable<ArticlesApiResponse>({
     columns: articlePageColumn,
     data: data?.items ?? [],
@@ -40,7 +39,6 @@ const ArticleDashboardPage = () => {
   return (
     <>
       {isLoading && <DataTableSkeleton className="h-[700px]   " />}
-
       {isSuccess && data && (
         <>
           <ArticleTableFilters filterSearch="title" table={table} />

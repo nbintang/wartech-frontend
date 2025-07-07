@@ -112,6 +112,7 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
         endpoint: `/articles/${articleSlug}`,
         TAG: "articles",
         formSchema: z.object({
+
           status: z.enum(statusArt),
         }),
       });

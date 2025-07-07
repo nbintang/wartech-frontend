@@ -1,6 +1,7 @@
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { useProgress } from "@bprogress/next";
 import {
   useMutation,
   UseMutationOptions,
@@ -47,17 +48,19 @@ const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
   const queryClient = useQueryClient();
   const router = useRouter();
 
-    const toastId = typeof TAG === "string" ? TAG : TAG[0];
+  const loader = useProgress();
+  const toastId = typeof TAG === "string" ? TAG : TAG[0];
   const toastMessage = capitalizeFirstLetter(toastId);
   return useMutation<
     ApiResponse<TResponse>,
     unknown,
     z.infer<typeof formSchema>
   >({
-    mutationKey: typeof TAG === "string" ? [TAG, params] : TAG,
+    mutationKey: Array.isArray(TAG) ? TAG : [TAG, endpoint, params],
     mutationFn: async (
       values: z.infer<typeof formSchema>
     ): Promise<ApiResponse<TResponse>> => {
+      loader.start();
       const response = await axiosInstance.patch(
         `/protected${endpoint}`,
         values,
@@ -66,28 +69,24 @@ const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
       return response.data;
     },
     onMutate: () => {
-      // 2. Gunakan ID yang sudah didefinisikan
       toast.loading(`Updating ${toastMessage}...`, { id: toastId });
     },
     onSuccess: () => {
-      if (redirect && redirectUrl) router.push(redirectUrl);
-      // Menjadi seperti ini
-      queryClient.invalidateQueries({ queryKey: [[TAG]] }); 
+      queryClient.invalidateQueries({ queryKey: [TAG] });
     },
-    onError: (err) => {console.log(catchAxiosErrorMessage(err))},
+    onError: (err) => {
+      console.log(catchAxiosErrorMessage(err));
+    },
     onSettled: (data, error) => {
       if (error) {
         toast.error(`${toastMessage} update failed!`, { id: toastId });
+        loader.stop();
       }
-
       if (data) {
         toast.success(`${toastMessage} updated successfully!`, { id: toastId });
+        loader.stop();
       }
-
-      // Lakukan redirect setelah toast ditampilkan
-      if (redirect && redirectUrl && !error) {
-        router.push(redirectUrl);
-      }
+      if (redirect && redirectUrl && !error) router.push(redirectUrl);
     },
     ...mutateOptions,
   });

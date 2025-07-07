@@ -2,10 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
 import commentsService from "../services/index";
 export const useComments = (articleSlug: string, isCollapsed: boolean) => {
-  return useInfiniteQuery<
-    PaginatedDataResultResponse<CommentApiResponse>,
-    Error
-  >({
+  return useInfiniteQuery({
     queryKey: ["comments", articleSlug],
     queryFn: async ({ pageParam = 1 }) => {
       const res = await commentsService.getCommentsService({
