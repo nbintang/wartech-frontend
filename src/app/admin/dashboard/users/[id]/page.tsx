@@ -1,19 +1,13 @@
 "use client";
-import { use, useState } from "react";
+import { use } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
 import {
-  UserProfileApiResponse,
-  UsersApiResponse,
+  UsersApiResponse
 } from "@/types/api/UserApiResponse";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
-import { Button } from "@/components/ui/button";
-import { Check, Trash2Icon } from "lucide-react";
+import { Check } from "lucide-react";
 import useHandleImageDialog from "@/hooks/store/useHandlerImageDialog";
 import { Separator } from "@/components/ui/separator";
 import UserByIdProfileDashboard from "@/features/admin/users/components/UserProfilePage";

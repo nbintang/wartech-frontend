@@ -1,13 +1,8 @@
 "use client";
 import {
-  Search,
-  Calendar,
   ExternalLink,
   BotIcon,
-  MenuIcon,
-  UserIcon,
-  LockIcon,
-  LogOutIcon,
+  MenuIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +11,6 @@ import Image from "next/image";
 import Link from "next/link";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
-import UserProfile from "@/components/UserProfile";
-import useSignOut from "@/features/auth/hooks/useSignOut";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -38,7 +31,7 @@ export default function NewsLandingPage() {
     month: "long",
     day: "numeric",
   });
-  const { data, isSuccess, isLoading, isError, error, isUnauthorized } =
+  const { data, isSuccess, isLoading, isUnauthorized } =
     useFetchProtectedData<UserProfileApiResponse>({
       TAG: "me",
       endpoint: "/users/me",

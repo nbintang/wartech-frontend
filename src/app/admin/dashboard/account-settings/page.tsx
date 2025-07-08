@@ -1,38 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
-  CalendarDays,
-  Mail,
-  UserIcon,
-  Camera,
-  Check,
-  X,
-  Edit2,
+  Check
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import useProfile from "@/hooks/hooks-api/useProfile";
 import UserProfileDasboard from "@/features/dashboard/profile/components/UserProfileDashboard";
