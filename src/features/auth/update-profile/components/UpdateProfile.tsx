@@ -30,22 +30,10 @@ import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 import { toast } from "sonner";
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { useRouter } from "next/navigation";
+import { imageSchema } from "@/schemas/imageSchema";
 
-const MAX_FILE_SIZE = 1024 * 1024 * 0.8; // 800kB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 const updateProfileSchema = z.object({
-  image: z
-    .instanceof(File, {
-      message: "Please upload an image.",
-    })
-    .refine((file) => file.size <= MAX_FILE_SIZE, {
-      message: `The image is too large. Please choose an image smaller than  1MB.`,
-    })
-    .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
-      message: "Please upload a valid image file (JPEG, PNG, or WebP).",
-    })
-    .or(z.string().url())
-    .nullable(),
+  image: imageSchema(),
 });
 
 type UpdateProfileFormValues = z.infer<typeof updateProfileSchema>;

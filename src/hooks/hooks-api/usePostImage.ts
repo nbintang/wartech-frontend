@@ -50,9 +50,6 @@ const usePostImage = ({
         "/protected/upload",
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
           params: {
             folder,
             "image-url": imageUrl ?? null,
