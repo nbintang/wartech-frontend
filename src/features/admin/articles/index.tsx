@@ -6,7 +6,6 @@ import React from "react";
 import useTable from "../../../hooks/useTable";
 import articlePageColumn from "./components/articlesColumn";
 import DataTableSkeleton from "../components/DataTableSkeleton";
-import DataTableFilters from "../components/DataTableFilters";
 import DataTable from "../components/DataTable";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-link";
 import { useSearchParams } from "next/navigation";
@@ -38,7 +37,9 @@ const ArticleDashboardPage = () => {
   const visibleRowCountOnPage = table.getPaginationRowModel().rows.length;
   return (
     <>
-      {isLoading && <DataTableSkeleton className="h-[700px]   " />}
+      {isLoading    && (
+        <DataTableSkeleton className="h-[700px]   " />
+      )}
       {isSuccess && data && (
         <>
           <ArticleTableFilters filterSearch="title" table={table} />

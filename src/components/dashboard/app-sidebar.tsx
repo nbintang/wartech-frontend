@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   IconArticle,
+  IconCategory2,
   IconHelp,
   IconLayoutDashboard,
   IconSettings,
@@ -40,6 +41,11 @@ export const navData = {
       title: "Articles",
       url: "/admin/dashboard/articles",
       icon: IconArticle,
+    },
+    {
+      title: "Categories",
+      url: "/admin/dashboard/categories",
+      icon: IconCategory2,
     },
   ],
   Others: [

@@ -25,8 +25,9 @@ type MutateParamKeys =
   | "comments"
   | "tags"
   | "categories";
+type ProtectedDataTags = MutateParamKeys | MutateParamKeys[] | string[];
 type PatchProtectedDataProps<TResponse, TFormSchema extends z.ZodSchema> = {
-  TAG: MutateParamKeys | string[];
+  TAG: ProtectedDataTags;
   endpoint: string;
   params?: any;
   formSchema: TFormSchema;
@@ -72,7 +73,7 @@ const usePatchProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
       toast.loading(`Updating ${toastMessage}...`, { id: toastId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [TAG] });
+      queryClient.invalidateQueries({ queryKey: [...TAG] });
     },
     onError: (err) => {
       console.log(catchAxiosErrorMessage(err));

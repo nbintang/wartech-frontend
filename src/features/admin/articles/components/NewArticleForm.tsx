@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { MinimalTiptapArticle } from "@/components/ui/minimal-tiptap";
 import AsyncTagsInput from "@/components/ui/async-tags-input";
 import { cn, slugify } from "@/lib/utils";
-import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
+import { CategoryApiResponse } from "@/types/api/CategoryApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
@@ -279,9 +279,9 @@ const NewArticleForm = () => {
                   minus iste expedita doloribus eos.
                 </FormDescription>
                 <FormControl>
-                  <AsyncSelect<CategorysApiResponse>
+                  <AsyncSelect<CategoryApiResponse>
                     fetcher={(query) =>
-                      fetchSearchedData<CategorysApiResponse>("/categories", {
+                      fetchSearchedData<CategoryApiResponse>("/categories", {
                         name: query,
                       })
                     }

@@ -112,7 +112,6 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
         endpoint: `/articles/${articleSlug}`,
         TAG: "articles",
         formSchema: z.object({
-
           status: z.enum(statusArt),
         }),
       });
@@ -124,11 +123,9 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
           description: `Are you sure you want to change the status of this article to ${status}?`,
           buttonVariants: "default",
           onConfirm: () => {
-            start();
             mutate({
               status,
             });
-            stop();
           },
         });
 

@@ -2,6 +2,7 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import { useProgress } from "@bprogress/next";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
+import test from "node:test";
 type FetchParamsKey =
   | "users"
   | "me"
@@ -9,9 +10,9 @@ type FetchParamsKey =
   | "comments"
   | "tags"
   | "categories";
-
+type ProtectedDataTags = FetchParamsKey | FetchParamsKey[] | string[];
 type FetchParamsProps<TResponse> = {
-  TAG: FetchParamsKey | string[];
+  TAG: ProtectedDataTags;
   params?: any;
   endpoint: string;
 } & Omit<
@@ -25,8 +26,7 @@ const useFetchProtectedData = <TResponse>({
   params,
   ...queryOptions
 }: FetchParamsProps<TResponse>) => {
-
-    const loader = useProgress();
+  const loader = useProgress();
   const result = useQuery({
     queryKey: Array.isArray(TAG) ? TAG : [TAG, endpoint, params],
     queryFn: async (): Promise<TResponse> => {
@@ -34,6 +34,7 @@ const useFetchProtectedData = <TResponse>({
       const res = await axiosInstance.get(`/protected${endpoint}`, {
         params,
       });
+      console.log(res.data.data);
       const data = res.data.data;
       return data as TResponse;
     },

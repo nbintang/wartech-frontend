@@ -75,18 +75,22 @@ const usePostProtectedData = <TResponse, TFormSchema extends z.ZodSchema>({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [TAG] });
+      queryClient.invalidateQueries({ queryKey: [...TAG] });
     },
     onError: (err) => {
       console.log(catchAxiosErrorMessage(err));
     },
     onSettled: (data, error, variables) => {
       if (error) {
-        toast.error(`${toastMessage} update failed!`, { id: toastId });
+        if (catchAxiosErrorMessage(error)) {
+          toast.error(catchAxiosErrorMessage(error), { id: toastId });
+        } else {
+          toast.error("An unknown error occurred.", { id: toastId });
+        }
         loader.stop();
       }
       if (data) {
-        toast.success(`${toastMessage} updated successfully!`, { id: toastId });
+        toast.success(`${toastMessage} created successfully!`, { id: toastId });
         loader.stop();
       }
       if (redirect && redirectUrl && !error) {

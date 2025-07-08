@@ -5,90 +5,87 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  LoaderCircleIcon,
-  PenIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { ChevronDown, PenIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@tanstack/react-table";
-import Link from "next/link";
-import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
+import useHandleCategoryFormDialog from "../hooks/useHandlenFormDialog";
+import { CategoryApiResponse } from "@/types/api/CategoryApiResponse";
 import useDeleteProtectedData from "@/hooks/hooks-api/useDeleteProtectedData";
-import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
-type ArticleTableFiltersProps<TData extends ArticlesApiResponse> = {
+import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
+
+type CategoryTableFiltersProps<TData extends CategoryApiResponse> = {
   table: Table<TData>;
-  filterSearch: string;
+  filterSearch: keyof TData;
 };
-const ArticleTableFilters = <TData extends ArticlesApiResponse>({
+const CategoryTableFilters = <TData extends CategoryApiResponse>({
   table,
   filterSearch,
-}: ArticleTableFiltersProps<TData>) => {
-  const selectedDataIds = table
-    .getFilteredSelectedRowModel()
-    .rows.map((art) => art.original.id);
-  const isRowSelected = table.getFilteredSelectedRowModel().rows.length > 0;
+}: CategoryTableFiltersProps<TData>) => {
+  const selectedOneCategory =
+    table.getFilteredSelectedRowModel().rows.length === 1;
+  const category = table
+    .getFilteredRowModel()
+    .rows.filter((row) => row.getIsSelected());
+  const setOpen = useHandleCategoryFormDialog((s) => s.setOpen);
   const setOpenDialog = useHandleWarningDialog((state) => state.setOpenDialog);
-  const { mutate, isPending } = useDeleteProtectedData({
-    TAG: "articles",
-    endpoint: `/articles`,
+  const setCategory = useHandleCategoryFormDialog((s) => s.setCategory);
+  const { mutate: deleteCategory } = useDeleteProtectedData({
+    TAG: ["categories"],
+    endpoint: selectedOneCategory
+      ? `/categories/${category[0].original.slug}`
+      : "",
   });
+
+  const filterSearchCategory = filterSearch.toString();
   const handleOpenDialog = () => {
     setOpenDialog({
       isOpen: true,
-      title: "Delete Article",
+      title: "Delete Category",
       description:
-        "Are you sure you want to delete this article? This action cannot be undone.",
+        "Are you sure you want to delete this category? This action cannot be undone.",
       onConfirm: () => {
-        mutate({ ids: selectedDataIds });
+        deleteCategory();
       },
     });
   };
   return (
     <div className="flex flex-wrap-reverse items-center justify-between gap-4 mb-6">
       <Input
-        placeholder={`Filter ${filterSearch}s...`}
+        placeholder={`Filter ${filterSearchCategory}s...`}
         value={
-          (table.getColumn(filterSearch)?.getFilterValue() as string) ?? ""
+          (table.getColumn(filterSearchCategory)?.getFilterValue() as string) ??
+          ""
         }
         onChange={(event) =>
-          table.getColumn(filterSearch)?.setFilterValue(event.target.value)
+          table
+            .getColumn(filterSearchCategory)
+            ?.setFilterValue(event.target.value)
         }
         className="md:w-1/4 w-full focus-visible:ring-0 focus-visible:ring-offset-0"
       />
 
       <div className="flex  items-center gap-2">
-        {isRowSelected && (
+        {selectedOneCategory ? (
           <Button
-            onClick={handleOpenDialog}
-            variant="destructive"
             size={"sm"}
-            className="md:mr-4 m-auto"
-            disabled={isPending}
+            onClick={() => {
+              handleOpenDialog();
+            }}
+            variant={"destructive"}
           >
-            {isPending ? (
-              <span className="flex items-center gap-2">
-                <LoaderCircleIcon className="size-4 animate-spin" /> Deleting...
-              </span>
-            ) : (
-              <>
-                <Trash2Icon className="size-4" />
-                Delete
-              </>
-            )}
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
           </Button>
-        )}
+        ) : null}
         <Button
-          variant="default"
-          size={"sm"}
-          className="md:mr-4 m-auto"
-          asChild
+          onClick={() => {
+            if (selectedOneCategory) {
+              setCategory(category[0].original);
+            }
+            setOpen(true);
+          }}
         >
-          <Link href="/admin/dashboard/articles/new-articles">
-            <PenIcon className="size-4" />
-            New Article
-          </Link>
+          <PenIcon /> {selectedOneCategory ? "Edit" : "Create"} Category
         </Button>
 
         <DropdownMenu>
@@ -120,4 +117,4 @@ const ArticleTableFilters = <TData extends ArticlesApiResponse>({
   );
 };
 
-export default ArticleTableFilters;
+export default CategoryTableFilters;

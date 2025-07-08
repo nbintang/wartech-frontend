@@ -26,8 +26,9 @@ type MutateParamKeys =
   | "comments"
   | "tags"
   | "categories";
+type ProtectedDataTags = MutateParamKeys | MutateParamKeys[] | string[];
 type DeleteProtectedDataProps = {
-  TAG: MutateParamKeys;
+  TAG: ProtectedDataTags;
   endpoint: string;
   params?: string;
   redirect?: boolean;
@@ -60,7 +61,7 @@ const useDeleteProtectedData = ({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [TAG] });
+      queryClient.invalidateQueries({ queryKey: [...TAG] });
     },
     onMutate: () => {
       toast.loading(`Deleting ${toastMessage}...`, { id: toastId });
@@ -70,11 +71,11 @@ const useDeleteProtectedData = ({
     },
     onSettled: (data, error, variables) => {
       if (error) {
-        toast.error(`${toastMessage} update failed!`, { id: toastId });
+        toast.error(`${toastMessage} deleted failed!`, { id: toastId });
         loader.stop();
       }
       if (data) {
-        toast.success(`${toastMessage} updated successfully!`, { id: toastId });
+        toast.success(`${toastMessage} deleted successfully!`, { id: toastId });
         loader.stop();
       }
       if (redirect && redirectUrl && !error) router.push(redirectUrl);

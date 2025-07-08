@@ -16,7 +16,7 @@ import { MinimalTiptapArticle } from "@/components/ui/minimal-tiptap";
 import AsyncTagsInput from "@/components/ui/async-tags-input";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { cn } from "@/lib/utils";
-import { CategorysApiResponse } from "@/types/api/CategoryApiResponse";
+import { CategoryApiResponse } from "@/types/api/CategoryApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload, LoaderCircleIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
@@ -368,13 +368,13 @@ const UpdateArticleForm = ({
                   minus iste expedita doloribus eos.
                 </FormDescription>
                 <FormControl>
-                  <AsyncSelect<CategorysApiResponse>
+                  <AsyncSelect<CategoryApiResponse>
                     fetcher={(query) =>
                       !field.onChange
-                        ? fetchSearchedData<CategorysApiResponse>(
+                        ? fetchSearchedData<CategoryApiResponse>(
                             `/categories/${article.category.id}`
                           )
-                        : fetchSearchedData<CategorysApiResponse>(
+                        : fetchSearchedData<CategoryApiResponse>(
                             `/categories`,
                             { name: query }
                           )
