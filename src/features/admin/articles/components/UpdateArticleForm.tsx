@@ -83,7 +83,7 @@ const UpdateArticleForm = ({
   const setOpenDialog = useHandleLoadingDialog((state) => state.setOpenDialog);
 
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
-    "image-url": article?.image,
+    imageUrl: article?.image,
     folder: "articles",
   });
 

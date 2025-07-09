@@ -26,8 +26,8 @@ const CategoryTableFilters = <TData extends CategoryApiResponse>({
   const category = table
     .getFilteredRowModel()
     .rows.filter((row) => row.getIsSelected());
-  const setOpen = useHandleCategoryFormDialog((s) => s.setOpen);
-  const setOpenDialog = useHandleWarningDialog((state) => state.setOpenDialog);
+    const setOpenDialog = useHandleWarningDialog((state) => state.setOpenDialog);
+    const setOpen = useHandleCategoryFormDialog((s) => s.setOpen);
   const setCategory = useHandleCategoryFormDialog((s) => s.setCategory);
   const { mutate: deleteCategory } = useDeleteProtectedData({
     TAG: ["categories"],

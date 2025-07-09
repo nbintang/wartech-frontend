@@ -17,7 +17,7 @@ type AlertDialogStore = {
     onConfirm?: () => void;
     buttonVariants?: ButtonVariants["variant"];
   }) => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   closeDialog: () => void;
 };
 
@@ -27,7 +27,7 @@ const useHandleWarningDialog = create<AlertDialogStore>((set) => ({
   isOpen: false,
   message: "",
   buttonVariants: "destructive",
-  setOpenDialog: ({ isOpen, title, description, onConfirm, buttonVariants }) =>
+  setOpenDialog:  ({ isOpen, title, description, onConfirm, buttonVariants }) =>
     set({
       isOpen,
       title,

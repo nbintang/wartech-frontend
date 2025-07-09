@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { ImagesIcon } from "lucide-react";
 import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
 import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
+import usePostImage from "@/hooks/hooks-api/usePostImage";
+import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 
 const UserProfileDasboard = ({
   profile,
@@ -42,8 +44,12 @@ const UserProfileDasboard = ({
   const setOpenWarningDialog = useHandleWarningDialog(
     (state) => state.setOpenDialog
   );
+  const setOpenLoadingDialog = useHandleLoadingDialog(
+    (state) => state.setOpenDialog
+  );
   const onDrop = React.useCallback((acceptedFiles: FileWithPath[]) => {
     const file = acceptedFiles[0];
+
     if (!file) {
       alert("Selected image is too large!");
       return;
@@ -62,9 +68,14 @@ const UserProfileDasboard = ({
     accept,
   });
 
-  const { mutate } = usePatchProtectedData({
+  const { mutateAsync: uploadImage } = usePostImage({
+    folder: "users",
+    imageUrl: profile.image,
+  });
+
+  const { mutate, isPending, isSuccess } = usePatchProtectedData({
     formSchema: userProfileSchema,
-    TAG: "me",
+    TAG: ["me", "users", "/users/me"],
     endpoint: `/users/${profile.id}`,
     redirect: true,
     redirectUrl: "/dashboard/profile",
@@ -76,11 +87,13 @@ const UserProfileDasboard = ({
       isOpen: true,
       title: "Update Profile",
       description: "Are you sure you want to update your profile?",
-      onConfirm: () =>
+      onConfirm: async () => {
+        const { secureUrl } = await uploadImage(croppedImage);
         mutate({
           ...values,
-          image: croppedImage ? croppedImage : profile.image,
-        }),
+          image: secureUrl ? secureUrl : profile.image,
+        });
+      },
     });
   });
   return (
@@ -155,9 +168,16 @@ const UserProfileDasboard = ({
             </FormItem>
           )}
         />
-        {form.formState.isDirty && (
+        {(form.formState.isDirty || croppedImage) && (
           <div className="flex gap-3  mt-10">
-            <Button variant="outline" type="reset" onClick={() => form.reset()}>
+            <Button
+              variant="outline"
+              type="reset"
+              onClick={() => {
+                form.reset();
+                setCroppedImage(null);
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit" variant="default">

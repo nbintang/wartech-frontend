@@ -17,6 +17,7 @@ import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
+import useHandleCategoryFormDialog from "../hooks/useHandlenFormDialog";
 const categoryPageColum: ColumnDef<CategoryApiResponse>[] = [
   {
     id: "select",
@@ -87,6 +88,8 @@ const categoryPageColum: ColumnDef<CategoryApiResponse>[] = [
         TAG: "categories",
         endpoint: `/categories/${category.slug}`,
       });
+       const setOpen = useHandleCategoryFormDialog((s) => s.setOpen);
+        const setCategory = useHandleCategoryFormDialog((s) => s.setCategory);
       const handleDelete = () =>
         setOpenDialog({
           title: `Delete Category`,
@@ -94,6 +97,11 @@ const categoryPageColum: ColumnDef<CategoryApiResponse>[] = [
           isOpen: true,
           onConfirm: () => mutate(),
         });
+
+        const handleEdit = ( ) => {
+          setOpen(true);
+          setCategory(category);
+        }
 
       return (
         <DropdownMenu>
@@ -122,6 +130,13 @@ const categoryPageColum: ColumnDef<CategoryApiResponse>[] = [
               <Link href={`/admin/dashboard/categories/${category.slug}`}>
                 View category details
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleEdit}
+            >
+              <span className="block max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                Edit {category.name}
+              </span>
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive"

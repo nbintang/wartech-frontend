@@ -93,7 +93,7 @@ const NewArticleForm = () => {
     },
   });
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
-    "image-url": null,
+   imageUrl: null,
     folder: "articles",
   });
   const dropZoneConfig: DropzoneOptions = {

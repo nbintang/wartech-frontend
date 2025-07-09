@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 type PostImageProps = {
   folder: "users" | "articles";
-  "image-url"?: string | null;
+  imageUrl?: string | null;
 } & Omit<
   UseMutationOptions<
     UploadImageApiResponse,
@@ -20,7 +20,7 @@ type PostImageProps = {
 
 const usePostImage = ({
   folder,
-  "image-url": imageUrl,
+ imageUrl,
   ...options
 }: PostImageProps) => {
   return useMutation({

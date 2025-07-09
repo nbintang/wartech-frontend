@@ -77,7 +77,7 @@ export default function UpdateProfile() {
   });
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
     folder: "users",
-    "image-url": profile?.image,
+    imageUrl: profile?.image,
   });
 
   const { mutateAsync: updateProfile, ...updateProfileMutations } =
