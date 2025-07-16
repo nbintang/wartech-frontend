@@ -7,13 +7,11 @@ import { useEffect, useState } from "react";
 const ProgressLoaderProvider = ({ children }: { children: React.ReactNode }) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) return null;
-
   return (
     <ProgressProvider
       height="4px"

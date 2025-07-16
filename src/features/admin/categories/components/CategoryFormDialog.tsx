@@ -51,7 +51,6 @@ const CategoryFormDialog = () => {
     endpoint: "/categories",
     formSchema: categorySchema,
   });
-  console.log(category);
   const { mutateAsync: updateCategory } = usePatchProtectedData({
     TAG: ["categories"],
     endpoint: `/categories/${category?.slug}`,

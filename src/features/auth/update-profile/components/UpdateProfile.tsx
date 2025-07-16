@@ -27,8 +27,6 @@ import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { type UserProfileApiResponse } from "@/types/api/UserApiResponse";
 import Link from "next/link";
 import usePatchProtectedData from "@/hooks/hooks-api/usePatchProtectedData";
-import { toast } from "sonner";
-import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { useRouter } from "next/navigation";
 import { imageSchema } from "@/schemas/imageSchema";
 

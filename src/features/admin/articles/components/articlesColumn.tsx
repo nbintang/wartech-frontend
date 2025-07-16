@@ -16,13 +16,11 @@ import useHandleImageDialog from "@/hooks/store/useHandlerImageDialog";
 import useHandleWarningDialog from "@/hooks/store/useHandleWarningDialog";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
-import { useProgress } from "@bprogress/next";
 import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -104,7 +102,6 @@ const articlePageColumn: ColumnDef<ArticlesApiResponse>[] = [
     cell: ({ row }) => {
       const articleSlug = row.original.slug;
       const statusArt = ["PUBLISHED", "DRAFT", "ARCHIVED"] as const;
-      const { start, stop } = useProgress();
       const setOpenDialog = useHandleWarningDialog(
         (state) => state.setOpenDialog
       );

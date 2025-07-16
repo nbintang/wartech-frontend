@@ -2,15 +2,12 @@
 import { userColumns } from "@/features/admin/root/components/userColumns";
 import { UsersApiResponse } from "@/types/api/UserApiResponse";
 import { ScrollArea, ScrollBar } from "../../../components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { articleColumns } from "@/features/admin/root/components/articleColumns";
 import CommentsItems from "@/features/admin/root/components/CommentRootItems";
 import UserChart from "@/features/admin/root/components/UsersChart";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { CommentApiResponse } from "@/types/api/CommentApiResponse";
-import DataTableSkeleton from "../components/DataTableSkeleton";
 import { ArticlesApiResponse } from "@/types/api/ArticleApiResponse";
-import DashboardRootCardLayout from "./components/DashboardRootCardLayout";
 import DataTable from "../components/DataTable";
 import useTable from "../../../hooks/useTable";
 import DashboardCardWrapper from "./components/DashboardCardWrapper";

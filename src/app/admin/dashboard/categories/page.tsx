@@ -10,7 +10,6 @@ export default function Categories() {
       className=" min-h-screen md:mx-5 mx-3 my-6"
     >
       <CategoriesDashboardPage />
-      
       <CategoryFormDialog />
     </DashboardCardLayout>
   );

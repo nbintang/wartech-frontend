@@ -44,6 +44,7 @@ import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { imageSchema, imageSchemOptions } from "@/schemas/imageSchema";
+import { Textarea } from "@/components/ui/textarea";
 
 const articleInputSchema = z.object({
   title: z
@@ -53,6 +54,10 @@ const articleInputSchema = z.object({
       message: "Title must be at most 100 characters long.",
     })
     .trim(),
+  description: z
+    .string()
+    .max(200, { message: "Description must be at most 200 characters long." })
+    .optional(),
   content: z.string().min(1, { message: "Content is required." }),
   image: imageSchema(),
   categoryId: z.string().uuid(),
@@ -93,6 +98,7 @@ const UpdateArticleForm = ({
       title: "",
       content: "",
       categoryId: "",
+      description: "",
       image: null,
       tags: [],
     },
@@ -149,6 +155,7 @@ const UpdateArticleForm = ({
         content: article.content,
         categoryId: article.category.id,
         image: article.image,
+        description: article.description,
         tags: article.tags,
       });
       if (editorRef.current && article.content) {
@@ -252,6 +259,23 @@ const UpdateArticleForm = ({
               </FormDescription>
               <FormControl>
                 <Input type="text" placeholder="Enter title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-2xl">Description</FormLabel>
+              <FormDescription>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Incidunt mollitia inventore totam?
+              </FormDescription>
+              <FormControl>
+                <Textarea rows={4} className="min-h-32" placeholder="Enter description" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

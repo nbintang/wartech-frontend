@@ -34,7 +34,6 @@ const useFetchProtectedData = <TResponse>({
       const res = await axiosInstance.get(`/protected${endpoint}`, {
         params,
       });
-      console.log(res.data.data);
       const data = res.data.data;
       return data as TResponse;
     },

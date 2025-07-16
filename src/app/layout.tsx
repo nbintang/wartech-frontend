@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import ProccessDialog from "@/components/ProccessDialog";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ProgressLoaderProvider from "@/components/providers/ProgressLoaderProvider";
+import ClientLayout from "../features/client/shared/layout/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ReactQueryProvider>
             <ProgressLoaderProvider>
-              {children}
+              <ClientLayout>{children}</ClientLayout>
               <Toaster position="top-right" />
               <ProccessDialog />
             </ProgressLoaderProvider>

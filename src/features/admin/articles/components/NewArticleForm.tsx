@@ -39,12 +39,10 @@ import { axiosInstance } from "@/lib/axiosInstance";
 import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import {
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useHandleLoadingDialog from "@/hooks/store/useHandleLoadingDialog";
 import { imageSchema } from "@/schemas/imageSchema";
+import { Textarea } from "@/components/ui/textarea";
 
 const articleInputSchema = z.object({
   title: z
@@ -54,6 +52,10 @@ const articleInputSchema = z.object({
       message: "Title must be at most 100 characters long.",
     })
     .trim(),
+  description: z
+    .string()
+    .max(200, { message: "Description must be at most 200 characters long." })
+    .optional(),
   content: z.string().min(1, { message: "Content is required." }),
   image: imageSchema(),
   categoryId: z.string().uuid(),
@@ -89,11 +91,12 @@ const NewArticleForm = () => {
       content: "",
       categoryId: "",
       image: undefined,
+      description: "",
       tags: [],
     },
   });
   const { mutateAsync: uploadImage, ...uploadMutations } = usePostImage({
-   imageUrl: null,
+    imageUrl: null,
     folder: "articles",
   });
   const dropZoneConfig: DropzoneOptions = {
@@ -185,6 +188,23 @@ const NewArticleForm = () => {
               </FormDescription>
               <FormControl>
                 <Input type="text" placeholder="Enter title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-2xl">Description</FormLabel>
+              <FormDescription>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Incidunt mollitia inventore totam?
+              </FormDescription>
+              <FormControl>
+                <Textarea rows={4} className="min-h-32" placeholder="Enter description" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

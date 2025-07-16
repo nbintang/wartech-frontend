@@ -1,5 +1,6 @@
 "use client";
 
+import catchAxiosErrorMessage from "@/helpers/catchAxiosError";
 import {
   QueryClient,
   QueryClientProvider,
@@ -24,7 +25,7 @@ export default function ReactQueryProvider({ children }: RQProviderProps) {
         onError: (error, query) => {
           console.log("[RQ] Query Error", {
             queryKey: query.queryKey,
-            error,
+            error: catchAxiosErrorMessage(error),
           });
         },
         onSuccess: (data, query) => {
@@ -38,7 +39,7 @@ export default function ReactQueryProvider({ children }: RQProviderProps) {
         onError: (error, _v, _c, mutation) => {
           console.log("[RQ] Mutation Error", {
             mutationKey: mutation.options?.mutationKey,
-            error,
+            error: catchAxiosErrorMessage(error),
           });
         },
         onSuccess: (data, _v, _c, mutation) => {
