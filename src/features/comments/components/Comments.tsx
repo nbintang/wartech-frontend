@@ -7,17 +7,9 @@ import { Button } from "@/components/ui/button";
 import { useComments } from "@/features/comments/hooks/useComments";
 import CommentForm from "./CommentForm";
 import { CommentList } from "./CommentList";
-import {
-  MessageCircle,
-  Loader2,
-  RefreshCw,
-  ChevronsUpDown,
-} from "lucide-react";
+import { MessageCircle, Loader2, ChevronsUpDown } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  ClientCommentApiResponse,
-  CommentApiResponse,
-} from "@/types/api/CommentApiResponse";
+import { ClientCommentApiResponse } from "@/types/api/CommentApiResponse";
 import { useInView } from "react-intersection-observer";
 import { useCommentStore } from "../hooks/useCommentStore";
 import { useShallow } from "zustand/shallow";
@@ -99,8 +91,6 @@ export default function Comments({
     return filteredComments;
   }, [data, optimisticComment, articleSlug, articleId]);
 
-  const totalComments = allComments.length;
-
   useEffect(() => {
     if (inView && hasNextPage && isCollapsed && !isFetchingNextPage) {
       fetchNextPage();
@@ -134,7 +124,7 @@ export default function Comments({
           <div className="space-y-3">
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              Comments ({totalComments})
+              Comments
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Discussion for "{articleTitle}"

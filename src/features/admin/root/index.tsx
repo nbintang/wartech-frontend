@@ -17,11 +17,8 @@ const RootListDashboardPage = () => {
   const { data: articles, ...articlesQuery } = useFetchProtectedData<
     PaginatedDataResultResponse<ArticlesApiResponse>
   >({
-    endpoint: "/articles",
+    endpoint: "/articles?is-paginated=true",
     TAG: "articles",
-    params: {
-      "is-paginated": true,
-    },
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: false,

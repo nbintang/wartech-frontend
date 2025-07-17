@@ -20,11 +20,10 @@ const ArticleDashboardPage = () => {
     PaginatedDataResultResponse<ArticlesApiResponse>
   >({
     TAG: "articles",
-    endpoint: "/articles",
+    endpoint: "/articles?is-paginated=true",
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 30,
     params: {
-      "is-paginated": true,
       page,
       limit,
     },

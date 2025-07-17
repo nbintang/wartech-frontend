@@ -1,5 +1,5 @@
 import PublicUserProfile from "@/components/PublicUserProfile";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
@@ -13,19 +13,24 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { CategoryApiResponse } from "@/types/api/CategoryApiResponse";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import { format } from "date-fns";
 import { BotIcon, Loader2, MenuIcon } from "lucide-react";
 import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 import React from "react";
 const HeaderNews = () => {
+  const { categorySlug, articleSlug } = useParams<{
+    categorySlug: string;
+    articleSlug: string;
+  }>();
+  const pathname = usePathname();
+  const isShouldAppearArticleDetail =
+    pathname === `/articles/${categorySlug}/${articleSlug}`;
   const mobileView = useIsMobile();
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const currentDate = format(new Date(), "yyyy-MM-dd");
   const {
     data: me,
     isSuccess,
@@ -54,8 +59,9 @@ const HeaderNews = () => {
     retry: false,
     refetchOnWindowFocus: false,
   });
+
   return (
-    <header className="">
+    <header className="pb-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {mobileView ? (
           <>
@@ -165,43 +171,49 @@ const HeaderNews = () => {
           </div>
         )}
         {/* Logo and Navigation */}
-        <div className="pt-4">
-          <div className="text-center mb-4">
-            <h1 className="text-4xl font-serif font-bold ">
-              The <span className="font-normal">NEWS</span>
-            </h1>
-          </div>
+        {!isShouldAppearArticleDetail && (
+          <div className="pt-4">
+            <div className="text-center mb-4">
+              <h1 className="text-4xl font-serif font-bold ">
+                The <span className="font-normal">NEWS</span>
+              </h1>
+            </div>
 
-          <ScrollArea className="max-w-96 md:max-w-2xl mx-auto">
-            <nav className="border-t border-b  py-2">
-              <div className="flex items-center justify-center space-x-8 whitespace-nowrap">
-                {(isLoadingCategories || isFetchingCategories) &&
-                  Array.from({ length: 10 }).map((_, idx) => (
-                    <Skeleton key={idx} className="h-6 w-20 rounded" />
-                  ))}
-                {isSuccessCategories &&
-                  categories.items.map((category) => (
-                    <Button
-                      key={category.id}
-                      variant={"link"}
-                      className="text-sm"
-                      asChild
-                    >
-                      <Link href={`/news/${category.slug}`}>
-                        {category.name}
-                      </Link>
-                    </Button>
-                  ))}
-                {isErrorCategories && (
-                  <p className="text-sm text-destructive">
-                    Gagal memuat kategori.
-                  </p>
-                )}
-              </div>
-            </nav>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </div>
+            <ScrollArea className="max-w-96 md:max-w-2xl mx-auto">
+              <nav className="border-t border-b  py-2">
+                <div className="flex items-center justify-center space-x-8 whitespace-nowrap">
+                  {(isLoadingCategories || isFetchingCategories) &&
+                    Array.from({ length: 10 }).map((_, idx) => (
+                      <Skeleton key={idx} className="h-6 w-20 rounded" />
+                    ))}
+                  {isSuccessCategories &&
+                    categories.items.map((category) => (
+                      <Button
+                        key={category.id}
+                        variant={"link"}
+                        className={cn(
+                          category.slug === categorySlug
+                            ? "underline underline-offset-4 font-semibold text-primary"
+                            : "text-muted-foreground"
+                        )}
+                        asChild
+                      >
+                        <Link href={`/articles/${category.slug}`}>
+                          {category.name}
+                        </Link>
+                      </Button>
+                    ))}
+                  {isErrorCategories && (
+                    <p className="text-sm text-destructive">
+                      Gagal memuat kategori.
+                    </p>
+                  )}
+                </div>
+              </nav>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
+        )}
       </div>
     </header>
   );

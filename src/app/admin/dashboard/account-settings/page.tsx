@@ -32,7 +32,8 @@ export default function AccountSettings() {
   if (isLoading || !isSuccess) {
     return (
       <>
-      <section className="px-4 sm:px-8">
+        <div className="container mx-auto">
+          <section className="px-4 sm:px-8">
             <div className="relative -mt-16 flex flex-col items-center md:flex-row md:items-center md:justify-between">
               <div className="relative">
                 <div className="size-40  bg-accent rounded-full ring-offset-2 ring-2 ring-offset-background ring-background" />
@@ -79,6 +80,7 @@ export default function AccountSettings() {
               </div>
             </div>
           </div>
+        </div>
       </>
     );
   }
