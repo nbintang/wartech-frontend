@@ -18,64 +18,6 @@ import LatestNewsSection from "@/features/client/main/LatestNewsSection";
 import Comments from "@/features/comments/components/Comments";
 import ClientArticleComments from "@/features/comments/components/ClientArticleComments";
 
-// Mock data - in a real app, this would come from your API/database
-const articleData = {
-  id: "96fe06e5-1381-4a02-97ef-a6bc4bbaa9b4",
-  title: "Mastering Next.js: A Complete Guide to Modern React Development",
-  slug: "mastering-nextjs-complete-guide",
-  content: `
-    <h2 id="introduction">Introduction to Next.js</h2>
-    <p>Next.js has revolutionized the way we build React applications by providing a powerful framework that combines the best of server-side rendering, static site generation, and client-side rendering. In this comprehensive guide, we'll explore everything you need to know about Next.js.</p>
-    
-    <h2 id="getting-started">Getting Started with Next.js</h2>
-    <p>Setting up a Next.js project is incredibly straightforward. The framework provides excellent developer experience out of the box with features like automatic code splitting, optimized bundling, and hot reloading.</p>
-    
-    <h3 id="installation">Installation Process</h3>
-    <p>To create a new Next.js application, you can use the create-next-app command which sets up everything automatically. This includes TypeScript support, ESLint configuration, and Tailwind CSS if desired.</p>
-    
-    <h2 id="key-features">Key Features of Next.js</h2>
-    <p>Next.js offers numerous features that make it an excellent choice for modern web development:</p>
-    
-    <h3 id="app-router">App Router</h3>
-    <p>The new App Router in Next.js 13+ provides a more intuitive way to handle routing with support for layouts, loading states, and error boundaries. It's built on top of React Server Components.</p>
-    
-    <h3 id="server-components">Server Components</h3>
-    <p>React Server Components allow you to render components on the server, reducing the JavaScript bundle size and improving performance. This is particularly beneficial for data-heavy applications.</p>
-    
-    <h2 id="performance">Performance Optimization</h2>
-    <p>Next.js includes many performance optimizations by default, including automatic code splitting, image optimization, and font optimization. These features help ensure your applications load quickly and provide excellent user experience.</p>
-    
-    <h3 id="image-optimization">Image Optimization</h3>
-    <p>The Next.js Image component automatically optimizes images for different screen sizes and formats, significantly improving page load times and Core Web Vitals scores.</p>
-    
-    <h2 id="deployment">Deployment Strategies</h2>
-    <p>Deploying Next.js applications is seamless with platforms like Vercel, but the framework also supports deployment to various other platforms including AWS, Google Cloud, and traditional hosting providers.</p>
-    
-    <h2 id="conclusion">Conclusion</h2>
-    <p>Next.js continues to evolve and improve, making it an excellent choice for developers who want to build fast, scalable React applications. Its combination of developer experience and performance makes it a standout framework in the React ecosystem.</p>
-  `,
-  image:
-    "https://res.cloudinary.com/da6hciwjn/image/upload/v1751910651/articles/ecrakgezim4zgqyxdlwj.jpg",
-  publishedAt: "2025-07-08T09:04:27.000Z",
-  description:
-    "A comprehensive guide to mastering Next.js, covering everything from basic setup to advanced optimization techniques for modern React development.",
-
-  category: {
-    name: "Programming",
-    slug: "programming",
-  },
-  author: {
-    name: "Clara sayangku",
-    email: "admin@gmail.com",
-    image:
-      "https://res.cloudinary.com/da6hciwjn/image/upload/v1752080989/users/oxxoycoiyjri6rdtdjye.jpg",
-  },
-  tags: [
-    { name: "Next.js", slug: "nextjs" },
-    { name: "React", slug: "react" },
-    { name: "Web Development", slug: "web-development" },
-  ],
-};
 
 export default function ArticlePage({
   params,
@@ -102,6 +44,7 @@ export default function ArticlePage({
     endpoint: `/articles?is-paginated=true&category=${articleData?.category.slug}`,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
+    enabled: !!articleData?.category.slug,
     retry: false,
   });
 

@@ -56,7 +56,7 @@ export default function NewsPage({
   return (
     <>
       <HightlightCarouselSection query={articleByCategory} />
-      <LatestNewsSection query={articleByCategory} />
+      <LatestNewsSection title={`Latest in ${categorySlug}`} query={articleByCategory} />
     </>
   );
 }

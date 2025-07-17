@@ -139,7 +139,7 @@ export default function ClientArticleComments({
 
   return (
     <Card className="w-full mx-auto relative">
-      {!isCollapsed && !isError && (
+      {!isCollapsed && !isError  && (
         <div className="bg-gradient-to-b from-transparent to-background rounded-xl pointer-events-none absolute inset-0 z-10" />
       )}
       <CardHeader>
@@ -168,7 +168,7 @@ export default function ClientArticleComments({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {isCollapsed && isSuccess && (
+        {!isUnauthorized && isSuccess && (
           <>
             <CommentForm
               articleSlug={articleSlug}
@@ -201,7 +201,7 @@ export default function ClientArticleComments({
             <>
               {allComments.length > 0 ? (
                 <>
-                  {!isCollapsed && (
+                  {!isCollapsed  && (
                     <div className="absolute inset-x-0 bottom-10 z-20 flex justify-center">
                       {isUnauthorized ? (
                         <Button
@@ -231,7 +231,7 @@ export default function ClientArticleComments({
                     articleId={articleId}
                   />
 
-                  {hasNextPage && isCollapsed && (
+                  {hasNextPage && !isCollapsed && (
                     <div ref={ref} className="flex justify-center mt-6">
                       {isFetchingNextPage ? (
                         <div className="flex items-center gap-2 text-muted-foreground">

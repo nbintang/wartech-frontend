@@ -69,18 +69,18 @@ export default function CommentForm({
       await createCommentMutation.mutateAsync({
         content: data.content,
         parentId,
-        articleId, // Dari props
-        articleSlug, // Dari props
-        articleTitle, // Dari props
+        articleId,
+        articleSlug,
+        articleTitle,
       });
-      onSuccess?.();
-      if (editorRef.current && createCommentMutation.isSuccess) {
-        form.reset();
+      if (editorRef.current) {
         editorRef.current.commands.clearContent();
       }
+      form.reset();
       if (parentId) {
         setReplyingTo(null);
       }
+      onSuccess?.();
     } catch (error) {
       console.log("Failed to create comment:", error);
     }
