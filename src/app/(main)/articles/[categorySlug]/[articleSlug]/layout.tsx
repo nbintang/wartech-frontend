@@ -41,5 +41,5 @@ export async function generateMetadata({
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-background">{children}</div>;
+  return <div className="max-w-full mx-auto  pb-8 pt-4">{children}</div>;
 }

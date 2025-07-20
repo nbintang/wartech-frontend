@@ -26,9 +26,10 @@ export default function NewsPage({
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
+  console.log("articleByCategory", articleByCategory.data);
   if (articleByCategory.isError) {
     return (
-      <div className="min-h-[calc(100vh-400px)] grid place-items-center">
+      <div className="min-h-[calc(100vh-400px)] max-w-7xl mx-auto  sm:px-6 lg:px-8 pb-8 pt-4 grid place-items-center">
         <div className="flex flex-col justify-center items-center gap-6">
           <Frown size={64} className="text-muted-foreground" />
           <h1 className="text-2xl text-center font-bold text-muted-foreground">
@@ -41,7 +42,7 @@ export default function NewsPage({
 
   if (articleByCategory.data?.meta.totalItems === 0) {
     return (
-      <div className="min-h-[calc(100vh-400px)] grid place-items-center">
+      <div className="min-h-[calc(100vh-400px)] max-w-7xl mx-auto  sm:px-6 lg:px-8 pb-8 pt-4 grid place-items-center">
         <div className="flex flex-col justify-center items-center gap-6">
           <Frown size={64} className="text-muted-foreground" />
           <h1 className="text-2xl text-center font-bold text-muted-foreground">
@@ -54,9 +55,9 @@ export default function NewsPage({
   }
 
   return (
-    <>
+    <div className="max-w-7xl mx-auto  sm:px-6 lg:px-8 pb-8 pt-4">
       <HightlightCarouselSection query={articleByCategory} />
       <LatestNewsSection title={`Latest in ${categorySlug}`} query={articleByCategory} />
-    </>
+    </div>
   );
 }

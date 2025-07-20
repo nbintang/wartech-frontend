@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
 
-const LatestNewsSection = ({
+const   LatestNewsSection = ({
   query,
   title ,
 }: {
@@ -28,7 +28,7 @@ const LatestNewsSection = ({
     )
     .slice(0, 3);
   return (
-    <section className="mb-12">
+    <section className="max-w-7xl mx-auto  sm:px-6 lg:px-8 pb-8 pt-4 ">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold ">{title || "Latest News"}</h2>
         <Button variant="ghost" size="sm">

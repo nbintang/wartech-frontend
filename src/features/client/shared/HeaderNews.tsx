@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import useFetchProtectedData from "@/hooks/hooks-api/useFetchProtectedData";
+import useProfile from "@/hooks/hooks-api/useProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { CategoryApiResponse } from "@/types/api/CategoryApiResponse";
@@ -36,14 +37,7 @@ const HeaderNews = () => {
     isSuccess,
     isLoading,
     isUnauthorized,
-  } = useFetchProtectedData<UserProfileApiResponse>({
-    TAG: "me",
-    endpoint: "/users/me",
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
+  } = useProfile();
   const {
     data: categories,
     isSuccess: isSuccessCategories,

@@ -13,10 +13,11 @@ const ClientLayout = ({ children }: ClientLayoutProps) => {
   const isProtectedRoutes =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/reporter") ||
-    pathname.startsWith("/auth") 
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/profile");
   if (!isProtectedRoutes) {
     return (
-      <main className="max-w-7xl mx-auto  sm:px-6 lg:px-8 pb-8 pt-4">
+      <main className="">
         <HeaderNews />
         {children}
         <FooterNews />

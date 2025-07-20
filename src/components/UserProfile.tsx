@@ -42,9 +42,9 @@ export default function UserProfile({
         )}
       >
         <Avatar className="h-8 w-8 rounded-lg grayscale">
-          <AvatarImage src={data?.image ?? "https://github.com/shadcn.png"} />
-          <AvatarFallback className="rounded-lg">
-            {data?.name?.slice(0, 2)}
+          <AvatarImage src={data?.image ?? ""} alt={data?.name ?? ""} />
+          <AvatarFallback className="text-lg">
+            {data?.name.charAt(0)}
           </AvatarFallback>
         </Avatar>
         <div className="grid flex-1 text-left text-sm leading-tight">

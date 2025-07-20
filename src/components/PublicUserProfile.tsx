@@ -11,6 +11,7 @@ import {
 import { LockIcon, LogOutIcon, UserIcon } from "lucide-react";
 import useSignOut from "@/hooks/hooks-api/useSignOut";
 import { UserProfileApiResponse } from "@/types/api/UserApiResponse";
+import Link from "next/link";
 export default function PublicUserProfile(dataProps: {
   isLoading?: boolean;
   isSuccess?: boolean;
@@ -27,13 +28,11 @@ export default function PublicUserProfile(dataProps: {
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <UserIcon className="mr-2 h-4 w-4" />
-          Edit Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <LockIcon className="mr-2 h-4 w-4" />
-          Change Password
+        <DropdownMenuItem asChild>
+          <Link href={`/profile`}>
+            <UserIcon className="mr-2 h-4 w-4" />
+             Profile
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-destructive" onClick={() => mutate()}>

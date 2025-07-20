@@ -105,13 +105,7 @@ export default function ClientArticleComments({
   }, [data, optimisticComment, articleSlug, articleId]);
 
   useEffect(() => {
-    if (
-      inView &&
-      hasNextPage &&
-      isCollapsed &&
-      !isFetchingNextPage &&
-      !isUnauthorized
-    ) {
+    if (inView && hasNextPage && isCollapsed && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isCollapsed, fetchNextPage, isFetchingNextPage]);
@@ -138,8 +132,8 @@ export default function ClientArticleComments({
   };
 
   return (
-    <Card className="w-full mx-auto relative">
-      {!isCollapsed && !isError  && (
+    <Card className="max-w-7xl mx-auto  sm:px-6 lg:px-8 pb-8 pt-4 relative">
+      {!isCollapsed && !isError && (
         <div className="bg-gradient-to-b from-transparent to-background rounded-xl pointer-events-none absolute inset-0 z-10" />
       )}
       <CardHeader>
@@ -201,7 +195,7 @@ export default function ClientArticleComments({
             <>
               {allComments.length > 0 ? (
                 <>
-                  {!isCollapsed  && (
+                  {!isCollapsed && (
                     <div className="absolute inset-x-0 bottom-10 z-20 flex justify-center">
                       {isUnauthorized ? (
                         <Button
@@ -231,7 +225,7 @@ export default function ClientArticleComments({
                     articleId={articleId}
                   />
 
-                  {hasNextPage && !isCollapsed && (
+                  {hasNextPage && isCollapsed && (
                     <div ref={ref} className="flex justify-center mt-6">
                       {isFetchingNextPage ? (
                         <div className="flex items-center gap-2 text-muted-foreground">

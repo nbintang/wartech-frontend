@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, Mail, Tag } from "lucide-react";
+import { Clock, LoaderCircleIcon, Mail, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,7 +17,6 @@ import ArticleDetailSkeleton from "@/features/client/skeleton/ArticleDetailSkele
 import LatestNewsSection from "@/features/client/main/LatestNewsSection";
 import Comments from "@/features/comments/components/Comments";
 import ClientArticleComments from "@/features/comments/components/ClientArticleComments";
-
 
 export default function ArticlePage({
   params,
@@ -113,7 +112,7 @@ export default function ArticlePage({
           </header>
 
           {/* Hero Image */}
-          <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+          <div className="relative w-full aspect-video overflow-hidden">
             <Image
               src={articleData.image || "/placeholder.svg"}
               alt={articleData.title}
@@ -160,6 +159,11 @@ export default function ArticlePage({
       )}
 
       <LatestNewsSection query={relatedArticles} />
+      {isLoading && (
+        <div className={"container mx-auto px-4 pb-12 pt-4"}>
+          <LoaderCircleIcon className="mx-auto h-12 w-12 animate-spin text-muted-foreground" />
+        </div>
+      )}
       {isSuccess && (
         <ClientArticleComments
           articleId={articleData.id}
